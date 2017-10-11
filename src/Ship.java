@@ -19,7 +19,7 @@ import java.util.Random;
  * </p>
  */
 
-public class Ship {
+public class Ship implements Comparable<Ship> {
 
     private int startX;
     private int startY;
@@ -80,8 +80,6 @@ public class Ship {
         return false;
     }
 
-    /*
-
     private static Ship getOneRandomShip(PlayerBoard pb, ShipType size, Direction[] directions){
         Ship tempShip = new Ship(0,0,Direction.RIGHT, ShipType.One);
         boolean done = false;
@@ -97,7 +95,7 @@ public class Ship {
             }
             String did = (didIt) ? "Placed" : "Could not place";
             /*System.out.printf("%s a ship at x-%d and y-%d. The " +
-                    "ship has %d size and it's dir is %s \n", did, x, y, tempShip.getSize(), tempShip._dir);
+                    "ship has %d size and it's dir is %s \n", did, x, y, tempShip.getSize(), tempShip._dir);*/
         }
         return tempShip;
     }
@@ -147,5 +145,4 @@ public class Ship {
         }
         return 0;
     }
-    */
 }

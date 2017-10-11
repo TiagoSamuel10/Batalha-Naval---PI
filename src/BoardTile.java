@@ -15,8 +15,8 @@ import java.beans.PropertyChangeListener;
  *     o isVisible é se já foi disparado contra;
  * </p>
  */
-public abstract class BoardTile extends JPanel{
 
+public abstract class BoardTile extends JPanel{
 
     static final int SIZE = 50;
 
