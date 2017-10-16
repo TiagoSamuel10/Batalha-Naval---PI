@@ -58,9 +58,8 @@ public class Game {
         int x = s.nextInt();
         System.out.println("Y coord");
         int y = s.nextInt();
-        BoardTile hit = playerBoards[id].attack(x, y);
         System.out.println(playerBoards[id]);
-        System.out.println(hit.gotHit());
+        //System.out.println(hit.gotHit());
         if(playerBoards[id].isGameOver()){
             allowed.remove(id);
         }

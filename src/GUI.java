@@ -2,22 +2,31 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.Socket;
 
-public class GUI extends JFrame {
+public class GUI extends JFrame implements WindowListener {
+
+    private boolean readyToStart;
+    private PlayerSocket thisSocket;
+    private PrintWriter toServer;
+    private BufferedReader fromServer;
+    //private Scanner sc;
 
     final static Point GAMEBOARD_LOCATION = new Point(180,180);
     private final static Dimension DIMENSION = new Dimension(1200, 1080);
     private Container container;
-    private Game game;
     private final static String TITLE = "GAME";
     private final static int BORDER_RIGHT_SIDE_WIDTH = 200;
 
     // TODO turns
 
     public GUI(){
-        game = new Game();
         container = getContentPane();
         setVisible(true);
         setSize(DIMENSION);
@@ -26,6 +35,16 @@ public class GUI extends JFrame {
         setResizable(false);
         setLayout(null);
         setMainMenu();
+        readyToStart = false;
+        try {
+            Socket socket = new Socket("localhost", 1000);
+            toServer = new PrintWriter(socket.getOutputStream(), true);
+            fromServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            thisSocket = new PlayerSocket(socket);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     private void setMainMenu() {
@@ -35,7 +54,15 @@ public class GUI extends JFrame {
         playButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                setGameWindow();
+                try {
+                    if(fromServer.readLine().equals("ready")){
+                        setGameWindow();
+                        return;
+                    }
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+                JOptionPane.showMessageDialog(container,"Not enough players.");
             }
         });
         add(playButton);
@@ -74,8 +101,8 @@ public class GUI extends JFrame {
         backToMenu.setLocation(100, 100);
         add(backToMenu);
 
-        PlayerBoard graphBoard = game.getPlayerBoards()[0];
-        add(graphBoard);
+        //PlayerBoard graphBoard = game.getPlayerBoards()[0];
+        //add(graphBoard);
         repaint();
         validate();
 
@@ -113,9 +140,9 @@ public class GUI extends JFrame {
         container.removeAll();
         repaint();
         validate();
-        PlayerBoard graphBoard = game.getPlayerBoards()[0];
-        graphBoard.setGettingAttacked(true);
-        add(graphBoard);
+        //PlayerBoard graphBoard = game.getPlayerBoards()[0];
+        //graphBoard.setGettingAttacked(true);
+        //add(graphBoard);
 
         Button b2 = new Button("PLAYER 3");
         b2.setSize(100,50);
@@ -124,15 +151,52 @@ public class GUI extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 //game.getPlayerBoards()[0].attack(4,5);
-                game.getPlayerBoards()[0].lightItUp();
+                //game.getPlayerBoards()[0].lightItUp();
             }
         });
 
-        add(b2);
+        //add(b2);
 
         repaint();
         validate();
     }
 
+    //region WindowListener
 
+    @Override
+    public void windowOpened(WindowEvent e) {
+
+    }
+
+    @Override
+    public void windowClosing(WindowEvent e) {
+
+    }
+
+    @Override
+    public void windowClosed(WindowEvent e) {
+        //thisSocket.close();
+    }
+
+    @Override
+    public void windowIconified(WindowEvent e) {
+
+    }
+
+    @Override
+    public void windowDeiconified(WindowEvent e) {
+
+    }
+
+    @Override
+    public void windowActivated(WindowEvent e) {
+
+    }
+
+    @Override
+    public void windowDeactivated(WindowEvent e) {
+
+    }
+
+    //endregion WindowListener
 }

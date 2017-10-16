@@ -118,7 +118,7 @@ public class Ship implements Comparable<Ship> {
             temp[i] = getOneRandomShip(tempBoard, types[i], directions);
             i++;
             if(i == types.length){
-                System.out.println("I is: " +  i);
+                //System.out.println("I is: " +  i);
                 //tempBoard.lightItUp();
                 //System.out.println(tempBoard);
                 //System.out.println(Arrays.toString(temp));

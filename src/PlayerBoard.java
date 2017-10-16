@@ -1,3 +1,6 @@
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.Nullable;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
@@ -29,14 +32,14 @@ public class PlayerBoard extends JPanel {
 
     //GRAPHICAL
 
-    boolean gettingAttacked;
-    BoardTile lastHit;
+    private boolean gettingAttacked;
+    private BoardTile lastHit;
     private boolean goAgain;
     private ArrayList<BoardTile> tiles;
 
     //LOGIC
 
-    private int _id;
+    private final int _id;
     private BoardTile[][] boardTiles;
     static final int LINES = 10;
     static final int COLUMNS = 10;
@@ -47,8 +50,8 @@ public class PlayerBoard extends JPanel {
 
     // TODO add method to handle all ships
 
-    public PlayerBoard(int id) {
-        System.out.println("++1");
+    PlayerBoard(int id) {
+        //System.out.println("++1");
         gameOver = false;
         _id = id;
         boardTiles = new BoardTile[LINES][COLUMNS];
@@ -66,9 +69,9 @@ public class PlayerBoard extends JPanel {
         }
     }
 
-    // TODO attack a BoardTile(not x and y)
-
     //region attacked
+
+    /*
 
     private void getAttacked(int x, int y) {
         goAgain = true;
@@ -79,6 +82,7 @@ public class PlayerBoard extends JPanel {
             tile.setAttacked();
             // NOT A SHIP PIECE
             if (!tile.isPiece()) {
+                System.out.println("NO");
                 goAgain = false;
                 return;
             }
@@ -89,7 +93,32 @@ public class PlayerBoard extends JPanel {
                 shipDestroyed(s);
             }
         }
+        repaint();
     }
+
+    */
+
+    void attack(BoardTile boardTile){
+        //NOT ATTACKED YET
+        if (!boardTile.isVisible) {
+            boardTile.setAttacked();
+            repaint();
+            // NOT A SHIP PIECE
+            if (!boardTile.isPiece()) {
+                goAgain = false;
+                return;
+            }
+            System.out.println("HIT A SHIP");
+            Ship s = shipsWithTiles.get((ShipPiece) boardTile);
+            if (s.isDestroyed()) {
+                System.out.println("SHIP DESTROYED");
+                shipDestroyed(s);
+            }
+        }
+        repaint();
+    }
+
+    /*
 
     BoardTile attack(int x, int y) {
         getAttacked(x, y);
@@ -98,6 +127,7 @@ public class PlayerBoard extends JPanel {
         }
         return lastHit;
     }
+    */
 
     //endregion
 
@@ -116,7 +146,7 @@ public class PlayerBoard extends JPanel {
             Point[] points = getSurroundingPoints(piece._x, piece._y);
             for (Point point : points) {
                 if (inBounds(point.x, point.y)) {
-                    getTileAt(point.x, point.y).isVisible = true;
+                    getTileAt(point.x, point.y).setAttacked();
                 }
             }
         }
@@ -126,6 +156,7 @@ public class PlayerBoard extends JPanel {
         for (int l = 0; l < LINES; l++) {
             for (int c = 0; c < COLUMNS; c++) {
                 boardTiles[l][c].setAttacked();
+                repaint();
             }
         }
     }
@@ -147,7 +178,7 @@ public class PlayerBoard extends JPanel {
         return s;
     }
 
-    public void removeShip(Ship toRemove) {
+    void removeShip(Ship toRemove) {
         for (ShipPiece piece : toRemove.getPieces()) {
             boardTiles[piece._x][piece._y] = new WaterTile(piece._x, piece._y);
             shipsWithTiles.remove(piece, toRemove);
@@ -155,10 +186,10 @@ public class PlayerBoard extends JPanel {
         ships.remove(toRemove);
     }
 
-    public void placeShip(Ship toAdd) {
-        System.out.println(ships.size());
+    void placeShip(Ship toAdd) {
+        //System.out.println(ships.size());
         if(ships.size() >= Game.MAX_SHIPS){
-            System.err.println("TOO MANY SHIPS ALREADY");
+            //System.err.println("TOO MANY SHIPS ALREADY");
             return;
         }
         //System.out.println(ships.size());
@@ -169,7 +200,7 @@ public class PlayerBoard extends JPanel {
             shipsWithTiles.put(piece, toAdd);
             //System.out.println(shipsWithTiles.get(piece));
         }
-        System.out.println(ships.size());
+        //System.out.println(ships.size());
         if(ships.size() == Game.MAX_SHIPS){
             addTiles();
         }
@@ -177,7 +208,7 @@ public class PlayerBoard extends JPanel {
 
     //region CanPlaceShip
 
-    public boolean canShipBeHere(Ship toAdd) {
+    boolean canShipBeHere(Ship toAdd) {
         for (ShipPiece piece : toAdd.getPieces()) {
             //System.out.println(piece.toString());
             boolean isInBounds = inBounds(piece._x, piece._y);
@@ -211,7 +242,7 @@ public class PlayerBoard extends JPanel {
         Point[] points = getSurroundingPoints(x, y);
         for (Point point : points) {
             if (inBounds(point.x, point.y)) {
-                if (!freeAt(point.x, point.y)) {
+                if (!isAPieceAt(point.x, point.y)) {
                     return false;
                 }
             }
@@ -219,21 +250,22 @@ public class PlayerBoard extends JPanel {
         return true;
     }
 
-    public boolean freeAt(int x, int y) {
+    private boolean isAPieceAt(int x, int y) {
         return !getTileAt(x, y).isPiece();
     }
 
     //endregion
 
-    public BoardTile getTileAt(int x, int y) {
+    BoardTile getTileAt(int x, int y) {
         return boardTiles[x][y];
     }
 
+    @Contract(pure = true)
     private boolean inBounds(int x, int y) {
         return (x < LINES && x >= 0) && (y < COLUMNS && y >= 0);
     }
 
-    public boolean isGameOver() {
+    boolean isGameOver() {
         return gameOver;
     }
 
@@ -241,7 +273,7 @@ public class PlayerBoard extends JPanel {
         return lastHit;
     }
 
-    public boolean goAgain() {
+    boolean goAgain() {
         return goAgain;
     }
 
@@ -271,8 +303,11 @@ public class PlayerBoard extends JPanel {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (gettingAttacked) {
-                    System.out.println(findTileAt(e.getX(), e.getY()));
-                    System.out.println(findTileAt(e.getX(), e.getY()).isPiece());
+                    //System.out.println(1);
+                    BoardTile boardTile = findTileAt(e.getPoint());
+                    if(boardTile != null){
+                        attack(boardTile);
+                    }
                 }
             }
 
@@ -301,22 +336,26 @@ public class PlayerBoard extends JPanel {
 
     //endregion
 
-    private BoardTile findTileAt(int x, int y) {
-        System.out.println("X: " + x);
-        System.out.println("Y: " + y);
-        Point p = new Point(x, y);
+    @Nullable
+    private BoardTile findTileAt(Point point){
         for (BoardTile tile : tiles) {
             //System.out.println(graphTile.getLocation());
-            if (tile.insidePoint(p)) {
+            if (tile.insidePoint(point)) {
                 lastHit = tile;
-                tile.setAttacked();
+                //tile.setAttacked();
                 return lastHit;
             }
         }
         return null;
     }
 
-    public void setGettingAttacked(boolean gettingAttacked) {
+    @Nullable
+    private BoardTile findTileAt(int x, int y) {
+        Point p = new Point(x, y);
+        return findTileAt(p);
+    }
+
+    void setGettingAttacked(boolean gettingAttacked) {
         this.gettingAttacked = gettingAttacked;
     }
 }
