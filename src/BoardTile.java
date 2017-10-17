@@ -30,6 +30,7 @@ public abstract class BoardTile extends JPanel{
     abstract Color getHitColor();
 
     public BoardTile(){
+        isVisible = false;
         addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {

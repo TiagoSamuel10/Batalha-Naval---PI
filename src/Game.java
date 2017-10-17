@@ -1,32 +1,44 @@
-import javax.swing.*;
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Game {
 
-    static final int MAX_SHIPS = 10;
     private static final int MAX_PLAYERS = 3;
 
-    private ArrayList<Integer> allowed;
+    private Turns turns;
     private int currentPlayer;
-    private boolean playing;
     private PlayerBoard[] playerBoards;
-    private Scanner s = new Scanner(System.in);
-    private boolean again;
 
-    public Game(){
-        allowed = new ArrayList<>();
+    Game(){
+        turns = new Turns();
         start();
-        playing = true;
     }
+
+    void attack(int id, int x, int y){
+        playerBoards[id].getAttacked(x, y);
+        checkIfHitAnything(id);
+        checkGameOver(id);
+    }
+
+    //TODO: SOMETHING ABOUT HITS
+
+    private void checkIfHitAnything(int id) {
+        //playerBoards[id].getLastHit();
+    }
+
+    //TODO: SOMETHING ABOUT GAME OVER
+
+    private void checkGameOver(int id) {
+        //playerBoards[id].isGameOver();
+    }
+
 
     private void start() {
         playerBoards = new PlayerBoard[MAX_PLAYERS];
         for(int i = 0; i < MAX_PLAYERS; i++){
             playerBoards[i] = new PlayerBoard(i);
             addRandomBoatsTo(playerBoards[i]);
-            allowed.add(i);
+            turns.addPlayer(i);
             //playerBoards[i].lightItUp();
         }
         //currentPlayer = new Random().nextInt(allowed.size());
@@ -34,14 +46,16 @@ public class Game {
 
     }
 
+    /*
+
     public void playerTurn(){
         System.out.println("Player nº " + (allowed.get(currentPlayer)+ 1) + " playing");
-        System.out.println("Who to attack?");
+        System.out.println("Who to getAttacked?");
         int id;
         while (true){
             id = s.nextInt() - 1;
             if(id == allowed.get(currentPlayer)){
-                System.out.println("Can't attack self");
+                System.out.println("Can't getAttacked self");
             }
             else if(id >= playerBoards.length){
                 System.out.println("3 players max");
@@ -68,18 +82,13 @@ public class Game {
         }
     }
 
+    */
+
     public void changeTurn(){
-        //1 -> 2 -> 3 -> 1 -> 2
-        // 1 -> /2/ -> 3 = 1 -> 3 -> 1 -> 3
-        System.out.println(allowed.size());
-        System.out.println(currentPlayer);
-        if(currentPlayer + 1 >= allowed.size()){
-            currentPlayer = allowed.get(0);
-        }
-        else{
-            currentPlayer = allowed.get(currentPlayer + 1);
-        }
+        currentPlayer = turns.nextPlayerIndex();
     }
+
+    /*
 
     public void run(){
         while (playing){
@@ -89,10 +98,10 @@ public class Game {
         }
     }
 
+    */
+
     public void addRandomBoatsTo(PlayerBoard pb){
-       for (Ship ship:Ship.getRandomShips()) {
-            pb.placeShip(ship);
-        }
+        pb.placeShips(Ship.getRandomShips());
     }
 
     @Override
@@ -109,7 +118,4 @@ public class Game {
         return playerBoards;
     }
 
-    public boolean getAgain() {
-        return again;
-    }
 }

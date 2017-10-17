@@ -9,12 +9,14 @@ class ShipPiece extends BoardTile implements Comparable<ShipPiece> {
     private final static Color notVisibleColor = new Color(100,100,100);
     private final static Color hitColor = new Color(30,30,30);
 
-    ShipPiece(int x, int y){
+    Ship _ship;
+
+    ShipPiece(Ship ship, int x, int y) {
         _x = x;
         _y = y;
-        //occupied = true;
-        isVisible = false;
+        _ship = ship;
     }
+
     @Override
     public String toString() {
         return (isVisible)?"X":"?";

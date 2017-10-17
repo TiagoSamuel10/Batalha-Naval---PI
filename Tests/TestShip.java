@@ -26,11 +26,11 @@ public class TestShip {
         );
         System.out.println(pb.toString());
         /*
-        pb.attack(0,0);
-        pb.attack(0,1);
-        pb.attack(0,2);
-        pb.attack(0,3);
-        pb.attack(4,5);
+        pb.getAttacked(0,0);
+        pb.getAttacked(0,1);
+        pb.getAttacked(0,2);
+        pb.getAttacked(0,3);
+        pb.getAttacked(4,5);
         System.out.println(pb.toString());
         */
     }

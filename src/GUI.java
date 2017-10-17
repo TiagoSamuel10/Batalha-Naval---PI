@@ -40,7 +40,6 @@ public class GUI extends JFrame implements WindowListener {
             Socket socket = new Socket("localhost", 1000);
             toServer = new PrintWriter(socket.getOutputStream(), true);
             fromServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            thisSocket = new PlayerSocket(socket);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -54,14 +53,7 @@ public class GUI extends JFrame implements WindowListener {
         playButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                try {
-                    if(fromServer.readLine().equals("ready")){
-                        setGameWindow();
-                        return;
-                    }
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
+                toServer.println("I'm trying to enter");
                 JOptionPane.showMessageDialog(container,"Not enough players.");
             }
         });
@@ -150,7 +142,7 @@ public class GUI extends JFrame implements WindowListener {
         b2.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                //game.getPlayerBoards()[0].attack(4,5);
+                //game.getPlayerBoards()[0].getAttacked(4,5);
                 //game.getPlayerBoards()[0].lightItUp();
             }
         });

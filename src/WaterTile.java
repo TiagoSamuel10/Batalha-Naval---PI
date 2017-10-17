@@ -12,7 +12,6 @@ public class WaterTile extends BoardTile {
     public WaterTile(int x, int y){
         _x = x;
         _y = y;
-        isVisible = false;
     }
 
     @Override

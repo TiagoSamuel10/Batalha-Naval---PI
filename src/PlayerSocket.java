@@ -3,13 +3,19 @@ import java.net.Socket;
 
 public class PlayerSocket extends Thread implements Runnable {
 
+    private static int i = 0;
+
+    private final int mine;
+    private final Server _theServer;
     private Socket socket;
     private OutputStream out;
     private InputStream in;
     public volatile boolean running;
 
-    public PlayerSocket(Socket socket) {
-        //System.out.println("1");
+    public PlayerSocket(Server theServer, Socket socket) {
+        i++;
+        mine = i;
+        _theServer = theServer;
         this.socket = socket;
         running = true;
         getStreams();
@@ -26,20 +32,25 @@ public class PlayerSocket extends Thread implements Runnable {
 
     @Override
     public void run() {
+        System.out.println(toString() + "has began");
         while (running) {
-            System.out.println(running);
             try {
                 BufferedReader fromClient = new BufferedReader(new InputStreamReader(in));
                 String s = fromClient.readLine();
-                if (s != null) {
-                    System.out.println(s);
-                }
+                System.out.println(toString() + "said " + s);
             } catch (IOException e) {
                 running = false;
                 //e.printStackTrace();
             }
         }
-        System.out.println("OVER");
+        //TODO: WARN THAT I DISCONNECTED?
+        _theServer.left(socket);
+        System.out.println(toString() + "has ended");
+    }
+
+    @Override
+    public String toString() {
+        return "Client number " + mine + " ";
     }
 
     public void close() {

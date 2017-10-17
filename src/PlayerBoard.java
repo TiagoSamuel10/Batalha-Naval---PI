@@ -39,26 +39,29 @@ public class PlayerBoard extends JPanel {
 
     //LOGIC
 
+    private int index = 0;
+
+    final static int NUMBER_OF_BOATS = 10;
     private final int _id;
     private BoardTile[][] boardTiles;
     static final int LINES = 10;
     static final int COLUMNS = 10;
-    private ArrayList<Ship> ships;
+    private Ship[] ships;
     private HashMap<ShipPiece, Ship> shipsWithTiles;
     private boolean gameOver;
+    private ArrayList<ShipPiece> pieces;
 
 
     // TODO add method to handle all ships
 
     PlayerBoard(int id) {
-        //System.out.println("++1");
         gameOver = false;
         _id = id;
         boardTiles = new BoardTile[LINES][COLUMNS];
         fillWithWater();
-        ships = new ArrayList<>();
-        shipsWithTiles = new HashMap<>();
+        ships = new Ship[NUMBER_OF_BOATS];
         tiles = new ArrayList<>();
+        pieces = new ArrayList<>();
     }
 
     private void fillWithWater() {
@@ -71,35 +74,9 @@ public class PlayerBoard extends JPanel {
 
     //region attacked
 
-    /*
-
-    private void getAttacked(int x, int y) {
-        goAgain = true;
-        BoardTile tile = getTileAt(x, y);
-        lastHit = tile;
+    void getAttacked(int x, int y) {
         //NOT ATTACKED YET
-        if (!tile.isVisible) {
-            tile.setAttacked();
-            // NOT A SHIP PIECE
-            if (!tile.isPiece()) {
-                System.out.println("NO");
-                goAgain = false;
-                return;
-            }
-            System.out.println("HIT A SHIP");
-            Ship s = shipsWithTiles.get((ShipPiece) tile);
-            if (s.isDestroyed()) {
-                System.out.println("SHIP DESTROYED");
-                shipDestroyed(s);
-            }
-        }
-        repaint();
-    }
-
-    */
-
-    void attack(BoardTile boardTile){
-        //NOT ATTACKED YET
+        BoardTile boardTile = getTileAt(x, y);
         if (!boardTile.isVisible) {
             boardTile.setAttacked();
             repaint();
@@ -108,19 +85,23 @@ public class PlayerBoard extends JPanel {
                 goAgain = false;
                 return;
             }
-            System.out.println("HIT A SHIP");
-            Ship s = shipsWithTiles.get((ShipPiece) boardTile);
-            if (s.isDestroyed()) {
+            pieces.remove((ShipPiece) boardTile);
+            Ship ship = ((ShipPiece) boardTile)._ship;
+            if (ship.isDestroyed()) {
                 System.out.println("SHIP DESTROYED");
-                shipDestroyed(s);
+                shipDestroyed(ship);
             }
         }
         repaint();
     }
 
+    void getAttacked(BoardTile boardTile){
+        getAttacked(boardTile._x, boardTile._y);
+    }
+
     /*
 
-    BoardTile attack(int x, int y) {
+    BoardTile getAttacked(int x, int y) {
         getAttacked(x, y);
         if (goAgain) {
             checkGameOver();
@@ -131,14 +112,12 @@ public class PlayerBoard extends JPanel {
 
     //endregion
 
+    boolean isGameOver(){
+        return gameOver;
+    }
+
     private void checkGameOver() {
-        for (Ship ship : ships) {
-            if (!ship.isDestroyed()) {
-                gameOver = false;
-                return;
-            }
-        }
-        gameOver = true;
+        gameOver = pieces.isEmpty();
     }
 
     private void shipDestroyed(Ship s) {
@@ -178,31 +157,19 @@ public class PlayerBoard extends JPanel {
         return s;
     }
 
-    void removeShip(Ship toRemove) {
-        for (ShipPiece piece : toRemove.getPieces()) {
-            boardTiles[piece._x][piece._y] = new WaterTile(piece._x, piece._y);
-            shipsWithTiles.remove(piece, toRemove);
+    void placeShips(Ship[] toAdd){
+        for (Ship ship : toAdd) {
+            placeShip(ship);
         }
-        ships.remove(toRemove);
+        addTiles();
     }
 
     void placeShip(Ship toAdd) {
-        //System.out.println(ships.size());
-        if(ships.size() >= Game.MAX_SHIPS){
-            //System.err.println("TOO MANY SHIPS ALREADY");
-            return;
-        }
-        //System.out.println(ships.size());
-        ships.add(toAdd);
         for (ShipPiece piece : toAdd.getPieces()) {
             //System.out.println("PLACING " + piece + " PIECE AT: " + piece._x + " " + piece._y);
             boardTiles[piece._x][piece._y] = piece;
-            shipsWithTiles.put(piece, toAdd);
+            //shipsWithTiles.put(piece, toAdd);
             //System.out.println(shipsWithTiles.get(piece));
-        }
-        //System.out.println(ships.size());
-        if(ships.size() == Game.MAX_SHIPS){
-            addTiles();
         }
     }
 
@@ -265,20 +232,12 @@ public class PlayerBoard extends JPanel {
         return (x < LINES && x >= 0) && (y < COLUMNS && y >= 0);
     }
 
-    boolean isGameOver() {
-        return gameOver;
-    }
-
     public BoardTile getLastHit() {
         return lastHit;
     }
 
     boolean goAgain() {
         return goAgain;
-    }
-
-    public ArrayList<Ship> getShips() {
-        return ships;
     }
 
     //region GRAPHICAL PART
@@ -306,7 +265,7 @@ public class PlayerBoard extends JPanel {
                     //System.out.println(1);
                     BoardTile boardTile = findTileAt(e.getPoint());
                     if(boardTile != null){
-                        attack(boardTile);
+                        getAttacked(boardTile);
                     }
                 }
             }
