@@ -5,30 +5,11 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-/**
- * O "tabuleiro" de cada jogador. Tem umas poucas de coisas.
- * <p>
- *     Uma lista de navios. Isto é para saber que navios pusemos cá
- * </p>
- * <p>
- *     Um Array 2D com BoardTile[][]. Isto é o tabuleiro mesmo em si. Como WaterTile e ShipPiece são derivados de(extends) de BoardTile, neste array podemos por, quer uma ou outra
- * </p>
- * <p>
- *     Um dicionario, basicamente, entre as peças de navio e o navio a que lhes pertençe
- * </p>
- * <p>
- *     Metodos para "disparar" contra um x e y
- * </p>
- * <p>
- *     Metodos para por, tirar, e ver se posso colocar um navio em (X,Y)
- * </p>
- *
- */
-
-public class PlayerBoard extends JPanel {
+public class PlayerBoard extends JPanel implements Serializable {
 
     //GRAPHICAL
 
@@ -257,7 +238,7 @@ public class PlayerBoard extends JPanel {
             }
         }
         setSize(LINES * (BoardTile.SIZE + 5), COLUMNS * (BoardTile.SIZE + 5));
-        setLocation(GUI.GAMEBOARD_LOCATION);
+        setLocation(Client.GAMEBOARD_LOCATION);
         addMouseListener(new MouseListener() {
             @Override
             public void mouseClicked(MouseEvent e) {

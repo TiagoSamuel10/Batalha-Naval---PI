@@ -1,16 +1,21 @@
 import java.io.*;
 import java.net.Socket;
 
-public class PlayerSocket extends Thread implements Runnable {
+public class PlayerSocket extends Thread {
 
     private static int i = 0;
 
     private final int mine;
     private final Server _theServer;
-    private Socket socket;
+    Socket socket;
+
+    private ObjectOutputStream objectOutputStream;
     private OutputStream out;
     private InputStream in;
-    public volatile boolean running;
+    private ObjectInputStream objectInputStream;
+
+    volatile boolean running;
+
 
     public PlayerSocket(Server theServer, Socket socket) {
         i++;
@@ -23,11 +28,26 @@ public class PlayerSocket extends Thread implements Runnable {
 
     private void getStreams() {
         try {
-            this.out = socket.getOutputStream();
-            this.in = socket.getInputStream();
+            //this.out = socket.getOutputStream();
+            //this.in = socket.getInputStream();
+            objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
+            objectInputStream = new ObjectInputStream(socket.getInputStream());
+            //System.out.println("Done streams on server");
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    void sendObject(Object object){
+        try {
+            objectOutputStream.writeObject(object);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    void sendMessage(String message){
+        new PrintWriter(out, true).println(message);
     }
 
     @Override
@@ -35,9 +55,8 @@ public class PlayerSocket extends Thread implements Runnable {
         System.out.println(toString() + "has began");
         while (running) {
             try {
-                BufferedReader fromClient = new BufferedReader(new InputStreamReader(in));
-                String s = fromClient.readLine();
-                System.out.println(toString() + "said " + s);
+                String s = objectInputStream.readUTF();
+                System.out.println("Server received " + s);
             } catch (IOException e) {
                 running = false;
                 //e.printStackTrace();
@@ -45,12 +64,13 @@ public class PlayerSocket extends Thread implements Runnable {
         }
         //TODO: WARN THAT I DISCONNECTED?
         _theServer.left(socket);
+        i--;
         System.out.println(toString() + "has ended");
     }
 
     @Override
     public String toString() {
-        return "Client number " + mine + " ";
+        return "Player socket " + mine + " ";
     }
 
     public void close() {

@@ -1,10 +1,11 @@
 import java.awt.*;
+import java.io.Serializable;
 
 /**
  * Um pedaço de navio. Tem um X e Y
  */
 
-class ShipPiece extends BoardTile implements Comparable<ShipPiece> {
+class ShipPiece extends BoardTile implements Comparable<ShipPiece>, Serializable{
 
     private final static Color notVisibleColor = new Color(100,100,100);
     private final static Color hitColor = new Color(30,30,30);

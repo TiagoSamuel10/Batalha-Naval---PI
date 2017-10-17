@@ -10,13 +10,13 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 
-public class GUI extends JFrame implements WindowListener {
+public class Client extends JFrame{
 
+    private ClientSocket clientSocket;
     private boolean readyToStart;
-    private PlayerSocket thisSocket;
-    private PrintWriter toServer;
-    private BufferedReader fromServer;
-    //private Scanner sc;
+
+    private PlayerBoard me;
+    private PlayerBoard[] others;
 
     final static Point GAMEBOARD_LOCATION = new Point(180,180);
     private final static Dimension DIMENSION = new Dimension(1200, 1080);
@@ -24,9 +24,7 @@ public class GUI extends JFrame implements WindowListener {
     private final static String TITLE = "GAME";
     private final static int BORDER_RIGHT_SIDE_WIDTH = 200;
 
-    // TODO turns
-
-    public GUI(){
+    public Client(){
         container = getContentPane();
         setVisible(true);
         setSize(DIMENSION);
@@ -38,8 +36,8 @@ public class GUI extends JFrame implements WindowListener {
         readyToStart = false;
         try {
             Socket socket = new Socket("localhost", 1000);
-            toServer = new PrintWriter(socket.getOutputStream(), true);
-            fromServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            clientSocket = new ClientSocket(this, socket);
+            clientSocket.start();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -53,7 +51,7 @@ public class GUI extends JFrame implements WindowListener {
         playButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                toServer.println("I'm trying to enter");
+                clientSocket.sendMessage("WANT TO ENTER");
                 JOptionPane.showMessageDialog(container,"Not enough players.");
             }
         });
@@ -153,42 +151,16 @@ public class GUI extends JFrame implements WindowListener {
         validate();
     }
 
-    //region WindowListener
+    // TODO: DEAL WITH NOT CLOSING
+
 
     @Override
-    public void windowOpened(WindowEvent e) {
-
+    public void dispose() {
+        try {
+            clientSocket._socket.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        super.dispose();
     }
-
-    @Override
-    public void windowClosing(WindowEvent e) {
-
-    }
-
-    @Override
-    public void windowClosed(WindowEvent e) {
-        //thisSocket.close();
-    }
-
-    @Override
-    public void windowIconified(WindowEvent e) {
-
-    }
-
-    @Override
-    public void windowDeiconified(WindowEvent e) {
-
-    }
-
-    @Override
-    public void windowActivated(WindowEvent e) {
-
-    }
-
-    @Override
-    public void windowDeactivated(WindowEvent e) {
-
-    }
-
-    //endregion WindowListener
 }

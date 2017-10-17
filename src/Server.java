@@ -6,9 +6,11 @@ import java.util.ArrayList;
 public class Server {
 
     private Game game;
-    ArrayList<Socket> sockets = new ArrayList<>();
+    ArrayList<PlayerSocket> sockets = new ArrayList<>();
     private boolean running = true;
     private State state;
+
+    private PrintWriter toClients;
 
     enum State{
         Waiting,
@@ -34,7 +36,12 @@ public class Server {
     void left(Socket socket){
         System.out.println(socket + " has sent message that left");
         if(state == State.Waiting){
-            sockets.remove(socket);
+            for (PlayerSocket playerSocket:
+             sockets) {
+                if(socket == playerSocket.socket){
+                    sockets.remove(playerSocket);
+                }
+            }
         }
     }
 
@@ -47,18 +54,33 @@ public class Server {
                 System.out.println("Waiting for players...");
                 Socket s = serverSocket.accept();
                 System.out.println("New player!" + s);
-                sockets.add(s);
                 System.out.println("Starting thread for him");
                 PlayerSocket p = new PlayerSocket(this, s);
                 p.start();
+                sockets.add(p);
                 readyToStart();
             }
             game = new Game();
-            System.out.println("READY TO BEGIN");
+            //sendToAll("READY TO START");
+            sendToAll(game.getPlayerBoards()[0]);
         } catch (IOException e) {
-            System.err.println("Could not listen on port " + 1000);
+            System.err.println("Could not listen on port " + PORT);
             System.exit(-1);
 
+        }
+    }
+
+    private void sendToAll(Object object){
+        for (PlayerSocket playerSocket:
+                sockets) {
+            playerSocket.sendObject(object);
+        }
+    }
+
+    private void sendToAll(String message){
+        for (PlayerSocket playerSocket:
+             sockets) {
+            playerSocket.sendMessage("READY TO PLAY");
         }
     }
 }

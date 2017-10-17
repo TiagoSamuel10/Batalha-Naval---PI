@@ -1,25 +1,8 @@
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Random;
 
-/**
- * Um navio. A classe contêm umas poucas de coisas.
- * <p>Um X e Y iniciais(a "cabeça" do navio)
- * </p>
- * <p>
- *     O tipo(a dimensão(1,2,3,4)
- * </p>
- * <p>
- *     A direção em que está
- * </p>
- * <p>
- *     Um booleano a dizer se já foi destroído ou não
- * </p>
- * <p>
- *     Um Array de ShipPiece[]. Este array tem as peças que vamos por no campo.
- * </p>
- */
-
-public class Ship {
+public class Ship implements Serializable{
 
     private int startX;
     private int startY;
