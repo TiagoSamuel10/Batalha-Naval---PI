@@ -1,47 +1,29 @@
 import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.Nullable;
 
-import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 
-public class PlayerBoard extends JPanel implements Serializable {
-
-    //GRAPHICAL
-
-    private boolean gettingAttacked;
-    private BoardTile lastHit;
-    private boolean goAgain;
-    private ArrayList<BoardTile> tiles;
-
-    //LOGIC
-
-    private int index = 0;
+public class PlayerBoard implements Serializable {
 
     final static int NUMBER_OF_BOATS = 10;
-    private final int _id;
-    private BoardTile[][] boardTiles;
     static final int LINES = 10;
     static final int COLUMNS = 10;
-    private Ship[] ships;
-    private HashMap<ShipPiece, Ship> shipsWithTiles;
     private boolean gameOver;
+    private Ship[] ships = new Ship[10];
     private ArrayList<ShipPiece> pieces;
+    private BoardTile[][] boardTiles;
+
+    boolean gotAPieceAttacked;
 
 
-    // TODO add method to handle all ships
+    // TODO: way to add ships in place
 
-    PlayerBoard(int id) {
+    PlayerBoard() {
         gameOver = false;
-        _id = id;
         boardTiles = new BoardTile[LINES][COLUMNS];
         fillWithWater();
         ships = new Ship[NUMBER_OF_BOATS];
-        tiles = new ArrayList<>();
         pieces = new ArrayList<>();
     }
 
@@ -57,13 +39,13 @@ public class PlayerBoard extends JPanel implements Serializable {
 
     void getAttacked(int x, int y) {
         //NOT ATTACKED YET
+        gotAPieceAttacked = true;
         BoardTile boardTile = getTileAt(x, y);
         if (!boardTile.isVisible) {
             boardTile.setAttacked();
-            repaint();
             // NOT A SHIP PIECE
             if (!boardTile.isPiece()) {
-                goAgain = false;
+                gotAPieceAttacked = false;
                 return;
             }
             pieces.remove((ShipPiece) boardTile);
@@ -73,23 +55,26 @@ public class PlayerBoard extends JPanel implements Serializable {
                 shipDestroyed(ship);
             }
         }
-        repaint();
+        checkGameOver();
+    }
+
+    void getAttacked(Point point){
+        getAttacked(point.x, point.y);
     }
 
     void getAttacked(BoardTile boardTile){
         getAttacked(boardTile._x, boardTile._y);
     }
 
-    /*
-
-    BoardTile getAttacked(int x, int y) {
-        getAttacked(x, y);
-        if (goAgain) {
-            checkGameOver();
+    void lightsOut(){
+        for (int l = 0; l < LINES; l++) {
+            for (int c = 0; c < COLUMNS; c++) {
+                if(!getTileAt(l,c).attacked){
+                    getTileAt(l,c).isVisible = false;
+                }
+            }
         }
-        return lastHit;
     }
-    */
 
     //endregion
 
@@ -99,6 +84,9 @@ public class PlayerBoard extends JPanel implements Serializable {
 
     private void checkGameOver() {
         gameOver = pieces.isEmpty();
+        if(gameOver){
+            lightItUp();
+        }
     }
 
     private void shipDestroyed(Ship s) {
@@ -112,11 +100,18 @@ public class PlayerBoard extends JPanel implements Serializable {
         }
     }
 
-    void lightItUp() {
+    void nukeIt(){
         for (int l = 0; l < LINES; l++) {
             for (int c = 0; c < COLUMNS; c++) {
                 boardTiles[l][c].setAttacked();
-                repaint();
+            }
+        }
+    }
+
+    void lightItUp() {
+        for (int l = 0; l < LINES; l++) {
+            for (int c = 0; c < COLUMNS; c++) {
+                boardTiles[l][c].isVisible = true;
             }
         }
     }
@@ -139,22 +134,36 @@ public class PlayerBoard extends JPanel implements Serializable {
     }
 
     void placeShips(Ship[] toAdd){
+        int i = 0;
         for (Ship ship : toAdd) {
+            ships[i] = ship;
+            i++;
             placeShip(ship);
         }
-        addTiles();
     }
 
     void placeShip(Ship toAdd) {
         for (ShipPiece piece : toAdd.getPieces()) {
             //System.out.println("PLACING " + piece + " PIECE AT: " + piece._x + " " + piece._y);
             boardTiles[piece._x][piece._y] = piece;
-            //shipsWithTiles.put(piece, toAdd);
-            //System.out.println(shipsWithTiles.get(piece));
+            pieces.add(piece);
         }
     }
 
     //region CanPlaceShip
+
+    private Point[] getSurroundingPoints(int x, int y) {
+        Point[] points = new Point[8];
+        points[0] = new Point(x + 1, y);
+        points[1] = new Point(x + 1, y + 1);
+        points[2] = new Point(x + 1, y - 1);
+        points[3] = new Point(x - 1, y);
+        points[4] = new Point(x - 1, y + 1);
+        points[5] = new Point(x - 1, y - 1);
+        points[6] = new Point(x, y + 1);
+        points[7] = new Point(x, y - 1);
+        return points;
+    }
 
     boolean canShipBeHere(Ship toAdd) {
         for (ShipPiece piece : toAdd.getPieces()) {
@@ -173,24 +182,11 @@ public class PlayerBoard extends JPanel implements Serializable {
         return true;
     }
 
-    private Point[] getSurroundingPoints(int x, int y) {
-        Point[] points = new Point[8];
-        points[0] = new Point(x + 1, y);
-        points[1] = new Point(x + 1, y + 1);
-        points[2] = new Point(x + 1, y - 1);
-        points[3] = new Point(x - 1, y);
-        points[4] = new Point(x - 1, y + 1);
-        points[5] = new Point(x - 1, y - 1);
-        points[6] = new Point(x, y + 1);
-        points[7] = new Point(x, y - 1);
-        return points;
-    }
-
     private boolean checkSurroundings(int x, int y) {
         Point[] points = getSurroundingPoints(x, y);
         for (Point point : points) {
             if (inBounds(point.x, point.y)) {
-                if (!isAPieceAt(point.x, point.y)) {
+                if (!freeAt(point.x, point.y)) {
                     return false;
                 }
             }
@@ -198,7 +194,7 @@ public class PlayerBoard extends JPanel implements Serializable {
         return true;
     }
 
-    private boolean isAPieceAt(int x, int y) {
+    public boolean freeAt(int x, int y) {
         return !getTileAt(x, y).isPiece();
     }
 
@@ -213,89 +209,5 @@ public class PlayerBoard extends JPanel implements Serializable {
         return (x < LINES && x >= 0) && (y < COLUMNS && y >= 0);
     }
 
-    public BoardTile getLastHit() {
-        return lastHit;
-    }
 
-    boolean goAgain() {
-        return goAgain;
-    }
-
-    //region GRAPHICAL PART
-
-    private void addTiles(){
-        setLayout(null);
-        gettingAttacked = false;
-        for (int x = 0; x < PlayerBoard.LINES; x++) {
-            for (int y = 0; y < PlayerBoard.COLUMNS; y++) {
-                BoardTile bt = getTileAt(x, y);
-                bt.setLocation(bt._x * (BoardTile.SIZE + 5), bt._y * (BoardTile.SIZE + 5));
-                bt.setSize(BoardTile.SIZE, BoardTile.SIZE);
-                //bt.setBackground(new Color(23 * bt._x,22 * bt._x,21 * bt._y));
-                //System.out.println(bt.isPiece());
-                tiles.add(bt);
-                add(bt);
-            }
-        }
-        setSize(LINES * (BoardTile.SIZE + 5), COLUMNS * (BoardTile.SIZE + 5));
-        setLocation(Client.GAMEBOARD_LOCATION);
-        addMouseListener(new MouseListener() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (gettingAttacked) {
-                    //System.out.println(1);
-                    BoardTile boardTile = findTileAt(e.getPoint());
-                    if(boardTile != null){
-                        getAttacked(boardTile);
-                    }
-                }
-            }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-
-            }
-        });
-
-    }
-
-    //endregion
-
-    @Nullable
-    private BoardTile findTileAt(Point point){
-        for (BoardTile tile : tiles) {
-            //System.out.println(graphTile.getLocation());
-            if (tile.insidePoint(point)) {
-                lastHit = tile;
-                //tile.setAttacked();
-                return lastHit;
-            }
-        }
-        return null;
-    }
-
-    @Nullable
-    private BoardTile findTileAt(int x, int y) {
-        Point p = new Point(x, y);
-        return findTileAt(p);
-    }
-
-    void setGettingAttacked(boolean gettingAttacked) {
-        this.gettingAttacked = gettingAttacked;
-    }
 }

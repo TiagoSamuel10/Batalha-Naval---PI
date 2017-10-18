@@ -2,7 +2,11 @@ public class TestGraph {
 
     public static void main(String[] args) {
 
-        Client g = new Client();
+        for(int i = 0; i < 10000; i++){
+            PlayerBoard pb = Game.getRandomPlayerBoard();
+            pb.lightItUp();
+            System.out.println(pb);
+        }
 
     }
 

@@ -1,6 +1,7 @@
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketAddress;
 import java.util.ArrayList;
 
 public class Server {
@@ -21,7 +22,7 @@ public class Server {
         state = State.Waiting;
     }
 
-    public static final int PORT = 1000;
+    public static final int PORT = 1234;
 
     public static void main(String[] args) {
         new Server().start();
@@ -47,8 +48,11 @@ public class Server {
 
     private void start() {
         System.out.println("Starting server");
-        try (ServerSocket serverSocket = new ServerSocket(PORT, 3)) {
+        try (ServerSocket serverSocket = new ServerSocket(PORT)) {
             System.out.println("Started");
+            System.out.println(serverSocket.getChannel());
+            System.out.println(serverSocket.getInetAddress());
+            System.out.println(serverSocket.getLocalSocketAddress());
             // WAITING FOR ALL PLAYERS
             while (state == State.Waiting) {
                 System.out.println("Waiting for players...");
@@ -62,7 +66,9 @@ public class Server {
             }
             game = new Game();
             //sendToAll("READY TO START");
-            sendToAll(game.getPlayerBoards()[0]);
+            while (!game.isOver){
+
+            }
         } catch (IOException e) {
             System.err.println("Could not listen on port " + PORT);
             System.exit(-1);

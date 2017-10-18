@@ -46,24 +46,6 @@ public class Ship implements Serializable{
         return _shipType.ordinal() + 1;
     }
 
-    public boolean isAPieceAt(int x, int y){
-        for (ShipPiece piece : pieces) {
-            if (piece._x == x && piece._y == y) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public boolean isAPiece(ShipPiece aPiece){
-        for (ShipPiece piece : pieces) {
-            if (aPiece == piece) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     private static Ship getOneRandomShip(PlayerBoard pb, ShipType size, Direction[] directions){
         Ship tempShip = new Ship(0,0,Direction.RIGHT, ShipType.One);
         boolean didIt = false;
@@ -93,7 +75,7 @@ public class Ship implements Serializable{
         // 3, 3
         // 2, 2, 2
         // 1, 1, 1, 1
-        PlayerBoard tempBoard = new PlayerBoard(1);
+        PlayerBoard tempBoard = new PlayerBoard();
         Direction[] directions = Direction.values();
         int i = 0;
         while(true){
@@ -113,7 +95,7 @@ public class Ship implements Serializable{
 
     boolean isDestroyed() {
         for (ShipPiece piece : pieces) {
-            if (!piece.isVisible) {
+            if (!piece.attacked) {
                 return false;
             }
         }

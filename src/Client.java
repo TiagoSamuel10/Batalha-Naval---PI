@@ -1,28 +1,49 @@
+import org.jetbrains.annotations.Nullable;
+
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
-import java.io.BufferedReader;
+import java.awt.event.*;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.Socket;
 
 public class Client extends JFrame{
 
+    //TESTS ONLY
+    private Turns turns;
+    //
+
+    private final boolean online = false;
     private ClientSocket clientSocket;
     private boolean readyToStart;
 
-    private PlayerBoard me;
-    private PlayerBoard[] others;
+    // MAIN MENU
+    private Button playButton;
 
-    final static Point GAMEBOARD_LOCATION = new Point(180,180);
+    // Main Game Window
+    private Button attackButton;
+    private Button chatButton;
+    private Button backToMenu;
+    private JLabel playerTurn;
+
+    //ATTACK PEOPLE
+    private Button attack1;
+    private Button attack2;
+    private JPanel players;
+    private BufferedImage[] bufferedImages = new BufferedImage[3];
+    private JLabel[] labelsToImage = new JLabel[3];
+    private GraphicalBoard[] all = new GraphicalBoard[3];
+    ////
+
+    final static Point GAME_BOARD_LOCATION = new Point(200,200);
     private final static Dimension DIMENSION = new Dimension(1200, 1080);
     private Container container;
     private final static String TITLE = "GAME";
     private final static int BORDER_RIGHT_SIDE_WIDTH = 200;
+
+    public static void main(String[] args){
+        Client c = new Client();
+    }
 
     public Client(){
         container = getContentPane();
@@ -32,56 +53,82 @@ public class Client extends JFrame{
         setTitle(TITLE);
         setResizable(false);
         setLayout(null);
-        setMainMenu();
         readyToStart = false;
-        try {
-            Socket socket = new Socket("localhost", 1000);
-            clientSocket = new ClientSocket(this, socket);
-            clientSocket.start();
-        } catch (IOException e) {
-            e.printStackTrace();
+        if(online) {
+            try {
+                Socket socket = new Socket("localhost", 1234);
+                clientSocket = new ClientSocket(this, socket);
+                clientSocket.start();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }else{
+            turns = new Turns();
+            turns.addPlayer(0);
+            turns.addPlayer(1);
+            turns.addPlayer(2);
+            all[0] = new GraphicalBoard(Game.getRandomPlayerBoard());
+            all[1] = new GraphicalBoard(Game.getRandomPlayerBoard());
+            all[2] = new GraphicalBoard(Game.getRandomPlayerBoard());
         }
+
+        setGameWindow();
+        setAttackWindow();
+        setMainMenu();
+
 
     }
 
     private void setMainMenu() {
-        Button playButton = new Button("Start game");
+        container.removeAll();
+        playButton = new Button("Start game");
         playButton.setLocation(500,500);
         playButton.setSize(100,50);
         playButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                clientSocket.sendMessage("WANT TO ENTER");
-                JOptionPane.showMessageDialog(container,"Not enough players.");
+                toGameWindow();
             }
         });
-        add(playButton);
+        container.add(playButton);
+    }
+
+    private void toGameWindow(){
+        container.removeAll();
+        container.add(attackButton);
+        container.add(chatButton);
+        container.add(backToMenu);
+        GraphicalBoard me = all[turns.getCurrent()];
+        me.lightItForNow();
+        container.add(me);
+        playerTurn.setText("Player " + (turns.getCurrent() + 1) + " is playing now");
+        container.add(playerTurn);
+        repaint();
+        validate();
     }
 
     private void setGameWindow() {
-        container.removeAll();
-        Button attackButton = new Button("Attack");
+        attackButton = new Button("Attack");
         attackButton.setSize(100,100);
         attackButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                setAttackWindow();
+                all[turns.getCurrent()].intoDarknessWeGo();
+                toAttackWindow();
             }
         });
         attackButton.setLocation(1200 - BORDER_RIGHT_SIDE_WIDTH, DIMENSION.height/2 - 400);
-        add(attackButton);
 
-        Button chatButton = new Button("Chat");
-        chatButton.setSize(100,100);
-        chatButton.addActionListener(new ActionListener() {
+       chatButton = new Button("Chat");
+       chatButton.setSize(100,100);
+       chatButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
             }
         });
         chatButton.setLocation(1200 - BORDER_RIGHT_SIDE_WIDTH, DIMENSION.height/2);
-        add(chatButton);
 
-        Button backToMenu = new Button("Back to Menu");
+        backToMenu = new Button("Back to Menu");
         backToMenu.setSize(100,50);
         backToMenu.addActionListener(new ActionListener() {
             @Override
@@ -89,77 +136,231 @@ public class Client extends JFrame{
             }
         });
         backToMenu.setLocation(100, 100);
-        add(backToMenu);
 
-        //PlayerBoard graphBoard = game.getPlayerBoards()[0];
-        //add(graphBoard);
+        playerTurn = new JLabel("Player " + (turns.getCurrent() + 1)+ " is playing now");
+        playerTurn.setSize(200, 100);
+        playerTurn.setLocation(500,20);
+
+    }
+
+    private static BufferedImage createImage(JPanel panel) {
+        int w = panel.getWidth();
+        int h = panel.getHeight();
+        BufferedImage bufferedImage = new BufferedImage(w , h, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = bufferedImage.createGraphics();
+        panel.paint(g);
+        return bufferedImage;
+    }
+
+    private void toAttackWindow(){
+        container.removeAll();
+
+        int player1 = turns.nextPlayerIndex() + 1;
+        int player2 = turns.nextPlayerIndex() + 1;
+
+        turns.nextPlayerIndex();
+
+        attack1.setLabel("PLAYER " + player1);
+        attack2.setLabel("PLAYER " + player2);
+
+        labelsToImage[0].setIcon(new ImageIcon(bufferedImages[player1 - 1]));
+        labelsToImage[0].setLocation(25, 50);
+        labelsToImage[0].setSize(GraphicalBoard.SIZE);
+
+        if(turns.remaining() > 1){
+            labelsToImage[1].setSize(GraphicalBoard.SIZE);
+            labelsToImage[1].setIcon(new ImageIcon(bufferedImages[player2 - 1]));
+            labelsToImage[1].setLocation(600, 50);
+        }
+
+
+        //players.add(labelsToImage[0]);
+        //players.add(labelsToImage[1]);
+
+        container.add(players);
+        players.repaint();
         repaint();
         validate();
-
     }
 
     private void setAttackWindow(){
-        container.removeAll();
-        repaint();
-        validate();
-        Button b1 = new Button("PLAYER 2");
-        b1.setSize(100,50);
-        b1.setLocation(250,500);
-        b1.addActionListener(new ActionListener() {
+        attack1 = new Button("PLAYER 2");
+        attack1.setLocation(350, 600);
+        attack1.setSize(150, 50);
+        attack1.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                setBoardToAttack();
+                setBoardToAttack(Integer.valueOf(attack1.getLabel().substring(7)) - 1);
             }
         });
 
-        Button b2 = new Button("PLAYER 3");
-        b2.setSize(100,50);
-        b2.setLocation(500,500);
+        attack2 = new Button("PLAYER 3");
+        attack2.setLocation(750, 600);
+        attack2.setSize(150, 50);
+        attack2.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setBoardToAttack(Integer.valueOf(attack2.getLabel().substring(7)) - 1);
+            }
+        });
 
-        JPanel players = new JPanel();
-        players.add(b1);
-        players.add(b2);
+        players = new JPanel(null);
+
+        bufferedImages[0] = createImage(all[0]);
+        bufferedImages[1] = createImage(all[1]);
+        bufferedImages[2] = createImage(all[2]);
+
+        labelsToImage[0] = new JLabel(new ImageIcon(bufferedImages[1]));
+        labelsToImage[1] = new JLabel(new ImageIcon(bufferedImages[2]));
+
+        labelsToImage[0].setLocation(25, 50);
+        labelsToImage[1].setLocation(650, 50);
+
+        labelsToImage[0].setSize(GraphicalBoard.SIZE);
+        labelsToImage[1].setSize(GraphicalBoard.SIZE);
+
+        players.add(attack1);
+        players.add(attack2);
+        players.add(labelsToImage[0]);
+        players.add(labelsToImage[1]);
         players.setLocation(0,0);
         players.setSize(DIMENSION);
 
-        container.add(players);
-
     }
 
-    private void setBoardToAttack() {
+    private void setBoardToAttack(int who) {
         container.removeAll();
         repaint();
         validate();
-        //PlayerBoard graphBoard = game.getPlayerBoards()[0];
-        //graphBoard.setGettingAttacked(true);
-        //add(graphBoard);
 
-        Button b2 = new Button("PLAYER 3");
-        b2.setSize(100,50);
-        b2.setLocation(1000,1000);
-        b2.addActionListener(new ActionListener() {
+        MouseListener mouseListener = new MouseListener() {
+            @Override
+            public void mouseClicked(MouseEvent e) {}
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                //System.out.println(e.getPoint());
+                if(!online) {
+                    if(getCoordinatesFromClick(e.getPoint()) != null) {
+                        all[who]._playerBoard.getAttacked(getCoordinatesFromClick(e.getPoint()));
+                        all[who].repaint();
+                        if(all[who]._playerBoard.isGameOver()){
+                            turns.removePlayer(who);
+                            JOptionPane.showMessageDialog(container,
+                                    "Destroyed the guy, poor " + (who + 1) );
+                            int i = turns.getCurrent();
+                            setBoardToAttack(turns.nextPlayerIndex());
+                            turns.setLatestIndex(i);
+                            return;
+                        }
+                        bufferedImages[who] = createImage(all[who]);
+                        if(!all[who]._playerBoard.gotAPieceAttacked){
+                            removeMouseListener(this);
+                            turns.nextPlayerIndex();
+                            JOptionPane.showMessageDialog(container,
+                                    "Missed. Now player " + (turns.getCurrent() + 1) + " will take over");
+                            toGameWindow();
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+
+            }
+        };
+
+        addMouseListener(mouseListener);
+
+        Button backToMenu = new Button("Back to Game");
+        backToMenu.setSize(100,50);
+        backToMenu.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                //game.getPlayerBoards()[0].getAttacked(4,5);
-                //game.getPlayerBoards()[0].lightItUp();
+                toGameWindow();
             }
         });
 
-        //add(b2);
+
+        add(backToMenu);
+
+        add(all[who]);
 
         repaint();
         validate();
+    }
+
+    @Nullable
+    private Point getCoordinatesFromClick(Point point){
+        //188, 211
+        //208, 231
+        // 20 border?
+        int minX = GAME_BOARD_LOCATION.x + 20;
+        int minY = GAME_BOARD_LOCATION.y + 30;
+        int gpWidth = GraphicalBoard.SIZE.width;
+        int gpHeight = GraphicalBoard.SIZE.height;
+        int maxX = minX + gpWidth;
+        int maxY = minY + gpHeight;
+        if(point.x > maxX || point.y > maxY){
+            return null;
+        }
+        int defX = -1;
+        for (int x = 0; x < PlayerBoard.LINES; x++) {
+            /*
+            System.out.println("-----------");
+            System.out.println("X: "+ x);
+            System.out.println("FIRST: " + (minX + x * (GraphicalBoard.BORDER + BoardTile.SIZE)));
+            System.out.println("SECOND: " + (minX + x * (BoardTile.SIZE  + GraphicalBoard.BORDER) + BoardTile.SIZE));
+            */
+            if(point.x > minX + x * (GraphicalBoard.BORDER + BoardTile.SIZE) &&
+                    point.x <= minX + x  * (BoardTile.SIZE + GraphicalBoard.BORDER) + BoardTile.SIZE){
+                defX = x;
+                break;
+            }
+        }
+        int defY = -1;
+
+        for (int y = 0; y < PlayerBoard.COLUMNS; y++) {
+            /*
+            System.out.println("-----------");
+            System.out.println("Y: "+ y);
+            System.out.println("FIRST: " + (minY + y * (GraphicalBoard.BORDER + BoardTile.SIZE)));
+            System.out.println("SECOND: " + (minY + y * (BoardTile.SIZE  + GraphicalBoard.BORDER) + BoardTile.SIZE));
+            */
+
+            if(point.y > minY + y * (GraphicalBoard.BORDER + BoardTile.SIZE) &&
+                    point.y <= minY + y  * (BoardTile.SIZE + GraphicalBoard.BORDER) + BoardTile.SIZE){
+                defY = y;
+                break;
+            }
+        }
+        if(defX  == - 1|| defY == -1){
+            return null;
+        }
+        return new Point(defX,defY);
     }
 
     // TODO: DEAL WITH NOT CLOSING
 
-
     @Override
     public void dispose() {
-        try {
-            clientSocket._socket.close();
-        } catch (Exception e) {
-            e.printStackTrace();
+        if(online) {
+            try {
+                clientSocket._socket.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
         super.dispose();
     }

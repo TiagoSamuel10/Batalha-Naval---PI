@@ -1,7 +1,7 @@
 public class TestShip {
 
     public static void main(String[] args){
-        PlayerBoard pb = new PlayerBoard(1);
+        PlayerBoard pb = new PlayerBoard();
         /*System.out.println(
                 pb.canShipBeHere(new Ship(4, 5, Direction.DOWN, ShipType.Four)
                 )
@@ -24,7 +24,20 @@ public class TestShip {
                 pb.canShipBeHere(new Ship(0, 0, Direction.RIGHT, Ship.ShipType.Four)
                 )
         );
-        System.out.println(pb.toString());
+
+        /*
+        for(int i = 0; i < 10000; i++){
+            for(Ship ship : Ship.getRandomShips()){
+                for(ShipPiece shipPiece : ship.getPieces()){
+                    if(shipPiece == null){
+                        System.err.println("!!!!");
+                    }
+                }
+            }
+        }
+
+        */
+
         /*
         pb.getAttacked(0,0);
         pb.getAttacked(0,1);
