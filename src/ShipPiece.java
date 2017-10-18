@@ -1,23 +1,34 @@
 import java.awt.*;
+import java.io.Serializable;
 
 /**
  * Um pedaço de navio. Tem um X e Y
  */
 
-class ShipPiece extends BoardTile implements Comparable<ShipPiece> {
+class ShipPiece extends BoardTile implements Comparable<ShipPiece>, Serializable{
 
-    private final static Color notVisibleColor = new Color(100,100,100);
-    private final static Color hitColor = new Color(30,30,30);
+    private final static Color ATTACKED_COLOR = new Color(20,20,20);
+    private final static Color ATTACKED_COLOR_SHIP_DESTROYED = new Color(150,10,11);
+    private final static Color VISIBLE_COLOR = new Color(100,100,100);
 
-    ShipPiece(int x, int y){
+
+    Ship _ship;
+
+    ShipPiece(Ship ship, int x, int y) {
         _x = x;
         _y = y;
-        //occupied = true;
-        isVisible = false;
+        _ship = ship;
     }
+
     @Override
     public String toString() {
-        return (isVisible)?"X":"?";
+        if(isVisible){
+            if(attacked){
+                return "HS";
+            }
+            return "S";
+        }
+        return "?";
     }
 
     @Override
@@ -34,17 +45,15 @@ class ShipPiece extends BoardTile implements Comparable<ShipPiece> {
     }
 
     @Override
-    String gotHit() {
-        return "Hit ship piece at " + _x + ":" + _y;
+    Color getAttackedColor() {
+        if(_ship.isDestroyed()){
+            return ATTACKED_COLOR_SHIP_DESTROYED;
+        }
+        return ATTACKED_COLOR;
     }
 
     @Override
-    Color getNotVisibleColor() {
-        return notVisibleColor;
-    }
-
-    @Override
-    Color getHitColor() {
-        return hitColor;
+    Color getVisibleColor() {
+        return VISIBLE_COLOR;
     }
 }

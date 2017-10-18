@@ -6,18 +6,24 @@ import java.awt.*;
 
 public class WaterTile extends BoardTile {
 
-    private final static Color notVisibleColor = new Color(100,100,100);
-    private final static Color hitColor = new Color(50,100,200);
+    private final static Color attackedColor = new Color(10,60,150);
+    private final static Color visibleColor = new Color(80,140,240);
+
 
     public WaterTile(int x, int y){
         _x = x;
         _y = y;
-        isVisible = false;
     }
 
     @Override
     public String toString() {
-        return (isVisible)?"W":"?";
+        if(isVisible){
+            if(attacked){
+                return "HW";
+            }
+            return "W";
+        }
+        return "?";
     }
 
     @Override
@@ -26,17 +32,12 @@ public class WaterTile extends BoardTile {
     }
 
     @Override
-    String gotHit() {
-        return "Hit water at " + _x + ":" + _y;
+    Color getAttackedColor() {
+        return attackedColor;
     }
 
     @Override
-    Color getNotVisibleColor() {
-        return notVisibleColor;
-    }
-
-    @Override
-    Color getHitColor() {
-        return hitColor;
+    Color getVisibleColor() {
+        return visibleColor;
     }
 }
