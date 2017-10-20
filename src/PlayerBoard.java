@@ -158,10 +158,7 @@ public class PlayerBoard implements Serializable {
 
     void placeShip(Ship toAdd) {
         for (ShipPiece piece : toAdd.getPieces()) {
-            //System.out.println("PLACING " + piece + " PIECE AT: " + piece._x + " " + piece._y);
-            if(boardTiles[piece._x][piece._y].isPiece()){
-                System.out.println();
-            }
+            System.out.println("PLACING " + piece.getClass().getSimpleName() + " AT: " + piece._x + " " + piece._y);
             boardTiles[piece._x][piece._y] = piece;
             pieces.add(piece);
         }
@@ -227,4 +224,18 @@ public class PlayerBoard implements Serializable {
     }
 
 
+    void removeShip(Ship ship) {
+
+        for (ShipPiece piece : ship.getPieces()) {
+            System.out.println("REMOVING " + piece.getClass().getSimpleName() + " AT: " + piece._x + " " + piece._y);
+            boardTiles[piece._x][piece._y] = new WaterTile(piece._x, piece._y);
+            pieces.remove(piece);
+        }
+
+    }
+
+    boolean fullOfShips(){
+        System.out.println(pieces.size());
+        return pieces.size() == 20;
+    }
 }

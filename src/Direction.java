@@ -7,21 +7,30 @@
  */
 
 public enum Direction {
-    UP,
-    DOWN,
+    LEFT,
     RIGHT,
-    LEFT;
+    DOWN,
+    UP;
 
+    private Direction rotated;
     private int[] directionVector;
 
     static {
-        UP.directionVector = new int[]{-1,0};
-        DOWN.directionVector = new int[]{1,0};
-        RIGHT.directionVector = new int[]{0,1};
-        LEFT.directionVector = new  int[]{0,-1};
+        LEFT.directionVector = new int[]{-1,0};
+        //LEFT.rotated = UP;
+        RIGHT.directionVector = new int[]{1,0};
+        RIGHT.rotated = DOWN;
+        DOWN.directionVector = new int[]{0,1};
+        DOWN.rotated = RIGHT;
+        UP.directionVector = new  int[]{0,-1};
+        //UP.rotated = RIGHT;
     }
 
-    public int[] getDirectionVector(){
+    Direction getRotated(){
+        return rotated;
+    }
+
+    int[] getDirectionVector(){
         return directionVector;
     }
 

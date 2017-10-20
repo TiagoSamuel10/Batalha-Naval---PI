@@ -4,6 +4,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.Socket;
 
@@ -21,23 +23,27 @@ public class Client extends JFrame{
     // MAIN MENU
     private Button playButton;
 
+    //SETTING BOATS WINDOW
+    private Button goToGame;
+    boolean shipsSet;
+
     // Main Game Window
     private Button attackButton;
     private Button chatButton;
     private Button backToMenu;
     private JLabel playerTurn;
+    final static Point GAME_BOARD_LOCATION = new Point(200,200);
 
     //ATTACK PEOPLE
     private Button attack1;
     private Button attack2;
     private JPanel players;
-    private BufferedImage[] bufferedImages = new BufferedImage[3];
+    private BufferedImage[] bufferedImages = new BufferedImage[2];
     private JLabel[] labelsToImage = new JLabel[3];
     private GraphicalBoard[] all = new GraphicalBoard[3];
     ////
 
-    final static Point GAME_BOARD_LOCATION = new Point(200,200);
-    private final static Dimension DIMENSION = new Dimension(1200, 1080);
+    final static Dimension DIMENSION = new Dimension(1200, 1080);
     private Container container;
     private final static String TITLE = "GAME";
     private final static int BORDER_RIGHT_SIDE_WIDTH = 200;
@@ -54,6 +60,7 @@ public class Client extends JFrame{
         setTitle(TITLE);
         setResizable(false);
         setLayout(null);
+        shipsSet = false;
         readyToStart = false;
         if(online) {
             try {
@@ -69,15 +76,14 @@ public class Client extends JFrame{
             turns.addPlayer(0);
             turns.addPlayer(1);
             turns.addPlayer(2);
-            all[0] = new GraphicalBoard(Game.getRandomPlayerBoard());
-            all[1] = new GraphicalBoard(Game.getRandomPlayerBoard());
-            all[2] = new GraphicalBoard(Game.getRandomPlayerBoard());
+            //all[0] = new GraphicalBoard(Game.getRandomPlayerBoard());
+            //all[1] = new GraphicalBoard(Game.getRandomPlayerBoard());
+            //all[2] = new GraphicalBoard(Game.getRandomPlayerBoard());
         }
 
         setGameWindow();
         setAttackWindow();
         setMainMenu();
-
 
     }
 
@@ -89,10 +95,33 @@ public class Client extends JFrame{
         playButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                toGameWindow();
+                placeShipsScreen();
             }
         });
         container.add(playButton);
+    }
+
+    private void placeShipsScreen(){
+        container.removeAll();
+
+        ShipsPlacing shipsPlacing = new ShipsPlacing(this);
+
+        goToGame = new Button("PLAY");
+        goToGame.setLocation(900,500);
+        goToGame.setSize(100,50);
+        goToGame.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if(shipsSet){
+                    toGameWindow();
+                }
+            }
+        });
+
+        add(goToGame);
+
+        container.add(shipsPlacing);
+        repaint();
     }
 
     private void toGameWindow(){
@@ -165,22 +194,15 @@ public class Client extends JFrame{
         attack1.setLabel("PLAYER " + player1);
         attack2.setLabel("PLAYER " + player2);
 
-        labelsToImage[0].setIcon(new ImageIcon(bufferedImages[player1 - 1]));
-        labelsToImage[0].setLocation(25, 50);
-        labelsToImage[0].setSize(GraphicalBoard.SIZE);
+        bufferedImages[0] = createImage(all[player1 - 1]);
+        labelsToImage[0].setIcon(new ImageIcon(bufferedImages[0]));
 
         if(turns.remaining() > 1){
-            labelsToImage[1].setSize(GraphicalBoard.SIZE);
-            labelsToImage[1].setIcon(new ImageIcon(bufferedImages[player2 - 1]));
-            labelsToImage[1].setLocation(600, 50);
+            bufferedImages[1] = createImage(all[player2 - 1]);
+            labelsToImage[1].setIcon(new ImageIcon(bufferedImages[1]));
         }
 
-
-        //players.add(labelsToImage[0]);
-        //players.add(labelsToImage[1]);
-
         container.add(players);
-        players.repaint();
         repaint();
         validate();
     }
@@ -208,12 +230,8 @@ public class Client extends JFrame{
 
         players = new JPanel(null);
 
-        bufferedImages[0] = createImage(all[0]);
-        bufferedImages[1] = createImage(all[1]);
-        bufferedImages[2] = createImage(all[2]);
-
-        labelsToImage[0] = new JLabel(new ImageIcon(bufferedImages[1]));
-        labelsToImage[1] = new JLabel(new ImageIcon(bufferedImages[2]));
+        labelsToImage[0] = new JLabel();
+        labelsToImage[1] = new JLabel();
 
         labelsToImage[0].setLocation(25, 50);
         labelsToImage[1].setLocation(650, 50);
@@ -255,7 +273,6 @@ public class Client extends JFrame{
                             turns.setLatestIndex(i);
                             return;
                         }
-                        bufferedImages[who] = createImage(all[who]);
                         if(!all[who]._playerBoard.gotAPieceAttacked){
                             removeMouseListener(this);
                             turns.nextPlayerIndex();
@@ -286,7 +303,7 @@ public class Client extends JFrame{
         addMouseListener(mouseListener);
 
         Button backToMenu = new Button("Back to Game");
-        backToMenu.setSize(100,50);
+        backToMenu.setSize(0,0);
         backToMenu.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -304,12 +321,12 @@ public class Client extends JFrame{
     }
 
     @Nullable
-    private Point getCoordinatesFromClick(Point point){
+    static Point getCoordinatesFromClick(Point point){
         //188, 211
         //208, 231
         // 20 border?
-        int minX = GAME_BOARD_LOCATION.x + 20;
-        int minY = GAME_BOARD_LOCATION.y + 30;
+        int minX = GAME_BOARD_LOCATION.x;
+        int minY = GAME_BOARD_LOCATION.y;
         int gpWidth = GraphicalBoard.SIZE.width;
         int gpHeight = GraphicalBoard.SIZE.height;
         int maxX = minX + gpWidth;

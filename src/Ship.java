@@ -1,5 +1,7 @@
+import org.jetbrains.annotations.NotNull;
+
+import java.awt.*;
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.Random;
 
 public class Ship implements Serializable{
@@ -7,32 +9,45 @@ public class Ship implements Serializable{
     private int startX;
     private int startY;
     private final ShipType _shipType;
-    private final Direction _dir;
+    Direction _dir;
     private ShipPiece[] pieces;
     private static final Random r = new Random();
 
     enum ShipType {
+
         One,
         Two,
         Three,
         Four
+
+    }
+
+    void setNewCoord(Point point){
+        startX = point.x;
+        startY = point.y;
+    }
+
+    void changeDirection(){
+        _dir = _dir.getRotated();
     }
 
     Ship(int x, int y, Direction dir, ShipType st){
-        startX = x;
-        startY = y;
         _shipType = st;
         _dir = dir;
         pieces = new ShipPiece[st.ordinal() + 1];
-        calculatePieces();
+        setNewCoord(new Point(x, y));
     }
 
     ShipPiece[] getPieces(){
+        calculatePieces();
         return pieces;
     }
 
     private void calculatePieces(){
-        int[] vector = _dir.getDirectionVector();
+        int[] vector = new int[]{0,0};
+        if(_dir != null){
+            vector = _dir.getDirectionVector();
+        }
         for (int i = 0; i < _shipType.ordinal() + 1; i++){
             pieces[i] = new ShipPiece(
                     this,
@@ -42,12 +57,12 @@ public class Ship implements Serializable{
         }
     }
 
-    public int getSize(){
+    int getSize(){
         return _shipType.ordinal() + 1;
     }
 
     private static Ship getOneRandomShip(PlayerBoard pb, ShipType size, Direction[] directions){
-        Ship tempShip = new Ship(0,0,Direction.RIGHT, ShipType.One);
+        Ship tempShip = new Ship(0,0,Direction.DOWN, ShipType.One);
         boolean didIt = false;
         while(!didIt) {
             int x = r.nextInt(PlayerBoard.LINES);
@@ -62,6 +77,22 @@ public class Ship implements Serializable{
                     "ship has %d size and it's dir is %s \n", did, x, y, tempShip.getSize(), tempShip._dir);*/
         }
         return tempShip;
+    }
+
+    @NotNull
+    static Ship[] getFreshShips(){
+        return new Ship[]{
+                new Ship(0,0,Direction.DOWN, ShipType.Four),
+                new Ship(0,0,Direction.DOWN,ShipType.Three),
+                new Ship(0,0,Direction.DOWN,ShipType.Three),
+                new Ship(0,0,Direction.DOWN,ShipType.Two),
+                new Ship(0,0,Direction.DOWN,ShipType.Two),
+                new Ship(0,0,Direction.DOWN,ShipType.Two),
+                new Ship(0,0,Direction.DOWN,ShipType.One),
+                new Ship(0,0,Direction.DOWN,ShipType.One),
+                new Ship(0,0,Direction.DOWN,ShipType.One),
+                new Ship(0,0,Direction.DOWN,ShipType.One)
+        };
     }
 
     static Ship[] getRandomShips(){

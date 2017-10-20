@@ -4,7 +4,7 @@ import java.awt.image.BufferedImage;
 
 public class GraphicalBoard extends JPanel {
 
-    static final int BORDER = 5;
+    static final int BORDER = 1;
     static final Dimension SIZE = new Dimension(
             PlayerBoard.LINES * (BoardTile.SIZE + BORDER),
             PlayerBoard.COLUMNS * (BoardTile.SIZE + BORDER)
