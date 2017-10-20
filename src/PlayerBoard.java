@@ -27,6 +27,20 @@ public class PlayerBoard implements Serializable {
         pieces = new ArrayList<>();
     }
 
+    void forTests(){
+        int i = 0;
+        for (int l = 0; l < LINES; l++) {
+            for (int c = 0; c < COLUMNS; c++) {
+                if(getTileAt(l,c).isPiece()){
+                    i++;
+                }
+            }
+        }
+        if(i!=20){
+           System.out.println("HAS " + i + "PIECES, NOT 20");
+        }
+    }
+
     private void fillWithWater() {
         for (int l = 0; l < LINES; l++) {
             for (int c = 0; c < COLUMNS; c++) {
@@ -145,6 +159,9 @@ public class PlayerBoard implements Serializable {
     void placeShip(Ship toAdd) {
         for (ShipPiece piece : toAdd.getPieces()) {
             //System.out.println("PLACING " + piece + " PIECE AT: " + piece._x + " " + piece._y);
+            if(boardTiles[piece._x][piece._y].isPiece()){
+                System.out.println();
+            }
             boardTiles[piece._x][piece._y] = piece;
             pieces.add(piece);
         }
@@ -173,8 +190,8 @@ public class PlayerBoard implements Serializable {
                 //System.out.println("NO BOUNDS");
                 return false;
             }
-            boolean isNotAdjacentOrOnTop = checkSurroundings(piece._x, piece._y);
-            if (!isNotAdjacentOrOnTop) {
+            boolean isNotAdjacent = checkSurroundings(piece._x, piece._y);
+            if (!isNotAdjacent || !freeAt(piece._x, piece._y)) {
                 //System.out.println("ADJACENT");
                 return false;
             }

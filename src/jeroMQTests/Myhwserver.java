@@ -11,7 +11,7 @@ public class Myhwserver {
 
         //  Socket to talk to clients
         ZMQ.Socket responder = context.socket(ZMQ.REP);
-        responder.bind("tcp://*:5555");
+        responder.bind("tcp://127.0.0.1:5555");
 
         while (!Thread.currentThread().isInterrupted()) {
             // Wait for next request from the client
