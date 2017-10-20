@@ -19,6 +19,7 @@ public class Game {
     static PlayerBoard getRandomPlayerBoard(){
         PlayerBoard pb = new PlayerBoard();
         pb.placeShips(Ship.getRandomShips());
+        //pb.allPieces();
         return pb;
     }
 

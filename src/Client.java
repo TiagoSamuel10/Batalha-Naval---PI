@@ -77,8 +77,8 @@ public class Client extends JFrame{
             turns.addPlayer(1);
             turns.addPlayer(2);
             //all[0] = new GraphicalBoard(Game.getRandomPlayerBoard());
-            //all[1] = new GraphicalBoard(Game.getRandomPlayerBoard());
-            //all[2] = new GraphicalBoard(Game.getRandomPlayerBoard());
+            all[1] = new GraphicalBoard(Game.getRandomPlayerBoard());
+            all[2] = new GraphicalBoard(Game.getRandomPlayerBoard());
         }
 
         setGameWindow();
@@ -113,6 +113,7 @@ public class Client extends JFrame{
             @Override
             public void actionPerformed(ActionEvent e) {
                 if(shipsSet){
+                    all[0] = new GraphicalBoard(shipsPlacing.getPlayerBoard());
                     toGameWindow();
                 }
             }
@@ -177,9 +178,16 @@ public class Client extends JFrame{
     private static BufferedImage createImage(JPanel panel) {
         int w = panel.getWidth();
         int h = panel.getHeight();
-        BufferedImage bufferedImage = new BufferedImage(w , h, BufferedImage.TYPE_INT_RGB);
-        Graphics2D g = bufferedImage.createGraphics();
-        panel.paint(g);
+        BufferedImage bufferedImage = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+        try {
+            Graphics2D g = bufferedImage.createGraphics();
+            panel.paint(g);
+        }catch (Exception e){
+            e.printStackTrace();
+            PlayerBoard pb = ((GraphicalBoard) panel)._playerBoard;
+            pb.lightItUp();
+            System.out.println(pb);
+        }
         return bufferedImage;
     }
 

@@ -1,8 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.image.BufferedImage;
 
-public class GraphicalBoard extends JPanel {
+class GraphicalBoard extends JPanel {
 
     static final int BORDER = 1;
     static final Dimension SIZE = new Dimension(
@@ -22,7 +21,7 @@ public class GraphicalBoard extends JPanel {
 
     GraphicalBoard(PlayerBoard playerBoard){
         _playerBoard = playerBoard;
-        addTiles();
+         addTiles();
     }
 
     private void addTiles(){

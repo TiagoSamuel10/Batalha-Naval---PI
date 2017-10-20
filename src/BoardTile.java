@@ -12,6 +12,7 @@ abstract class BoardTile{
     boolean attacked;
 
     abstract boolean isPiece();
+
     abstract Color getAttackedColor();
     abstract Color getVisibleColor();
 
@@ -21,6 +22,16 @@ abstract class BoardTile{
 
     BoardTile(){
         isVisible = false;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null)
+            return false;
+        if (!(obj instanceof BoardTile))
+            return false;
+        BoardTile other = (BoardTile) obj;
+        return _x == other._x && _y == other._y;
     }
 
     void setAttacked(){

@@ -1,5 +1,4 @@
 import java.util.ArrayList;
-
 class Turns {
 
     private ArrayList<Integer> playersIndex;

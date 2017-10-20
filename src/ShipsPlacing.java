@@ -36,6 +36,11 @@ class ShipsPlacing extends JLayeredPane{
 
     }
 
+
+    PlayerBoard getPlayerBoard(){
+        return playerBoard;
+    }
+
     private class SpecialMouseListener extends MouseAdapter {
 
         GraphShip currentFocused;
@@ -76,34 +81,30 @@ class ShipsPlacing extends JLayeredPane{
 
         @Override
         public void mouseReleased(MouseEvent e) {
-            if(currentFocused != null){
+            if (currentFocused != null) {
                 currentFocused.setLocation(e.getPoint());
                 Point coordinatesFromClick = Client.getCoordinatesFromClick(e.getPoint());
-                if(coordinatesFromClick != null) {
+                if (coordinatesFromClick != null) {
                     currentFocused.changeShipPosition(coordinatesFromClick);
-                    if(playerBoard.canShipBeHere(currentFocused.getShip())){
+                    if (playerBoard.canShipBeHere(currentFocused.getShip())) {
                         playerBoard.placeShip(currentFocused.getShip());
                         currentFocused.alreadyPlaced = true;
-                        currentFocused.setBackground(new Color(1f,0f,0f,0.0f));
+                        currentFocused.setBackground(new Color(1f, 0f, 0f, 0.0f));
                         remove(graphicalBoard);
                         graphicalBoard = new GraphicalBoard(playerBoard);
                         graphicalBoard.lightItForNow();
-                        add(graphicalBoard, 0,7);
+                        add(graphicalBoard, 0, 7);
                         me.repaint();
-                        if(playerBoard.fullOfShips()){
+                        if (playerBoard.fullOfShips()) {
                             _client.shipsSet = true;
                         }
                     }
-                }
-                else{
+                } else {
                     currentFocused.alreadyPlaced = false;
                 }
             }
             //System.out.println(e);
         }
 
-        private boolean insideBorders(){
-            return true;
-        }
     }
 }
