@@ -19,7 +19,7 @@ abstract class BoardTile{
         return NOT_VISIBLE_COLOR;
     }
 
-    public BoardTile(){
+    BoardTile(){
         isVisible = false;
     }
 
