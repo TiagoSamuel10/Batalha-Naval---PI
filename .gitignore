@@ -22,3 +22,6 @@
 hs_err_pid*
 .idea/
 Batalha-Naval---PI.iml
+Out/
+lib/
+

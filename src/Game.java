@@ -12,7 +12,7 @@ public class Game {
 
     Game(){
         turns = new Turns();
-        start();
+        playerBoards = new PlayerBoard[MAX_PLAYERS];
         isOver = false;
     }
 
@@ -49,9 +49,12 @@ public class Game {
         }
     }
 
+    void addPlayerBoard(PlayerBoard playerBoard){
+        currentPlayer++;
+    }
+
 
     private void start() {
-        playerBoards = new PlayerBoard[MAX_PLAYERS];
         for(int i = 0; i < MAX_PLAYERS; i++){
             playerBoards[i] = new PlayerBoard();
             addRandomBoatsTo(playerBoards[i]);

@@ -1,7 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
 
-public abstract class BoardTile extends JPanel{
+abstract class BoardTile{
 
     private final static Color NOT_VISIBLE_COLOR = new Color(100,100,100);
     static final int SIZE = 50;
@@ -26,22 +26,6 @@ public abstract class BoardTile extends JPanel{
     void setAttacked(){
         attacked = true;
         isVisible = true;
-    }
-
-    @Override
-    public void paint(Graphics g) {
-        if (isVisible){
-            if(attacked){
-                setBackground(getAttackedColor());
-            }
-            else {
-                setBackground(getVisibleColor());
-            }
-        }
-        else {
-            setBackground(getNotVisibleColor());
-        }
-        super.paint(g);
     }
 
 }

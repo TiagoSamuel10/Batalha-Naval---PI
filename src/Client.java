@@ -11,6 +11,7 @@ public class Client extends JFrame{
 
     //TESTS ONLY
     private Turns turns;
+    private Game game;
     //
 
     private final boolean online = false;
@@ -63,6 +64,7 @@ public class Client extends JFrame{
                 e.printStackTrace();
             }
         }else{
+            game = new Game();
             turns = new Turns();
             turns.addPlayer(0);
             turns.addPlayer(1);
