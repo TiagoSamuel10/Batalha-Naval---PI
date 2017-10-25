@@ -11,7 +11,7 @@ public class Myhwclient {
         System.out.println("Connecting to hello world server…");
 
         ZMQ.Socket requester = context.socket(ZMQ.REQ);
-        requester.connect("82.154.29.213:5555");
+        requester.connect("tcp://82.154.29.213:5555");
 
         for (int requestNbr = 0; requestNbr != 10; requestNbr++) {
             String request = "Hello";
