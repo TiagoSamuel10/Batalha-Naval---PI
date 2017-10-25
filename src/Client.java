@@ -64,7 +64,7 @@ public class Client extends JFrame{
         readyToStart = false;
         if(online) {
             try {
-                Socket socket = new Socket("193.137.219.49", 1234);
+                Socket socket = new Socket("82.154.29.213", 1234);
                 clientSocket = new ClientSocket(this, socket);
                 clientSocket.start();
             } catch (IOException e) {
