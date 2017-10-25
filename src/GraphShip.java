@@ -59,7 +59,7 @@ class GraphShip extends JPanel{
         int x = 0;
         int y = 0;
 
-        if(number >= 0 && number <= 2){
+        if(number >= 0 && number <= 3){
             x += 800;
             y += 100;
             if(number > 0){
@@ -68,9 +68,12 @@ class GraphShip extends JPanel{
             if(number > 1){
                 x+= 100;
             }
+            if(number > 2){
+                x+= 100;
+            }
         }
 
-        else if(number >= 3 && number <= 6){
+        else if(number > 3 && number <= 6){
             x += 800;
             y += 120 + 4 * BoardTile.SIZE;
             if(number > 4){
