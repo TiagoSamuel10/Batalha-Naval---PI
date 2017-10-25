@@ -16,7 +16,7 @@ public class Client extends JFrame{
     private Game game;
     //
 
-    private final boolean online = false;
+    private final boolean online = true;
     private ClientSocket clientSocket;
     private boolean readyToStart;
 
@@ -64,7 +64,7 @@ public class Client extends JFrame{
         readyToStart = false;
         if(online) {
             try {
-                Socket socket = new Socket("85.245.11.125", 1234);
+                Socket socket = new Socket("193.137.219.49", 1234);
                 clientSocket = new ClientSocket(this, socket);
                 clientSocket.start();
             } catch (IOException e) {
