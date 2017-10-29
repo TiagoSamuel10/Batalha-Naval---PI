@@ -9,14 +9,14 @@ import java.util.ArrayList;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 
-import Common.Network;
+import Common.NetworkChat;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
 import com.esotericsoftware.minlog.Log;
-import Common.Network.ChatMessage;
-import Common.Network.RegisterName;
-import Common.Network.UpdateNames;
+import Common.NetworkChat.ChatMessage;
+import Common.NetworkChat.RegisterName;
+import Common.NetworkChat.UpdateNames;
 
 
 public class ChatServer {
@@ -34,7 +34,7 @@ public class ChatServer {
 
 		// For consistency, the classes to be sent over the network are
 		// registered by the same method for both the client and server.
-		Network.register(server);
+        NetworkChat.register(server);
 
 		server.addListener(new Listener() {
 			public void received (Connection c, Object object) {
@@ -88,7 +88,7 @@ public class ChatServer {
 				}
 			}
 		});
-		server.bind(Network.port);
+		server.bind(NetworkChat.port);
 		server.start();
 
 		// Open a window to provide an easy way to stop the server.

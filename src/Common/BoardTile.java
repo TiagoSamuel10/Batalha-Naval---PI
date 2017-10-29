@@ -1,8 +1,9 @@
 package Common;
 
 import java.awt.*;
+import java.io.Serializable;
 
-public abstract class BoardTile{
+public abstract class BoardTile implements Serializable {
 
     private final static Color NOT_VISIBLE_COLOR = new Color(100,100,100);
     public static final int SIZE = 50;

@@ -44,7 +44,7 @@ class GraphicalBoard extends JPanel {
             }
         }
         setSize(SIZE);
-        setLocation(Client.GAME_BOARD_LOCATION);
+        setLocation(GameClient.GAME_BOARD_LOCATION);
     }
 
 }

@@ -12,16 +12,16 @@ class ShipsPlacing extends JLayeredPane{
     private ShipsPlacing me;
     private PlayerBoard playerBoard;
     private GraphicalBoard graphicalBoard;
-    private Client _client;
+    private GameClient _Game_client;
 
-    ShipsPlacing(Client client){
-        _client = client;
+    ShipsPlacing(GameClient gameClient){
+        _Game_client = gameClient;
 
         setLayout(null);
         playerBoard = new PlayerBoard();
         me = this;
         setLocation(0,0);
-        setSize(Client.DIMENSION);
+        setSize(GameClient.DIMENSION);
         setBackground(Color.WHITE);
 
         graphicalBoard = new GraphicalBoard(playerBoard);
@@ -85,7 +85,7 @@ class ShipsPlacing extends JLayeredPane{
         public void mouseReleased(MouseEvent e) {
             if (currentFocused != null) {
                 currentFocused.setLocation(e.getPoint());
-                Point coordinatesFromClick = Client.getCoordinatesFromClick(e.getPoint());
+                Point coordinatesFromClick = GameClient.getCoordinatesFromClick(e.getPoint());
                 if (coordinatesFromClick != null) {
                     currentFocused.changeShipPosition(coordinatesFromClick);
                     if (playerBoard.canShipBeHere(currentFocused.getShip())) {
@@ -98,7 +98,7 @@ class ShipsPlacing extends JLayeredPane{
                         add(graphicalBoard, 0, 7);
                         me.repaint();
                         if (playerBoard.fullOfShips()) {
-                            _client.shipsSet = true;
+                            _Game_client.shipsSet = true;
                         }
                     }
                 } else {

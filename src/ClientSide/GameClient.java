@@ -1,9 +1,16 @@
 package ClientSide;
 
 import Common.BoardTile;
+import Common.Network;
+import Common.Network.*;
 import Common.PlayerBoard;
+
 import Server.Game;
 import Server.Turns;
+
+import com.esotericsoftware.kryonet.Client;
+import com.esotericsoftware.kryonet.Connection;
+import com.esotericsoftware.kryonet.Listener;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -11,18 +18,22 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.net.Socket;
 
-public class Client extends JFrame{
+public class GameClient extends JFrame{
 
     //TESTS ONLY
     private Turns turns;
     private Game game;
     //
 
+    //FOR ONLINE
     private final boolean online = true;
-    private ClientSocket clientSocket;
-    private boolean readyToStart;
+    private Client client;
+    private String myName;
+
+    // BEFORE MENU
+    private Button goButton;
+    private JTextField nameField;
 
     // MAIN MENU
     private Button playButton;
@@ -31,7 +42,7 @@ public class Client extends JFrame{
     private Button goToGame;
     boolean shipsSet;
 
-    // Main Server.Game Window
+    // Main Game Window
     private Button attackButton;
     private Button chatButton;
     private Button backToMenu;
@@ -53,10 +64,11 @@ public class Client extends JFrame{
     private final static int BORDER_RIGHT_SIDE_WIDTH = 200;
 
     public static void main(String[] args){
-        Client c = new Client();
+        GameClient c = new GameClient();
     }
 
-    public Client(){
+    public GameClient() {
+
         container = getContentPane();
         setVisible(true);
         setSize(DIMENSION);
@@ -65,30 +77,62 @@ public class Client extends JFrame{
         setResizable(false);
         setLayout(null);
         shipsSet = false;
-        readyToStart = false;
-        if(online) {
-            try {
-                Socket socket = new Socket("82.154.29.213", 1234);
-                clientSocket = new ClientSocket(this, socket);
-                clientSocket.start();
-            } catch (IOException e) {
-                e.printStackTrace();
+        //all[0] = new ClientSide.GraphicalBoard(Server.Game.getRandomPlayerBoard());
+        all[1] = new GraphicalBoard(Game.getRandomPlayerBoard());
+        all[2] = new GraphicalBoard(Game.getRandomPlayerBoard());
+
+        String input = (String)JOptionPane.showInputDialog(null, "Your name:", "Choose a name", JOptionPane.QUESTION_MESSAGE,
+                null, null, "");
+        if (input == null || input.trim().length() == 0) System.exit(1);
+        myName = input.trim();
+
+        client = new Client();
+        client.start();
+
+        Network.register(client);
+
+        setCloseListener(new Runnable() {
+            public void run () {
+                dispose();
+                client.stop();
             }
-        }else{
-            game = new Game();
-            turns = new Turns();
-            turns.addPlayer(0);
-            turns.addPlayer(1);
-            turns.addPlayer(2);
-            //all[0] = new ClientSide.GraphicalBoard(Server.Game.getRandomPlayerBoard());
-            all[1] = new GraphicalBoard(Game.getRandomPlayerBoard());
-            all[2] = new GraphicalBoard(Game.getRandomPlayerBoard());
-        }
+        });
 
-        setGameWindow();
-        setAttackWindow();
-        setMainMenu();
+        client.addListener(new Listener() {
+            public void connected (Connection connection) {
+                Register register = new Register();
+                register.name = myName;
+                client.sendTCP(register);
+            }
 
+            public void received (Connection connection, Object object) {
+                //
+            }
+        });
+
+        //setMainMenu();
+        //setAttackWindow();
+        //setGameWindow();
+
+        new Thread("Connect") {
+            public void run () {
+                try {
+                    client.connect(5000, "192.168.56.1", Network.port);
+                    // Server communication after connection can go here, or in Listener#connected().
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                    System.exit(1);
+                }
+            }
+        }.start();
+    }
+
+    private void setCloseListener (final Runnable listener) {
+        addWindowListener(new WindowAdapter() {
+            public void windowClosed (WindowEvent evt) {
+                listener.run();
+            }
+        });
     }
 
     private void setMainMenu() {
@@ -380,19 +424,5 @@ public class Client extends JFrame{
             return null;
         }
         return new Point(defX,defY);
-    }
-
-    // TODO: DEAL WITH NOT CLOSING
-
-    @Override
-    public void dispose() {
-        if(online) {
-            try {
-                clientSocket._socket.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        super.dispose();
     }
 }

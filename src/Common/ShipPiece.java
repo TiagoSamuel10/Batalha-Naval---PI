@@ -3,7 +3,7 @@ package Common;
 import java.awt.*;
 import java.io.Serializable;
 
-class ShipPiece extends BoardTile implements Serializable{
+class ShipPiece extends BoardTile {
 
     private final static Color ATTACKED_COLOR = new Color(20,20,20);
     private final static Color ATTACKED_COLOR_SHIP_DESTROYED = new Color(150,10,11);

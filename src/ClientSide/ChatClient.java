@@ -27,14 +27,14 @@ import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 
-import Common.Network;
+import Common.NetworkChat;
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.minlog.Log;
-import Common.Network.ChatMessage;
-import Common.Network.RegisterName;
-import Common.Network.UpdateNames;
+import Common.NetworkChat.ChatMessage;
+import Common.NetworkChat.RegisterName;
+import Common.NetworkChat.UpdateNames;
 
 public class ChatClient {
 	ChatFrame chatFrame;
@@ -47,7 +47,7 @@ public class ChatClient {
 
 		// For consistency, the classes to be sent over the network are
 		// registered by the same method for both the client and server.
-		Network.register(client);
+		NetworkChat.register(client);
 
 		client.addListener(new Listener() {
 			public void connected (Connection connection) {
@@ -115,7 +115,7 @@ public class ChatClient {
 		new Thread("Connect") {
 			public void run () {
 				try {
-					client.connect(5000, host, Network.port);
+					client.connect(5000, host, NetworkChat.port);
 					// Server.Server communication after connection can go here, or in Listener#connected().
 				} catch (IOException ex) {
 					ex.printStackTrace();
@@ -134,7 +134,7 @@ public class ChatClient {
 		JList nameList;
 
 		public ChatFrame (String host) {
-			super("Chat ClientSide.Client");
+			super("Chat ClientSide.GameClient");
 			setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			setSize(640, 200);
 			setLocationRelativeTo(null);
@@ -153,24 +153,24 @@ public class ChatClient {
 			}
 				JPanel panel = new JPanel(new BorderLayout());
 				contentPane.add(panel, "chat");
+			{
+				JPanel topPanel = new JPanel(new GridLayout(1, 2));
+				panel.add(topPanel);
 				{
-					JPanel topPanel = new JPanel(new GridLayout(1, 2));
-					panel.add(topPanel);
-					{
-						topPanel.add(new JScrollPane(messageList = new JList()));
-						messageList.setModel(new DefaultListModel());
-					}
-					{
-						topPanel.add(new JScrollPane(nameList = new JList()));
-						nameList.setModel(new DefaultListModel());
-					}
-					DefaultListSelectionModel disableSelections = new DefaultListSelectionModel() {
-						public void setSelectionInterval (int index0, int index1) {
-						}
-					};
-					messageList.setSelectionModel(disableSelections);
-					nameList.setSelectionModel(disableSelections);
+					topPanel.add(new JScrollPane(messageList = new JList()));
+					messageList.setModel(new DefaultListModel());
 				}
+				{
+					topPanel.add(new JScrollPane(nameList = new JList()));
+					nameList.setModel(new DefaultListModel());
+				}
+				DefaultListSelectionModel disableSelections = new DefaultListSelectionModel() {
+					public void setSelectionInterval(int index0, int index1) {
+					}
+				};
+				messageList.setSelectionModel(disableSelections);
+				nameList.setSelectionModel(disableSelections);
+			}
 				{
 					JPanel bottomPanel = new JPanel(new GridBagLayout());
 					panel.add(bottomPanel, BorderLayout.SOUTH);
