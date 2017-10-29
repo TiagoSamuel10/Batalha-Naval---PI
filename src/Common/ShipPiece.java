@@ -1,3 +1,5 @@
+package Common;
+
 import java.awt.*;
 import java.io.Serializable;
 
@@ -32,7 +34,7 @@ class ShipPiece extends BoardTile implements Serializable{
     }
 
     @Override
-    Color getAttackedColor() {
+    public Color getAttackedColor() {
         if(_ship.isDestroyed()){
             return ATTACKED_COLOR_SHIP_DESTROYED;
         }
@@ -40,7 +42,7 @@ class ShipPiece extends BoardTile implements Serializable{
     }
 
     @Override
-    Color getVisibleColor() {
+    public Color getVisibleColor() {
         return VISIBLE_COLOR;
     }
 }

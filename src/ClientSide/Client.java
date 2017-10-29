@@ -1,11 +1,15 @@
+package ClientSide;
+
+import Common.BoardTile;
+import Common.PlayerBoard;
+import Server.Game;
+import Server.Turns;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.Socket;
 
@@ -27,7 +31,7 @@ public class Client extends JFrame{
     private Button goToGame;
     boolean shipsSet;
 
-    // Main Game Window
+    // Main Server.Game Window
     private Button attackButton;
     private Button chatButton;
     private Button backToMenu;
@@ -76,7 +80,7 @@ public class Client extends JFrame{
             turns.addPlayer(0);
             turns.addPlayer(1);
             turns.addPlayer(2);
-            //all[0] = new GraphicalBoard(Game.getRandomPlayerBoard());
+            //all[0] = new ClientSide.GraphicalBoard(Server.Game.getRandomPlayerBoard());
             all[1] = new GraphicalBoard(Game.getRandomPlayerBoard());
             all[2] = new GraphicalBoard(Game.getRandomPlayerBoard());
         }
@@ -310,7 +314,7 @@ public class Client extends JFrame{
 
         addMouseListener(mouseListener);
 
-        Button backToMenu = new Button("Back to Game");
+        Button backToMenu = new Button("Back to Server.Game");
         backToMenu.setSize(0,0);
         backToMenu.addActionListener(new ActionListener() {
             @Override
@@ -347,8 +351,8 @@ public class Client extends JFrame{
             /*
             System.out.println("-----------");
             System.out.println("X: "+ x);
-            System.out.println("FIRST: " + (minX + x * (GraphicalBoard.BORDER + BoardTile.SIZE)));
-            System.out.println("SECOND: " + (minX + x * (BoardTile.SIZE  + GraphicalBoard.BORDER) + BoardTile.SIZE));
+            System.out.println("FIRST: " + (minX + x * (ClientSide.GraphicalBoard.BORDER + BoardTile.SIZE)));
+            System.out.println("SECOND: " + (minX + x * (BoardTile.SIZE  + ClientSide.GraphicalBoard.BORDER) + BoardTile.SIZE));
             */
             if(point.x > minX + x * (GraphicalBoard.BORDER + BoardTile.SIZE) &&
                     point.x <= minX + x  * (BoardTile.SIZE + GraphicalBoard.BORDER) + BoardTile.SIZE){
@@ -362,8 +366,8 @@ public class Client extends JFrame{
             /*
             System.out.println("-----------");
             System.out.println("Y: "+ y);
-            System.out.println("FIRST: " + (minY + y * (GraphicalBoard.BORDER + BoardTile.SIZE)));
-            System.out.println("SECOND: " + (minY + y * (BoardTile.SIZE  + GraphicalBoard.BORDER) + BoardTile.SIZE));
+            System.out.println("FIRST: " + (minY + y * (ClientSide.GraphicalBoard.BORDER + BoardTile.SIZE)));
+            System.out.println("SECOND: " + (minY + y * (BoardTile.SIZE  + ClientSide.GraphicalBoard.BORDER) + BoardTile.SIZE));
             */
 
             if(point.y > minY + y * (GraphicalBoard.BORDER + BoardTile.SIZE) &&

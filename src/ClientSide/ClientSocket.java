@@ -1,3 +1,7 @@
+package ClientSide;
+
+import Common.PlayerBoard;
+
 import java.io.*;
 import java.net.Socket;
 
@@ -41,7 +45,7 @@ public class ClientSocket extends Thread {
         while (running) {
             try {
                 //String s = objectInputStream.readUTF();
-                //System.out.println("Client received " + s);
+                //System.out.println("ClientSide.Client received " + s);
                 Object o = objectInputStream.readObject();
                 PlayerBoard pb = (PlayerBoard) o;
                 System.out.println(pb);
@@ -53,7 +57,7 @@ public class ClientSocket extends Thread {
             }
         }
 
-        System.out.println("Client "+ "died");
+        System.out.println("ClientSide.Client "+ "died");
 
     }
 

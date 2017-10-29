@@ -1,5 +1,7 @@
-import java.util.ArrayList;
-import java.util.Scanner;
+package Server;
+
+import Common.PlayerBoard;
+import Common.Ship;
 
 public class Game {
 
@@ -10,13 +12,13 @@ public class Game {
     private PlayerBoard[] playerBoards;
     public boolean isOver;
 
-    Game(){
+    public Game(){
         turns = new Turns();
         playerBoards = new PlayerBoard[MAX_PLAYERS];
         isOver = false;
     }
 
-    static PlayerBoard getRandomPlayerBoard(){
+    public static PlayerBoard getRandomPlayerBoard(){
         PlayerBoard pb = new PlayerBoard();
         pb.placeShips(Ship.getRandomShips());
         //pb.allPieces();

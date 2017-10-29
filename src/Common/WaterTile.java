@@ -1,3 +1,5 @@
+package Common;
+
 import java.awt.*;
 
 /**
@@ -32,12 +34,12 @@ public class WaterTile extends BoardTile {
     }
 
     @Override
-    Color getAttackedColor() {
+    public Color getAttackedColor() {
         return attackedColor;
     }
 
     @Override
-    Color getVisibleColor() {
+    public Color getVisibleColor() {
         return visibleColor;
     }
 }

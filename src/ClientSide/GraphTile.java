@@ -1,5 +1,8 @@
+package ClientSide;
+
 import javax.swing.*;
 import java.awt.*;
+import Common.*;
 
 public class GraphTile extends JPanel {
 
@@ -11,8 +14,8 @@ public class GraphTile extends JPanel {
 
     @Override
     public void paint(Graphics g) {
-        if (_boardTile.isVisible){
-            if(_boardTile.attacked){
+        if (_boardTile.isVisible()){
+            if(_boardTile.isAttacked()){
                 setBackground(_boardTile.getAttackedColor());
             }
             else {

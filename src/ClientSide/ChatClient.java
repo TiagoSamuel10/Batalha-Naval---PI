@@ -1,5 +1,5 @@
 
-package kryonet;
+package ClientSide;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
@@ -27,13 +27,14 @@ import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 
+import Common.Network;
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.minlog.Log;
-import kryonet.Network.ChatMessage;
-import kryonet.Network.RegisterName;
-import kryonet.Network.UpdateNames;
+import Common.Network.ChatMessage;
+import Common.Network.RegisterName;
+import Common.Network.UpdateNames;
 
 public class ChatClient {
 	ChatFrame chatFrame;
@@ -115,7 +116,7 @@ public class ChatClient {
 			public void run () {
 				try {
 					client.connect(5000, host, Network.port);
-					// Server communication after connection can go here, or in Listener#connected().
+					// Server.Server communication after connection can go here, or in Listener#connected().
 				} catch (IOException ex) {
 					ex.printStackTrace();
 					System.exit(1);
@@ -133,7 +134,7 @@ public class ChatClient {
 		JList nameList;
 
 		public ChatFrame (String host) {
-			super("Chat Client");
+			super("Chat ClientSide.Client");
 			setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			setSize(640, 200);
 			setLocationRelativeTo(null);
@@ -150,7 +151,6 @@ public class ChatClient {
 					progressBar.setIndeterminate(true);
 				}
 			}
-			{
 				JPanel panel = new JPanel(new BorderLayout());
 				contentPane.add(panel, "chat");
 				{
@@ -179,7 +179,6 @@ public class ChatClient {
 					bottomPanel.add(sendButton = new JButton("Send"), new GridBagConstraints(1, 0, 1, 1, 0, 0,
 						GridBagConstraints.CENTER, 0, new Insets(0, 0, 0, 0), 0, 0));
 				}
-			}
 
 			sendText.addActionListener(new ActionListener() {
 				public void actionPerformed (ActionEvent e) {

@@ -1,3 +1,5 @@
+package Common;
+
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
@@ -9,7 +11,7 @@ public class Ship implements Serializable{
     private int startX;
     private int startY;
     private final ShipType _shipType;
-    Direction _dir;
+    private Direction _dir;
     private ShipPiece[] pieces;
     private static final Random r = new Random();
 
@@ -22,12 +24,12 @@ public class Ship implements Serializable{
 
     }
 
-    void setNewCoord(Point point){
+    public void setNewCoord(Point point){
         startX = point.x;
         startY = point.y;
     }
 
-    void changeDirection(){
+    public void changeDirection(){
         _dir = _dir.getRotated();
     }
 
@@ -57,7 +59,7 @@ public class Ship implements Serializable{
         }
     }
 
-    int getSize(){
+    public int getSize(){
         return _shipType.ordinal() + 1;
     }
 
@@ -80,7 +82,7 @@ public class Ship implements Serializable{
     }
 
     @NotNull
-    static Ship[] getFreshShips(){
+    public static Ship[] getFreshShips(){
         return new Ship[]{
                 new Ship(0,0,Direction.DOWN, ShipType.Four),
                 new Ship(0,0,Direction.DOWN,ShipType.Three),
@@ -95,7 +97,7 @@ public class Ship implements Serializable{
         };
     }
 
-    static Ship[] getRandomShips(){
+    public static Ship[] getRandomShips(){
         ShipType[] types = new ShipType[]{
                 ShipType.Four, ShipType.Three, ShipType.Three,
                 ShipType.Two, ShipType.Two, ShipType.Two,

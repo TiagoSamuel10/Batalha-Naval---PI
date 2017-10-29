@@ -1,35 +1,38 @@
+package Server;
+
 import java.util.ArrayList;
-class Turns {
+
+public class Turns {
 
     private ArrayList<Integer> playersIndex;
     private int latestIndex;
 
-    Turns(){
+    public Turns(){
         latestIndex = 0;
         playersIndex = new ArrayList<>();
     }
 
-    void setLatestIndex(int who){
+    public void setLatestIndex(int who){
         latestIndex = who;
     }
 
-    int getCurrent(){
+    public int getCurrent(){
         return latestIndex;
     }
 
-    int remaining(){
+    public int remaining(){
         return playersIndex.size();
     }
 
-    void addPlayer(int who){
+    public void addPlayer(int who){
         playersIndex.add(who);
     }
 
-    void removePlayer(int who){
+    public void removePlayer(int who){
         playersIndex.remove(who);
     }
 
-    int nextPlayerIndex(){
+    public int nextPlayerIndex(){
 
         //1 -> 2 -> 3 -> 1 -> 2
         // 1 -> /2/ -> 3 = 1 -> 3 -> 1 -> 3

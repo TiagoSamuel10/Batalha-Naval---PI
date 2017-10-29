@@ -1,5 +1,5 @@
 
-package kryonet;
+package Server;
 
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -9,18 +9,21 @@ import java.util.ArrayList;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 
+import Common.Network;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
 import com.esotericsoftware.minlog.Log;
-import kryonet.Network.ChatMessage;
-import kryonet.Network.RegisterName;
-import kryonet.Network.UpdateNames;
+import Common.Network.ChatMessage;
+import Common.Network.RegisterName;
+import Common.Network.UpdateNames;
+
 
 public class ChatServer {
-	Server server;
 
-	public ChatServer () throws IOException {
+	private Server server;
+
+	ChatServer () throws IOException {
 		server = new Server() {
 			protected Connection newConnection () {
 				// By providing our own connection implementation, we can store per
@@ -89,7 +92,7 @@ public class ChatServer {
 		server.start();
 
 		// Open a window to provide an easy way to stop the server.
-		JFrame frame = new JFrame("Chat Server");
+		JFrame frame = new JFrame("Chat Server.Server");
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		frame.addWindowListener(new WindowAdapter() {
 			public void windowClosed (WindowEvent evt) {

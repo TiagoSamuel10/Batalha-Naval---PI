@@ -1,3 +1,5 @@
+package Common;
+
 import org.jetbrains.annotations.Contract;
 
 import java.awt.*;
@@ -7,19 +9,19 @@ import java.util.ArrayList;
 public class PlayerBoard implements Serializable {
 
     final static int NUMBER_OF_BOATS = 10;
-    static final int LINES = 10;
-    static final int COLUMNS = 10;
+    public static final int LINES = 10;
+    public static final int COLUMNS = 10;
     private boolean gameOver;
     private Ship[] ships = new Ship[10];
     private ArrayList<ShipPiece> pieces;
     private BoardTile[][] boardTiles;
 
-    boolean gotAPieceAttacked;
+    public boolean gotAPieceAttacked;
 
 
     // TODO: way to add ships in place
 
-    PlayerBoard() {
+    public PlayerBoard() {
         gameOver = false;
         boardTiles = new BoardTile[LINES][COLUMNS];
         fillWithWater();
@@ -51,7 +53,7 @@ public class PlayerBoard implements Serializable {
 
     //region attacked
 
-    void getAttacked(int x, int y) {
+    public void getAttacked(int x, int y) {
         //NOT ATTACKED YET
         gotAPieceAttacked = true;
         BoardTile boardTile = getTileAt(x, y);
@@ -72,7 +74,7 @@ public class PlayerBoard implements Serializable {
         checkGameOver();
     }
 
-    void getAttacked(Point point){
+    public void getAttacked(Point point){
         getAttacked(point.x, point.y);
     }
 
@@ -80,7 +82,7 @@ public class PlayerBoard implements Serializable {
         getAttacked(boardTile._x, boardTile._y);
     }
 
-    void lightsOut(){
+    public void lightsOut(){
         for (int l = 0; l < LINES; l++) {
             for (int c = 0; c < COLUMNS; c++) {
                 if(!getTileAt(l,c).attacked){
@@ -92,7 +94,7 @@ public class PlayerBoard implements Serializable {
 
     //endregion
 
-    boolean isGameOver(){
+    public boolean isGameOver(){
         return gameOver;
     }
 
@@ -122,7 +124,7 @@ public class PlayerBoard implements Serializable {
         }
     }
 
-    void lightItUp() {
+    public void lightItUp() {
         for (int l = 0; l < LINES; l++) {
             for (int c = 0; c < COLUMNS; c++) {
                 boardTiles[l][c].isVisible = true;
@@ -147,7 +149,7 @@ public class PlayerBoard implements Serializable {
         return s;
     }
 
-    void placeShips(Ship[] toAdd){
+    public void placeShips(Ship[] toAdd){
         int i = 0;
         for (Ship ship : toAdd) {
             ships[i] = ship;
@@ -156,7 +158,7 @@ public class PlayerBoard implements Serializable {
         }
     }
 
-    void placeShip(Ship toAdd) {
+    public void placeShip(Ship toAdd) {
         for (ShipPiece piece : toAdd.getPieces()) {
             System.out.println("PLACING " + piece.getClass().getSimpleName() + " AT: " + piece._x + " " + piece._y);
             boardTiles[piece._x][piece._y] = piece;
@@ -179,7 +181,7 @@ public class PlayerBoard implements Serializable {
         return points;
     }
 
-    boolean canShipBeHere(Ship toAdd) {
+    public boolean canShipBeHere(Ship toAdd) {
         for (ShipPiece piece : toAdd.getPieces()) {
             //System.out.println(piece.toString());
             boolean isInBounds = inBounds(piece._x, piece._y);
@@ -214,7 +216,7 @@ public class PlayerBoard implements Serializable {
 
     //endregion
 
-    BoardTile getTileAt(int x, int y) {
+    public BoardTile getTileAt(int x, int y) {
         return boardTiles[x][y];
     }
 
@@ -224,7 +226,7 @@ public class PlayerBoard implements Serializable {
     }
 
 
-    void removeShip(Ship ship) {
+    public void removeShip(Ship ship) {
 
         for (ShipPiece piece : ship.getPieces()) {
             System.out.println("REMOVING " + piece.getClass().getSimpleName() + " AT: " + piece._x + " " + piece._y);
@@ -234,7 +236,7 @@ public class PlayerBoard implements Serializable {
 
     }
 
-    boolean fullOfShips(){
+    public boolean fullOfShips(){
         System.out.println(pieces.size());
         return pieces.size() == 20;
     }
