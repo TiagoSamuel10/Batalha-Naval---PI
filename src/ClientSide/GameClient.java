@@ -30,6 +30,7 @@ public class GameClient extends JFrame{
     private final boolean online = true;
     private Client client;
     private String myName;
+    private boolean canStart;
 
     // BEFORE MENU
     private Button goButton;
@@ -77,13 +78,15 @@ public class GameClient extends JFrame{
         setResizable(false);
         setLayout(null);
         shipsSet = false;
-        //all[0] = new ClientSide.GraphicalBoard(Server.Game.getRandomPlayerBoard());
-        all[1] = new GraphicalBoard(Game.getRandomPlayerBoard());
-        all[2] = new GraphicalBoard(Game.getRandomPlayerBoard());
+        canStart = false;
+
+        //all[1] = new GraphicalBoard(Game.getRandomPlayerBoard());
+        //all[2] = new GraphicalBoard(Game.getRandomPlayerBoard());
 
         String input = (String)JOptionPane.showInputDialog(null, "Your name:", "Choose a name", JOptionPane.QUESTION_MESSAGE,
                 null, null, "");
         if (input == null || input.trim().length() == 0) System.exit(1);
+
         myName = input.trim();
 
         client = new Client();
@@ -108,6 +111,16 @@ public class GameClient extends JFrame{
             public void received (Connection connection, Object object) {
                 if (object instanceof IsFull){
                     System.out.println(object);
+                    return;
+                }
+                if (object instanceof StartTheGame){
+                    System.out.println("GAME IS ABOUT TO START");
+                    canStart = true;
+                    return;
+                }
+                if (object instanceof Abort){
+                    setMainMenu();
+                    canStart = false;
                 }
             }
         });
@@ -115,6 +128,7 @@ public class GameClient extends JFrame{
         //setMainMenu();
         //setAttackWindow();
         //setGameWindow();
+        placeShipsScreen();
 
         new Thread("Connect") {
             public void run () {
@@ -145,7 +159,9 @@ public class GameClient extends JFrame{
         playButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                placeShipsScreen();
+                if(canStart){
+                    placeShipsScreen();
+                }
             }
         });
         container.add(playButton);
@@ -156,6 +172,24 @@ public class GameClient extends JFrame{
 
         ShipsPlacing shipsPlacing = new ShipsPlacing(this);
 
+        Button b = new Button("RANDOM");
+
+        b.setLocation(900,700);
+        b.setSize(100,50);
+
+        b.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                shipsSet = true;
+                PlayerBoard pb = Game.getRandomPlayerBoard();
+                shipsPlacing.setPlayerBoard(pb);
+                shipsPlacing.repaint();
+                shipsPlacing.validate();
+                client.sendTCP(pb.getToSend());
+            }
+        });
+
+
         goToGame = new Button("PLAY");
         goToGame.setLocation(900,500);
         goToGame.setSize(100,50);
@@ -163,13 +197,15 @@ public class GameClient extends JFrame{
             @Override
             public void actionPerformed(ActionEvent e) {
                 if(shipsSet){
-                    all[0] = new GraphicalBoard(shipsPlacing.getPlayerBoard());
-                    toGameWindow();
+                    client.sendTCP(shipsPlacing.getPlayerBoard());
+                    //all[0] = new GraphicalBoard(shipsPlacing.getPlayerBoard());
+                    //toGameWindow();
                 }
             }
         });
 
         add(goToGame);
+        add(b);
 
         container.add(shipsPlacing);
         repaint();

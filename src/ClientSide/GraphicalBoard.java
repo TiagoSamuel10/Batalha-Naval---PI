@@ -37,7 +37,7 @@ class GraphicalBoard extends JPanel {
                 BoardTile bt = _playerBoard.getTileAt(x, y);
                 GraphTile graphTile = new GraphTile(bt);
                 Point p = new Point(bt.getCoord());
-                p.setLocation(p.x * multiplier, p.y * multiplier);
+                p.setLocation(p.y * multiplier, p.x * multiplier);
                 graphTile.setLocation(p);
                 graphTile.setSize(BoardTile.SIZE, BoardTile.SIZE);
                 add(graphTile);

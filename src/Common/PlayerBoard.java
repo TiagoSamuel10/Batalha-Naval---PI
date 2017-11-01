@@ -5,6 +5,7 @@ import org.jetbrains.annotations.Contract;
 import java.awt.*;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class PlayerBoard implements Serializable {
 
@@ -15,18 +16,109 @@ public class PlayerBoard implements Serializable {
     private Ship[] ships = new Ship[10];
     private ArrayList<ShipPiece> pieces;
     private BoardTile[][] boardTiles;
+    private int[][] toSend;
+    private int shipN = 0;
 
     public boolean gotAPieceAttacked;
 
+    public int[][] getToSend(){
+        lightItUp();
+        /*
+        System.out.println(this);
+        for (int l = 0; l < LINES; l++) {
+            System.out.println(Arrays.toString(toSend[l]));
+        }
+        */
+        return toSend;
+    }
 
-    // TODO: way to add ships in place
+    private boolean isPiece(int[][] check, int x, int y){
+        return check[x][y] > 0;
+    }
+
+    public void transformBack(int[][] sent){
+        ArrayList<Point> toSkip = new ArrayList<>(LINES * COLUMNS);
+
+        for (int l = 0; l < LINES; l++) {
+            System.out.println(Arrays.toString(sent[l]));
+        }
+
+        int count = 0;
+
+        for (int l = 0; l < LINES; l++) {
+            for (int c = 0; c < COLUMNS; c++) {
+                if (toSkip.contains(new Point(l, c))){
+                    //already found it
+                    continue;
+                }
+                //IT'S A PIECE
+                if(isPiece(sent, l, c)){
+                    //look in directions
+                    int x = l;
+                    int y = c + 1;
+                    int size = 1;
+                    boolean foundHorizontal = false;
+
+                    //HORIZONTAL
+
+                    while(inBounds(x, y)){
+                        if(isPiece(sent, x, y)){
+                            size++;
+                            foundHorizontal = true;
+                            toSkip.add(new Point(x, y));
+                            y++;
+                        }
+                        else{
+                            break;
+                        }
+                    }
+
+                    //VERTICAL
+
+                    x = l + 1;
+                    y = c;
+
+                    if(!foundHorizontal){
+                        while(inBounds(x, y)){
+                            if(isPiece(sent, x, y)){
+                                size++;
+                                toSkip.add(new Point(x, y));
+                                x++;
+                            }
+                            else{
+                                break;
+                            }
+                        }
+                    }
+                    Ship.ShipType st = Ship.ShipType.getShipType(size);
+                    Direction d = Direction.DOWN;
+                    if(foundHorizontal){
+                        d = Direction.RIGHT;
+                    }
+                    Ship tempShip = new Ship(l, c, d, st);
+                    tempShip.getPieces();
+                    System.out.println(tempShip);
+                    placeShip(tempShip);
+                    count += size;
+                }
+
+            }
+        }
+        forTests();
+    }
 
     public PlayerBoard() {
+        toSend = new int[LINES][COLUMNS];
         gameOver = false;
         boardTiles = new BoardTile[LINES][COLUMNS];
         fillWithWater();
         ships = new Ship[NUMBER_OF_BOATS];
         pieces = new ArrayList<>();
+    }
+
+    public PlayerBoard(int[][] sent){
+        this();
+        transformBack(sent);
     }
 
     void forTests(){
@@ -47,6 +139,7 @@ public class PlayerBoard implements Serializable {
         for (int l = 0; l < LINES; l++) {
             for (int c = 0; c < COLUMNS; c++) {
                 boardTiles[l][c] = new WaterTile(l, c);
+                toSend[l][c] = 0;
             }
         }
     }
@@ -159,10 +252,12 @@ public class PlayerBoard implements Serializable {
     }
 
     public void placeShip(Ship toAdd) {
+        shipN++;
         for (ShipPiece piece : toAdd.getPieces()) {
             System.out.println("PLACING " + piece.getClass().getSimpleName() + " AT: " + piece._x + " " + piece._y);
             boardTiles[piece._x][piece._y] = piece;
             pieces.add(piece);
+            toSend[piece._x][piece._y] = shipN;
         }
     }
 
@@ -232,6 +327,7 @@ public class PlayerBoard implements Serializable {
             System.out.println("REMOVING " + piece.getClass().getSimpleName() + " AT: " + piece._x + " " + piece._y);
             boardTiles[piece._x][piece._y] = new WaterTile(piece._x, piece._y);
             pieces.remove(piece);
+            toSend[piece._x][piece._y] = 0;
         }
 
     }

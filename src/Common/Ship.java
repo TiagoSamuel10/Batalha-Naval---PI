@@ -1,9 +1,11 @@
 package Common;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Random;
 
 public class Ship implements Serializable{
@@ -20,7 +22,26 @@ public class Ship implements Serializable{
         One,
         Two,
         Three,
-        Four
+        Four;
+
+        private int value;
+
+        static {
+            One.value = 1;
+            Two.value = 2;
+            Three.value = 3;
+            Four.value = 4;
+        }
+
+        @Nullable
+        static ShipType getShipType(int value){
+            for(ShipType shipType : ShipType.values()){
+                if(shipType.value == value){
+                    return shipType;
+                }
+            }
+            return null;
+        }
 
     }
 
@@ -35,10 +56,11 @@ public class Ship implements Serializable{
 
     Ship(int x, int y, Direction dir, ShipType st){
         _shipType = st;
-        _dir = dir;
-        pieces = new ShipPiece[st.ordinal() + 1];
+        pieces = new ShipPiece[st.value];
         setNewCoord(new Point(x, y));
+        _dir = dir;
     }
+
 
     ShipPiece[] getPieces(){
         calculatePieces();
@@ -133,5 +155,15 @@ public class Ship implements Serializable{
             }
         }
         return true;
+    }
+
+    @Override
+    public String toString() {
+        String s = "[";
+        for(int i = 0; i < pieces.length; i++){
+            s += pieces[i].details() + ", ";
+        }
+        s+= "]";
+        return s;
     }
 }

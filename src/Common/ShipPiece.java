@@ -17,6 +17,15 @@ class ShipPiece extends BoardTile {
         _ship = ship;
     }
 
+    /*
+
+    @Override
+    public String toString() {
+        return "Ship at " + _x + "; " +_y;
+    }
+
+    */
+
     @Override
     public String toString() {
         if(isVisible){
@@ -44,5 +53,9 @@ class ShipPiece extends BoardTile {
     @Override
     public Color getVisibleColor() {
         return VISIBLE_COLOR;
+    }
+
+    public String details(){
+        return "Ship at " +  _x  + ";" + _y;
     }
 }

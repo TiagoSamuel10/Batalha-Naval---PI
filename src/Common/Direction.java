@@ -11,13 +11,13 @@ public enum Direction {
     private int[] directionVector;
 
     static {
-        LEFT.directionVector = new int[]{-1,0};
+        LEFT.directionVector = new int[]{0,-1};
         //LEFT.rotated = UP;
-        RIGHT.directionVector = new int[]{1,0};
+        RIGHT.directionVector = new int[]{0,1};
         RIGHT.rotated = DOWN;
-        DOWN.directionVector = new int[]{0,1};
+        DOWN.directionVector = new int[]{1,0};
         DOWN.rotated = RIGHT;
-        UP.directionVector = new  int[]{0,-1};
+        UP.directionVector = new  int[]{-1,0};
         //UP.rotated = RIGHT;
     }
 
