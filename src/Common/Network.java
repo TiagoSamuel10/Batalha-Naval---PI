@@ -13,8 +13,8 @@ public class Network {
 		Kryo kryo = endPoint.getKryo();
 		kryo.register(Register.class);
 		kryo.register(ChatMessage.class);
-		kryo.register(PlayerBoard.class);
-        kryo.register(EndPoint.class);
+		//kryo.register(PlayerBoard.class);
+        kryo.register(IsFull.class);
 	}
 
 	public static class Register {
@@ -24,4 +24,11 @@ public class Network {
 	public static class ChatMessage {
 		public String text;
 	}
+
+	public static class IsFull{
+        @Override
+        public String toString() {
+            return "Server is full";
+        }
+    }
 }

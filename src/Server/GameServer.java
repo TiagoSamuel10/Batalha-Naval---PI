@@ -12,14 +12,18 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class GameServer {
 
     private Game game;
     private Server server;
+    private BConnection[] connections;
+    private int count;
 
     public GameServer() throws IOException {
 
+        connections = new BConnection[3];
         server = new Server() {
             protected Connection newConnection () {
                 // By providing our own connection implementation, we can store per
@@ -31,6 +35,18 @@ public class GameServer {
         Network.register(server);
 
         server.addListener(new Listener() {
+
+            @Override
+            public void connected(Connection connection) {
+                System.out.println(count);
+                if(count == 3) {
+                    connection.sendTCP(new IsFull());
+                    connection.close();
+                    System.out.println(Arrays.toString(server.getConnections()));
+                    return;
+                }
+                count++;
+            }
 
             public void received (Connection c, Object object) {
 
@@ -50,7 +66,8 @@ public class GameServer {
 
             public void disconnected (Connection c) {
                 BConnection connection = (BConnection)c;
-                System.out.println("LEFT :" + connection.name);
+                System.out.println("LEFT: " + connection.name);
+                count--;
                 if (connection.name != null) {
                     // Announce to everyone that someone (with a registered name) has left.
                 }
@@ -66,6 +83,7 @@ public class GameServer {
 
     static class BConnection extends Connection {
         String name;
+        int id;
     }
 
     public static void main(String[] args) throws IOException {

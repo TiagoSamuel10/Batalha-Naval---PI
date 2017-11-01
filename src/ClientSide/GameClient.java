@@ -106,7 +106,9 @@ public class GameClient extends JFrame{
             }
 
             public void received (Connection connection, Object object) {
-                //
+                if (object instanceof IsFull){
+                    System.out.println(object);
+                }
             }
         });
 
@@ -117,7 +119,7 @@ public class GameClient extends JFrame{
         new Thread("Connect") {
             public void run () {
                 try {
-                    client.connect(5000, "192.168.56.1", Network.port);
+                    client.connect(5000, "192.168.1.4", Network.port);
                     // Server communication after connection can go here, or in Listener#connected().
                 } catch (IOException ex) {
                     ex.printStackTrace();

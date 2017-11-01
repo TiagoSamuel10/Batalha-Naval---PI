@@ -1,55 +1,65 @@
 package Server;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Turns {
 
-    private ArrayList<Integer> playersIndex;
+    private int[] playersIndex;
+    private int count;
     private int latestIndex;
+    private int lastTurn;
+
+    private static final int REMOVED = -1;
+
+    //private ArrayList<Integer> playersIndex;
+
 
     public Turns(){
-        latestIndex = 0;
-        playersIndex = new ArrayList<>();
+        lastTurn = 0;
+        count = 0;
+        playersIndex = new int[3];
     }
 
     public void setLatestIndex(int who){
-        latestIndex = who;
+        lastTurn = who;
     }
 
     public int getCurrent(){
-        return latestIndex;
+        return lastTurn;
     }
 
     public int remaining(){
-        return playersIndex.size();
+        return count;
     }
 
     public void addPlayer(int who){
-        playersIndex.add(who);
+        playersIndex[latestIndex] = who;
+        latestIndex++;
     }
 
     public void removePlayer(int who){
-        playersIndex.remove(who);
+        playersIndex[who] = REMOVED;
     }
 
-    public int nextPlayerIndex(){
+    public int nextPlayerIndex() {
 
         //1 -> 2 -> 3 -> 1 -> 2
         // 1 -> /2/ -> 3 = 1 -> 3 -> 1 -> 3
-
-        boolean foundLatest = false;
-        while (true){
-            for(Integer integer : playersIndex){
-                if(foundLatest){
-                    latestIndex = integer;
-                    return latestIndex;
-                }
-                else if(integer.equals(latestIndex)){
-                    foundLatest = true;
+        for (int i = 0; i < playersIndex.length; i++) {
+            if (!(playersIndex[i] == REMOVED)) {
+                if (playersIndex[i] == lastTurn) {
+                    lastTurn = (i + 1) % (playersIndex.length);
+                    System.out.println(lastTurn);
+                    return lastTurn;
                 }
             }
         }
+        return REMOVED;
     }
 
-
+    @Override
+    public String toString() {
+        return Arrays.toString(playersIndex);
+    }
 }
