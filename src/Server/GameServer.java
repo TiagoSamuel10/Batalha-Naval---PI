@@ -2,18 +2,12 @@ package Server;
 
 import Common.Network;
 import Common.Network.*;
-import Common.NetworkChat;
 import Common.PlayerBoard;
 import com.esotericsoftware.kryonet.Connection;
-import com.esotericsoftware.kryonet.EndPoint;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
 
 import java.io.*;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Arrays;
 
 public class GameServer {
 
@@ -85,8 +79,14 @@ public class GameServer {
                 }
                 if(object instanceof int[][]){
                     PlayerBoard pb = new PlayerBoard((int[][]) object);
-                    pb.lightItUp();
+                    pb.nukeIt();
                     System.out.println(pb);
+                    if(addToGame(pb)){
+                        WhoseTurn whoseTurn = new WhoseTurn();
+                        whoseTurn.id = 0;
+                        server.sendToAllTCP(whoseTurn);
+                        server.sendToAllTCP(new CanStart());
+                    }
                 }
 
             }
@@ -95,6 +95,7 @@ public class GameServer {
                 BConnection connection = (BConnection)c;
                 //System.out.println("LEFT: " + connection.name);
                 count--;
+                connection.id = -1;
                 if(state == GameState.waitingForPlayers){
                 }
                 if(state == GameState.waitingForShips){
@@ -108,6 +109,17 @@ public class GameServer {
 
         System.out.println("Server started");
 
+    }
+
+    private boolean addToGame(PlayerBoard playerBoard){
+        for(int i = 0; i < connections.length; i++){
+            if(connections[i].id == -1){
+                connections[i].id = i;
+                game.setPlayerBoard(playerBoard, i);
+                return i == connections.length - 1;
+            }
+        }
+        return false;
     }
 
     private void abortGame() {
@@ -128,6 +140,10 @@ public class GameServer {
     static class BConnection extends Connection {
         String name;
         int id;
+
+        BConnection(){
+            id = -1;
+        }
     }
 
     public static void main(String[] args) throws IOException {

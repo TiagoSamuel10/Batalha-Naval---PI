@@ -13,6 +13,7 @@ class ShipsPlacing extends JLayeredPane{
     private PlayerBoard playerBoard;
     private GraphicalBoard graphicalBoard;
     private GameClient _Game_client;
+    private GraphShip[] ships;
 
     ShipsPlacing(GameClient gameClient){
         _Game_client = gameClient;
@@ -29,7 +30,9 @@ class ShipsPlacing extends JLayeredPane{
         addMouseListener(new SpecialMouseListener());
         addMouseMotionListener(new SpecialMouseListener());
 
-        for(GraphShip graphShip : GraphShip.getAll()) {
+        ships = GraphShip.getAll();
+
+        for(GraphShip graphShip : ships) {
             add(graphShip, 1, 5);
         }
 
@@ -45,6 +48,15 @@ class ShipsPlacing extends JLayeredPane{
         graphicalBoard.lightItForNow();
         add(graphicalBoard, 0, 7);
         repaint();
+    }
+
+    void removeShips(){
+        for(int i = 0; i < ships.length; i++){
+            if(ships[i] != null){
+                remove(ships[i]);
+                ships[i] = null;
+            }
+        }
     }
 
     PlayerBoard getPlayerBoard(){

@@ -36,7 +36,13 @@ public class Network {
         kryo.register(IsFull.class);
         kryo.register(StartTheGame.class);
         kryo.register(Abort.class);
+        kryo.register(CanStart.class);
+        kryo.register(WhoseTurn.class);
 	}
+
+    public static class WhoseTurn{
+	    public int id;
+    }
 
 	public static class Abort{
     }
@@ -51,6 +57,9 @@ public class Network {
 	public static class ChatMessage {
 		public String text;
 	}
+
+	public static class CanStart{
+    }
 
 	public static class IsFull{
         @Override

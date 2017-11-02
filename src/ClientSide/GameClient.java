@@ -31,6 +31,7 @@ public class GameClient extends JFrame{
     private Client client;
     private String myName;
     private boolean canStart;
+    private boolean notReceived;
 
     // BEFORE MENU
     private Button goButton;
@@ -68,7 +69,7 @@ public class GameClient extends JFrame{
         GameClient c = new GameClient();
     }
 
-    public GameClient() {
+    GameClient() {
 
         container = getContentPane();
         setVisible(true);
@@ -122,18 +123,28 @@ public class GameClient extends JFrame{
                     setMainMenu();
                     canStart = false;
                 }
+                if (object instanceof CanStart){
+                    toGameWindow();
+                }
+                if (object instanceof WhoseTurn){
+                    WhoseTurn whoseTurn = (WhoseTurn) object;
+                    System.out.println(whoseTurn.id);
+                    if(whoseTurn.id != -1){
+                        setPlayerTurn(whoseTurn.id);
+                    }
+                }
             }
         });
 
         //setMainMenu();
         //setAttackWindow();
-        //setGameWindow();
+        setGameWindow();
         placeShipsScreen();
 
         new Thread("Connect") {
             public void run () {
                 try {
-                    client.connect(5000, "192.168.1.4", Network.port);
+                    client.connect(5000, "192.168.56.1", Network.port);
                     // Server communication after connection can go here, or in Listener#connected().
                 } catch (IOException ex) {
                     ex.printStackTrace();
@@ -183,9 +194,9 @@ public class GameClient extends JFrame{
                 shipsSet = true;
                 PlayerBoard pb = Game.getRandomPlayerBoard();
                 shipsPlacing.setPlayerBoard(pb);
+                shipsPlacing.removeShips();
                 shipsPlacing.repaint();
                 shipsPlacing.validate();
-                client.sendTCP(pb.getToSend());
             }
         });
 
@@ -197,9 +208,10 @@ public class GameClient extends JFrame{
             @Override
             public void actionPerformed(ActionEvent e) {
                 if(shipsSet){
-                    client.sendTCP(shipsPlacing.getPlayerBoard());
-                    //all[0] = new GraphicalBoard(shipsPlacing.getPlayerBoard());
-                    //toGameWindow();
+                    client.sendTCP(shipsPlacing.getPlayerBoard().getToSend());
+                    all[0] = new GraphicalBoard(shipsPlacing.getPlayerBoard());
+                    toWaitingWindow();
+                    //getPlayerTurn();
                 }
             }
         });
@@ -211,15 +223,24 @@ public class GameClient extends JFrame{
         repaint();
     }
 
+    private void toWaitingWindow(){
+        container.removeAll();
+        repaint();
+        validate();
+    }
+
+    private void setPlayerTurn(int index){
+        playerTurn.setText("Player " + index + " is playing now");
+    }
+
     private void toGameWindow(){
         container.removeAll();
         container.add(attackButton);
         container.add(chatButton);
         container.add(backToMenu);
-        GraphicalBoard me = all[turns.getCurrent()];
+        GraphicalBoard me = all[0];
         me.lightItForNow();
         container.add(me);
-        playerTurn.setText("Player " + (turns.getCurrent() + 1) + " is playing now");
         container.add(playerTurn);
         repaint();
         validate();
@@ -231,8 +252,8 @@ public class GameClient extends JFrame{
         attackButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                all[turns.getCurrent()].intoDarknessWeGo();
-                toAttackWindow();
+                //all[turns.getCurrent()].intoDarknessWeGo();
+                //toAttackWindow();
             }
         });
         attackButton.setLocation(1200 - BORDER_RIGHT_SIDE_WIDTH, DIMENSION.height/2 - 400);
@@ -255,7 +276,7 @@ public class GameClient extends JFrame{
         });
         backToMenu.setLocation(100, 100);
 
-        playerTurn = new JLabel("Player " + (turns.getCurrent() + 1)+ " is playing now");
+        playerTurn = new JLabel();
         playerTurn.setSize(200, 100);
         playerTurn.setLocation(500,20);
 

@@ -22,7 +22,7 @@ public class PlayerBoard implements Serializable {
     public boolean gotAPieceAttacked;
 
     public int[][] getToSend(){
-        lightItUp();
+        //lightItUp();
         /*
         System.out.println(this);
         for (int l = 0; l < LINES; l++) {
@@ -39,9 +39,14 @@ public class PlayerBoard implements Serializable {
     public void transformBack(int[][] sent){
         ArrayList<Point> toSkip = new ArrayList<>(LINES * COLUMNS);
 
+        /*
+
         for (int l = 0; l < LINES; l++) {
             System.out.println(Arrays.toString(sent[l]));
         }
+
+        */
+
 
         int count = 0;
 
@@ -97,7 +102,7 @@ public class PlayerBoard implements Serializable {
                     }
                     Ship tempShip = new Ship(l, c, d, st);
                     tempShip.getPieces();
-                    System.out.println(tempShip);
+                    //System.out.println(tempShip);
                     placeShip(tempShip);
                     count += size;
                 }
@@ -209,7 +214,7 @@ public class PlayerBoard implements Serializable {
         }
     }
 
-    void nukeIt(){
+    public void nukeIt(){
         for (int l = 0; l < LINES; l++) {
             for (int c = 0; c < COLUMNS; c++) {
                 boardTiles[l][c].setAttacked();
@@ -254,7 +259,7 @@ public class PlayerBoard implements Serializable {
     public void placeShip(Ship toAdd) {
         shipN++;
         for (ShipPiece piece : toAdd.getPieces()) {
-            System.out.println("PLACING " + piece.getClass().getSimpleName() + " AT: " + piece._x + " " + piece._y);
+            //System.out.println("PLACING " + piece.getClass().getSimpleName() + " AT: " + piece._x + " " + piece._y);
             boardTiles[piece._x][piece._y] = piece;
             pieces.add(piece);
             toSend[piece._x][piece._y] = shipN;
@@ -324,7 +329,7 @@ public class PlayerBoard implements Serializable {
     public void removeShip(Ship ship) {
 
         for (ShipPiece piece : ship.getPieces()) {
-            System.out.println("REMOVING " + piece.getClass().getSimpleName() + " AT: " + piece._x + " " + piece._y);
+            //System.out.println("REMOVING " + piece.getClass().getSimpleName() + " AT: " + piece._x + " " + piece._y);
             boardTiles[piece._x][piece._y] = new WaterTile(piece._x, piece._y);
             pieces.remove(piece);
             toSend[piece._x][piece._y] = 0;

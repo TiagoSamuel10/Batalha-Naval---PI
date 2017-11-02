@@ -52,11 +52,6 @@ public class Game {
         }
     }
 
-    void addPlayerBoard(PlayerBoard playerBoard){
-        currentPlayer++;
-    }
-
-
     private void start() {
         for(int i = 0; i < MAX_PLAYERS; i++){
             playerBoards[i] = new PlayerBoard();
@@ -87,4 +82,7 @@ public class Game {
         return s;
     }
 
+    public void setPlayerBoard(PlayerBoard playerBoard, int i) {
+        playerBoards[i] = playerBoard;
+    }
 }
