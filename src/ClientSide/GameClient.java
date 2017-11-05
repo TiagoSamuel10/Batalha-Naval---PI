@@ -6,11 +6,11 @@ import Common.Network.*;
 import Common.PlayerBoard;
 
 import Server.Game;
-import Server.Turns;
 
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
+import com.sun.org.apache.regexp.internal.RE;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -21,24 +21,20 @@ import java.io.IOException;
 
 public class GameClient extends JFrame{
 
-    //TESTS ONLY
-    private Turns turns;
-    private Game game;
-    //
-
     //FOR ONLINE
-    private final boolean online = false;
+    private final boolean online = true;
     private Client client;
     private String myName;
     private boolean canStart;
-    private boolean notReceived;
 
-    // BEFORE MENU
-    private Button goButton;
-    private JTextField nameField;
 
     // MAIN MENU
     private Button playButton;
+    private JTextField nameField;
+
+    //WAITING WINDOW
+    private String[] namesArray;
+    private JList<String> names;
 
     //SETTING BOATS WINDOW
     private Button goToGame;
@@ -78,18 +74,23 @@ public class GameClient extends JFrame{
         setTitle(TITLE);
         setResizable(false);
         setLayout(null);
+
         shipsSet = false;
         canStart = false;
 
-        //all[1] = new GraphicalBoard(Game.getRandomPlayerBoard());
-        //all[2] = new GraphicalBoard(Game.getRandomPlayerBoard());
+        serverConfigurations();
 
-        String input = (String)JOptionPane.showInputDialog(null, "Your name:", "Choose a name", JOptionPane.QUESTION_MESSAGE,
-                null, null, "");
-        if (input == null || input.trim().length() == 0) System.exit(1);
+        setMainMenu();
+        setAttackWindow();
+        setGameWindow();
 
-        myName = input.trim();
+        toMainMenu();
 
+    }
+
+    //region server stuff
+
+    private void serverConfigurations(){
         client = new Client();
         client.start();
 
@@ -133,16 +134,18 @@ public class GameClient extends JFrame{
                         setPlayerTurn(whoseTurn.id);
                     }
                 }
+                if (object instanceof ConnectedPlayers){
+                    ConnectedPlayers connectedPlayers = (ConnectedPlayers) object;
+                    namesArray = connectedPlayers.names;
+                    updateNames();
+                    repaint();
+                    validate();
+                }
             }
         });
 
-        setMainMenu();
-        setAttackWindow();
-        setGameWindow();
-        placeShipsScreen();
 
         if(online) {
-
             new Thread("Connect") {
                 public void run() {
                     try {
@@ -155,6 +158,7 @@ public class GameClient extends JFrame{
                 }
             }.start();
         }
+
     }
 
     private void setCloseListener (final Runnable listener) {
@@ -165,20 +169,54 @@ public class GameClient extends JFrame{
         });
     }
 
-    private void setMainMenu() {
+    //endregion
+
+    private void toMainMenu(){
         container.removeAll();
+        container.add(playButton);
+        container.add(nameField);
+        myName = nameField.getText();
+        repaint();
+    }
+
+    private void setMainMenu() {
+
         playButton = new Button("Start game");
         playButton.setLocation(500,500);
         playButton.setSize(100,50);
         playButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if(canStart){
-                    placeShipsScreen();
-                }
+                myName = nameField.getText();
+                System.out.println(myName);
+                toWaitingWindow();
             }
         });
-        container.add(playButton);
+
+        nameField = new JTextField();
+        nameField.setLocation(500, 450);
+        nameField.setSize(100,25);
+        nameField.setTransferHandler(null);
+        nameField.addKeyListener(new KeyListener() {
+
+            private final int maxChars = 10;
+
+            @Override
+            public void keyTyped(KeyEvent e) {
+                if(nameField.getText().length() >= maxChars){
+                    e.consume();
+                }
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+
+            }
+        });
     }
 
     private void placeShipsScreen(){
@@ -229,8 +267,25 @@ public class GameClient extends JFrame{
         repaint();
     }
 
+    private void updateNames(){
+        DefaultListModel<String> model = (DefaultListModel<String>) names.getModel();
+        model.removeAllElements();
+        for(String s : namesArray){
+            System.out.println("Received player from server list " + s);
+            model.addElement(s);
+        }
+    }
+
     private void toWaitingWindow(){
         container.removeAll();
+        names = new JList<>();
+        names.setModel(new DefaultListModel<>());
+        names.setSize(500, 500);
+        names.setLocation(500,500);
+        Register r = new Register();
+        r.name = myName;
+        client.sendTCP(r);
+        add(names);
         repaint();
         validate();
     }
@@ -307,21 +362,23 @@ public class GameClient extends JFrame{
     private void toAttackWindow(){
         container.removeAll();
 
-        int player1 = turns.nextPlayerIndex() + 1;
-        int player2 = turns.nextPlayerIndex() + 1;
+        /*
 
-        turns.nextPlayerIndex();
+        //TODO: Labels correctly
 
-        attack1.setLabel("PLAYER " + player1);
-        attack2.setLabel("PLAYER " + player2);
+        attack1.setLabel("PLAYER " + "1");
+        attack2.setLabel("PLAYER " + "2");
 
         bufferedImages[0] = createImage(all[player1 - 1]);
         labelsToImage[0].setIcon(new ImageIcon(bufferedImages[0]));
+
 
         if(turns.remaining() > 1){
             bufferedImages[1] = createImage(all[player2 - 1]);
             labelsToImage[1].setIcon(new ImageIcon(bufferedImages[1]));
         }
+
+        */
 
         container.add(players);
         repaint();
@@ -380,29 +437,6 @@ public class GameClient extends JFrame{
 
             @Override
             public void mousePressed(MouseEvent e) {
-                //System.out.println(e.getPoint());
-                if(!online) {
-                    if(getCoordinatesFromClick(e.getPoint()) != null) {
-                        all[who]._playerBoard.getAttacked(getCoordinatesFromClick(e.getPoint()));
-                        all[who].repaint();
-                        if(all[who]._playerBoard.isGameOver()){
-                            turns.removePlayer(who);
-                            JOptionPane.showMessageDialog(container,
-                                    "Destroyed the guy, poor " + (who + 1) );
-                            int i = turns.getCurrent();
-                            setBoardToAttack(turns.nextPlayerIndex());
-                            turns.setLatestIndex(i);
-                            return;
-                        }
-                        if(!all[who]._playerBoard.gotAPieceAttacked){
-                            removeMouseListener(this);
-                            turns.nextPlayerIndex();
-                            JOptionPane.showMessageDialog(container,
-                                    "Missed. Now player " + (turns.getCurrent() + 1) + " will take over");
-                            toGameWindow();
-                        }
-                    }
-                }
             }
 
             @Override

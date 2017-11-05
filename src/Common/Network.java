@@ -38,6 +38,8 @@ public class Network {
         kryo.register(Abort.class);
         kryo.register(CanStart.class);
         kryo.register(WhoseTurn.class);
+        kryo.register(String[].class);
+        kryo.register(ConnectedPlayers.class);
 	}
 
     public static class WhoseTurn{
@@ -57,6 +59,10 @@ public class Network {
 	public static class ChatMessage {
 		public String text;
 	}
+
+	public static class ConnectedPlayers{
+	    public String[] names;
+    }
 
 	public static class CanStart{
     }
