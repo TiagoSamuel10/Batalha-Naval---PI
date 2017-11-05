@@ -180,7 +180,6 @@ public class GameClient extends JFrame{
 
     private void placeShipsScreen(){
         container.removeAll();
-
         ShipsPlacing shipsPlacing = new ShipsPlacing(this);
 
         Button b = new Button("RANDOM");
