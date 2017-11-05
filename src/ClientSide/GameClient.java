@@ -1,24 +1,41 @@
+package ClientSide;
+
+import Common.BoardTile;
+import Common.Network;
+import Common.Network.*;
+import Common.PlayerBoard;
+
+import Server.Game;
+import Server.Turns;
+
+import com.esotericsoftware.kryonet.Client;
+import com.esotericsoftware.kryonet.Connection;
+import com.esotericsoftware.kryonet.Listener;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.net.Socket;
 
-public class Client extends JFrame{
+public class GameClient extends JFrame{
 
     //TESTS ONLY
     private Turns turns;
     private Game game;
     //
 
+    //FOR ONLINE
     private final boolean online = true;
-    private ClientSocket clientSocket;
-    private boolean readyToStart;
+    private Client client;
+    private String myName;
+    private boolean canStart;
+    private boolean notReceived;
+
+    // BEFORE MENU
+    private Button goButton;
+    private JTextField nameField;
 
     // MAIN MENU
     private Button playButton;
@@ -49,10 +66,11 @@ public class Client extends JFrame{
     private final static int BORDER_RIGHT_SIDE_WIDTH = 200;
 
     public static void main(String[] args){
-        Client c = new Client();
+        GameClient c = new GameClient();
     }
 
-    public Client(){
+    GameClient() {
+
         container = getContentPane();
         setVisible(true);
         setSize(DIMENSION);
@@ -61,30 +79,87 @@ public class Client extends JFrame{
         setResizable(false);
         setLayout(null);
         shipsSet = false;
-        readyToStart = false;
-        if(online) {
-            try {
-                Socket socket = new Socket("82.154.29.213", 1234);
-                clientSocket = new ClientSocket(this, socket);
-                clientSocket.start();
-            } catch (IOException e) {
-                e.printStackTrace();
+        canStart = false;
+
+        //all[1] = new GraphicalBoard(Game.getRandomPlayerBoard());
+        //all[2] = new GraphicalBoard(Game.getRandomPlayerBoard());
+
+        String input = (String)JOptionPane.showInputDialog(null, "Your name:", "Choose a name", JOptionPane.QUESTION_MESSAGE,
+                null, null, "");
+        if (input == null || input.trim().length() == 0) System.exit(1);
+
+        myName = input.trim();
+
+        client = new Client();
+        client.start();
+
+        Network.register(client);
+
+        setCloseListener(new Runnable() {
+            public void run () {
+                dispose();
+                client.stop();
             }
-        }else{
-            game = new Game();
-            turns = new Turns();
-            turns.addPlayer(0);
-            turns.addPlayer(1);
-            turns.addPlayer(2);
-            //all[0] = new GraphicalBoard(Game.getRandomPlayerBoard());
-            all[1] = new GraphicalBoard(Game.getRandomPlayerBoard());
-            all[2] = new GraphicalBoard(Game.getRandomPlayerBoard());
-        }
+        });
 
+        client.addListener(new Listener() {
+            public void connected (Connection connection) {
+                Register register = new Register();
+                register.name = myName;
+                client.sendTCP(register);
+            }
+
+            public void received (Connection connection, Object object) {
+                if (object instanceof IsFull){
+                    System.out.println(object);
+                    return;
+                }
+                if (object instanceof StartTheGame){
+                    System.out.println("GAME IS ABOUT TO START");
+                    canStart = true;
+                    return;
+                }
+                if (object instanceof Abort){
+                    setMainMenu();
+                    canStart = false;
+                }
+                if (object instanceof CanStart){
+                    toGameWindow();
+                }
+                if (object instanceof WhoseTurn){
+                    WhoseTurn whoseTurn = (WhoseTurn) object;
+                    System.out.println(whoseTurn.id);
+                    if(whoseTurn.id != -1){
+                        setPlayerTurn(whoseTurn.id);
+                    }
+                }
+            }
+        });
+
+        //setMainMenu();
+        //setAttackWindow();
         setGameWindow();
-        setAttackWindow();
-        setMainMenu();
+        placeShipsScreen();
 
+        new Thread("Connect") {
+            public void run () {
+                try {
+                    client.connect(5000, "192.168.56.1", Network.port);
+                    // Server communication after connection can go here, or in Listener#connected().
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                    System.exit(1);
+                }
+            }
+        }.start();
+    }
+
+    private void setCloseListener (final Runnable listener) {
+        addWindowListener(new WindowAdapter() {
+            public void windowClosed (WindowEvent evt) {
+                listener.run();
+            }
+        });
     }
 
     private void setMainMenu() {
@@ -95,7 +170,9 @@ public class Client extends JFrame{
         playButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                placeShipsScreen();
+                if(canStart){
+                    placeShipsScreen();
+                }
             }
         });
         container.add(playButton);
@@ -103,8 +180,25 @@ public class Client extends JFrame{
 
     private void placeShipsScreen(){
         container.removeAll();
-
         ShipsPlacing shipsPlacing = new ShipsPlacing(this);
+
+        Button b = new Button("RANDOM");
+
+        b.setLocation(900,700);
+        b.setSize(100,50);
+
+        b.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                shipsSet = true;
+                PlayerBoard pb = Game.getRandomPlayerBoard();
+                shipsPlacing.setPlayerBoard(pb);
+                shipsPlacing.removeShips();
+                shipsPlacing.repaint();
+                shipsPlacing.validate();
+            }
+        });
+
 
         goToGame = new Button("PLAY");
         goToGame.setLocation(900,500);
@@ -113,16 +207,29 @@ public class Client extends JFrame{
             @Override
             public void actionPerformed(ActionEvent e) {
                 if(shipsSet){
+                    client.sendTCP(shipsPlacing.getPlayerBoard().getToSend());
                     all[0] = new GraphicalBoard(shipsPlacing.getPlayerBoard());
-                    toGameWindow();
+                    toWaitingWindow();
+                    //getPlayerTurn();
                 }
             }
         });
 
         add(goToGame);
+        add(b);
 
         container.add(shipsPlacing);
         repaint();
+    }
+
+    private void toWaitingWindow(){
+        container.removeAll();
+        repaint();
+        validate();
+    }
+
+    private void setPlayerTurn(int index){
+        playerTurn.setText("Player " + index + " is playing now");
     }
 
     private void toGameWindow(){
@@ -130,10 +237,9 @@ public class Client extends JFrame{
         container.add(attackButton);
         container.add(chatButton);
         container.add(backToMenu);
-        GraphicalBoard me = all[turns.getCurrent()];
+        GraphicalBoard me = all[0];
         me.lightItForNow();
         container.add(me);
-        playerTurn.setText("Player " + (turns.getCurrent() + 1) + " is playing now");
         container.add(playerTurn);
         repaint();
         validate();
@@ -145,8 +251,8 @@ public class Client extends JFrame{
         attackButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                all[turns.getCurrent()].intoDarknessWeGo();
-                toAttackWindow();
+                //all[turns.getCurrent()].intoDarknessWeGo();
+                //toAttackWindow();
             }
         });
         attackButton.setLocation(1200 - BORDER_RIGHT_SIDE_WIDTH, DIMENSION.height/2 - 400);
@@ -169,7 +275,7 @@ public class Client extends JFrame{
         });
         backToMenu.setLocation(100, 100);
 
-        playerTurn = new JLabel("Player " + (turns.getCurrent() + 1)+ " is playing now");
+        playerTurn = new JLabel();
         playerTurn.setSize(200, 100);
         playerTurn.setLocation(500,20);
 
@@ -310,7 +416,7 @@ public class Client extends JFrame{
 
         addMouseListener(mouseListener);
 
-        Button backToMenu = new Button("Back to Game");
+        Button backToMenu = new Button("Back to Server.Game");
         backToMenu.setSize(0,0);
         backToMenu.addActionListener(new ActionListener() {
             @Override
@@ -347,8 +453,8 @@ public class Client extends JFrame{
             /*
             System.out.println("-----------");
             System.out.println("X: "+ x);
-            System.out.println("FIRST: " + (minX + x * (GraphicalBoard.BORDER + BoardTile.SIZE)));
-            System.out.println("SECOND: " + (minX + x * (BoardTile.SIZE  + GraphicalBoard.BORDER) + BoardTile.SIZE));
+            System.out.println("FIRST: " + (minX + x * (ClientSide.GraphicalBoard.BORDER + BoardTile.SIZE)));
+            System.out.println("SECOND: " + (minX + x * (BoardTile.SIZE  + ClientSide.GraphicalBoard.BORDER) + BoardTile.SIZE));
             */
             if(point.x > minX + x * (GraphicalBoard.BORDER + BoardTile.SIZE) &&
                     point.x <= minX + x  * (BoardTile.SIZE + GraphicalBoard.BORDER) + BoardTile.SIZE){
@@ -362,8 +468,8 @@ public class Client extends JFrame{
             /*
             System.out.println("-----------");
             System.out.println("Y: "+ y);
-            System.out.println("FIRST: " + (minY + y * (GraphicalBoard.BORDER + BoardTile.SIZE)));
-            System.out.println("SECOND: " + (minY + y * (BoardTile.SIZE  + GraphicalBoard.BORDER) + BoardTile.SIZE));
+            System.out.println("FIRST: " + (minY + y * (ClientSide.GraphicalBoard.BORDER + BoardTile.SIZE)));
+            System.out.println("SECOND: " + (minY + y * (BoardTile.SIZE  + ClientSide.GraphicalBoard.BORDER) + BoardTile.SIZE));
             */
 
             if(point.y > minY + y * (GraphicalBoard.BORDER + BoardTile.SIZE) &&
@@ -376,19 +482,5 @@ public class Client extends JFrame{
             return null;
         }
         return new Point(defX,defY);
-    }
-
-    // TODO: DEAL WITH NOT CLOSING
-
-    @Override
-    public void dispose() {
-        if(online) {
-            try {
-                clientSocket._socket.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        super.dispose();
     }
 }

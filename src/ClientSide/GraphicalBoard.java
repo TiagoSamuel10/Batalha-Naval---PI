@@ -1,3 +1,8 @@
+package ClientSide;
+
+import Common.BoardTile;
+import Common.PlayerBoard;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -31,13 +36,15 @@ class GraphicalBoard extends JPanel {
             for (int y = 0; y < PlayerBoard.COLUMNS; y++) {
                 BoardTile bt = _playerBoard.getTileAt(x, y);
                 GraphTile graphTile = new GraphTile(bt);
-                graphTile.setLocation(bt._x * multiplier, bt._y * multiplier);
+                Point p = new Point(bt.getCoord());
+                p.setLocation(p.y * multiplier, p.x * multiplier);
+                graphTile.setLocation(p);
                 graphTile.setSize(BoardTile.SIZE, BoardTile.SIZE);
                 add(graphTile);
             }
         }
         setSize(SIZE);
-        setLocation(Client.GAME_BOARD_LOCATION);
+        setLocation(GameClient.GAME_BOARD_LOCATION);
     }
 
 }

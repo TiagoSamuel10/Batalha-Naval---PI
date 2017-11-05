@@ -1,3 +1,8 @@
+package ClientSide;
+
+import Common.BoardTile;
+import Common.Ship;
+
 import javax.swing.*;
 import java.awt.*;
 
