@@ -27,7 +27,7 @@ public class GameClient extends JFrame{
     //
 
     //FOR ONLINE
-    private final boolean online = true;
+    private final boolean online = false;
     private Client client;
     private String myName;
     private boolean canStart;
@@ -136,22 +136,25 @@ public class GameClient extends JFrame{
             }
         });
 
-        //setMainMenu();
-        //setAttackWindow();
+        setMainMenu();
+        setAttackWindow();
         setGameWindow();
         placeShipsScreen();
 
-        new Thread("Connect") {
-            public void run () {
-                try {
-                    client.connect(5000, "192.168.56.1", Network.port);
-                    // Server communication after connection can go here, or in Listener#connected().
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                    System.exit(1);
+        if(online) {
+
+            new Thread("Connect") {
+                public void run() {
+                    try {
+                        client.connect(5000, "192.168.56.1", Network.port);
+                        // Server communication after connection can go here, or in Listener#connected().
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                        System.exit(1);
+                    }
                 }
-            }
-        }.start();
+            }.start();
+        }
     }
 
     private void setCloseListener (final Runnable listener) {
@@ -206,7 +209,11 @@ public class GameClient extends JFrame{
         goToGame.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if(shipsSet){
+                if(shipsSet && !online){
+                    all[0] = new GraphicalBoard(shipsPlacing.getPlayerBoard());
+                    toGameWindow();
+                }
+                if(shipsSet && online){
                     client.sendTCP(shipsPlacing.getPlayerBoard().getToSend());
                     all[0] = new GraphicalBoard(shipsPlacing.getPlayerBoard());
                     toWaitingWindow();
