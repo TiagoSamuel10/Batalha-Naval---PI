@@ -72,7 +72,7 @@ public class Ship implements Serializable{
         if(_dir != null){
             vector = _dir.getDirectionVector();
         }
-        for (int i = 0; i < _shipType.ordinal() + 1; i++){
+        for (int i = 0; i < _shipType.value + 1; i++){
             pieces[i] = new ShipPiece(
                     this,
                     startX + vector[0] * i,
@@ -82,7 +82,7 @@ public class Ship implements Serializable{
     }
 
     public int getSize(){
-        return _shipType.ordinal() + 1;
+        return _shipType.value;
     }
 
     private static Ship getOneRandomShip(PlayerBoard pb, ShipType size, Direction[] directions){

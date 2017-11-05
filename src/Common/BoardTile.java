@@ -32,7 +32,7 @@ public abstract class BoardTile implements Serializable {
         return attacked;
     }
 
-    public Point getCoord(){
+    public Point getPointCoordinates(){
         return new Point(_x, _y);
     }
 
@@ -46,9 +46,13 @@ public abstract class BoardTile implements Serializable {
         return _x == other._x && _y == other._y;
     }
 
+    void setVisible(){
+        isVisible = true;
+    }
+
     void setAttacked(){
         attacked = true;
-        isVisible = true;
+        setVisible();
     }
 
 }
