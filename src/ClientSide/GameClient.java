@@ -553,6 +553,7 @@ public class GameClient extends JFrame{
 
         add(all[who]);
 
+
         repaint();
         validate();
     }
