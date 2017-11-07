@@ -20,49 +20,38 @@ import java.io.IOException;
 
 public class GameClient extends JFrame{
 
+    final static Point GAME_BOARD_LOCATION = new Point(200,200);
+    final static Dimension DIMENSION = new Dimension(1280, 720);
+    private final static String TITLE = "GAME";
+    private final static int BORDER_RIGHT_SIDE_WIDTH = 200;
     //FOR ONLINE
     private final boolean online = false;
+    boolean shipsSet;
     private Client client;
     private String myName;
     private boolean canStart;
-
-
     // MAIN MENU
     private Button playButton;
     private JTextField nameField;
-
     //WAITING WINDOW
     private String[] namesArray;
     private JList<String> names;
-
     //SETTING BOATS WINDOW
     private Button goToGame;
-    boolean shipsSet;
-
     // Main Game Window
     private Button attackButton;
     private Button chatButton;
     private Button backToMenu;
     private JLabel playerTurn;
-    final static Point GAME_BOARD_LOCATION = new Point(200,200);
-
     //ATTACK PEOPLE
     private Button attack1;
     private Button attack2;
     private JPanel players;
+    ////
     private BufferedImage[] bufferedImages = new BufferedImage[2];
     private JLabel[] labelsToImage = new JLabel[3];
     private GraphicalBoard[] all = new GraphicalBoard[3];
-    ////
-
-    final static Dimension DIMENSION = new Dimension(1280, 720);
     private Container container;
-    private final static String TITLE = "GAME";
-    private final static int BORDER_RIGHT_SIDE_WIDTH = 200;
-
-    public static void main(String[] args){
-        GameClient c = new GameClient();
-    }
 
     GameClient() {
 
@@ -89,7 +78,79 @@ public class GameClient extends JFrame{
 
     }
 
+    public static void main(String[] args){
+        GameClient c = new GameClient();
+    }
+
     //region server stuff
+
+    private static BufferedImage createImage(JPanel panel) {
+        int w = panel.getWidth();
+        int h = panel.getHeight();
+        BufferedImage bufferedImage = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+        try {
+            Graphics2D g = bufferedImage.createGraphics();
+            panel.paint(g);
+        }catch (Exception e){
+            e.printStackTrace();
+            PlayerBoard pb = ((GraphicalBoard) panel)._playerBoard;
+            pb.lightItUp();
+            System.out.println(pb);
+        }
+        return bufferedImage;
+    }
+
+    @Nullable
+    static Point getCoordinatesFromClick(Point point){
+        //188, 211
+        //208, 231
+        // 20 border?
+        int minX = GAME_BOARD_LOCATION.x;
+        int minY = GAME_BOARD_LOCATION.y;
+        int gpWidth = GraphicalBoard.SIZE.width;
+        int gpHeight = GraphicalBoard.SIZE.height;
+        int maxX = minX + gpWidth;
+        int maxY = minY + gpHeight;
+        if(point.x > maxX || point.y > maxY){
+            return null;
+        }
+        int defX = -1;
+        for (int x = 0; x < PlayerBoard.LINES; x++) {
+            /*
+            System.out.println("-----------");
+            System.out.println("X: "+ x);
+            System.out.println("FIRST: " + (minX + x * (ClientSide.GraphicalBoard.BORDER + BoardTile.SIZE)));
+            System.out.println("SECOND: " + (minX + x * (BoardTile.SIZE  + ClientSide.GraphicalBoard.BORDER) + BoardTile.SIZE));
+            */
+            if(point.x > minX + x * (GraphicalBoard.BORDER + BoardTile.SIZE) &&
+                    point.x <= minX + x  * (BoardTile.SIZE + GraphicalBoard.BORDER) + BoardTile.SIZE){
+                defX = x;
+                break;
+            }
+        }
+        int defY = -1;
+
+        for (int y = 0; y < PlayerBoard.COLUMNS; y++) {
+            /*
+            System.out.println("-----------");
+            System.out.println("Y: "+ y);
+            System.out.println("FIRST: " + (minY + y * (ClientSide.GraphicalBoard.BORDER + BoardTile.SIZE)));
+            System.out.println("SECOND: " + (minY + y * (BoardTile.SIZE  + ClientSide.GraphicalBoard.BORDER) + BoardTile.SIZE));
+            */
+
+            if(point.y > minY + y * (GraphicalBoard.BORDER + BoardTile.SIZE) &&
+                    point.y <= minY + y  * (BoardTile.SIZE + GraphicalBoard.BORDER) + BoardTile.SIZE){
+                defY = y;
+                break;
+            }
+        }
+        if(defX  == - 1|| defY == -1){
+            return null;
+        }
+        return new Point(defX,defY);
+    }
+
+    //endregion
 
     private void serverConfigurations(){
         client = new Client();
@@ -169,8 +230,6 @@ public class GameClient extends JFrame{
             }
         });
     }
-
-    //endregion
 
     private void toMainMenu(){
         container.removeAll();
@@ -382,22 +441,6 @@ public class GameClient extends JFrame{
 
     }
 
-    private static BufferedImage createImage(JPanel panel) {
-        int w = panel.getWidth();
-        int h = panel.getHeight();
-        BufferedImage bufferedImage = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-        try {
-            Graphics2D g = bufferedImage.createGraphics();
-            panel.paint(g);
-        }catch (Exception e){
-            e.printStackTrace();
-            PlayerBoard pb = ((GraphicalBoard) panel)._playerBoard;
-            pb.lightItUp();
-            System.out.println(pb);
-        }
-        return bufferedImage;
-    }
-
     private void toAttackWindow(){
         container.removeAll();
 
@@ -512,55 +555,5 @@ public class GameClient extends JFrame{
 
         repaint();
         validate();
-    }
-
-    @Nullable
-    static Point getCoordinatesFromClick(Point point){
-        //188, 211
-        //208, 231
-        // 20 border?
-        int minX = GAME_BOARD_LOCATION.x;
-        int minY = GAME_BOARD_LOCATION.y;
-        int gpWidth = GraphicalBoard.SIZE.width;
-        int gpHeight = GraphicalBoard.SIZE.height;
-        int maxX = minX + gpWidth;
-        int maxY = minY + gpHeight;
-        if(point.x > maxX || point.y > maxY){
-            return null;
-        }
-        int defX = -1;
-        for (int x = 0; x < PlayerBoard.LINES; x++) {
-            /*
-            System.out.println("-----------");
-            System.out.println("X: "+ x);
-            System.out.println("FIRST: " + (minX + x * (ClientSide.GraphicalBoard.BORDER + BoardTile.SIZE)));
-            System.out.println("SECOND: " + (minX + x * (BoardTile.SIZE  + ClientSide.GraphicalBoard.BORDER) + BoardTile.SIZE));
-            */
-            if(point.x > minX + x * (GraphicalBoard.BORDER + BoardTile.SIZE) &&
-                    point.x <= minX + x  * (BoardTile.SIZE + GraphicalBoard.BORDER) + BoardTile.SIZE){
-                defX = x;
-                break;
-            }
-        }
-        int defY = -1;
-
-        for (int y = 0; y < PlayerBoard.COLUMNS; y++) {
-            /*
-            System.out.println("-----------");
-            System.out.println("Y: "+ y);
-            System.out.println("FIRST: " + (minY + y * (ClientSide.GraphicalBoard.BORDER + BoardTile.SIZE)));
-            System.out.println("SECOND: " + (minY + y * (BoardTile.SIZE  + ClientSide.GraphicalBoard.BORDER) + BoardTile.SIZE));
-            */
-
-            if(point.y > minY + y * (GraphicalBoard.BORDER + BoardTile.SIZE) &&
-                    point.y <= minY + y  * (BoardTile.SIZE + GraphicalBoard.BORDER) + BoardTile.SIZE){
-                defY = y;
-                break;
-            }
-        }
-        if(defX  == - 1|| defY == -1){
-            return null;
-        }
-        return new Point(defX,defY);
     }
 }
