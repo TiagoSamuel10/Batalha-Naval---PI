@@ -38,4 +38,8 @@ public class WaterTile extends BoardTile {
     public Color getVisibleColor() {
         return VISIBLE_COLOR;
     }
+
+    String details(){
+        return "W";
+    }
 }

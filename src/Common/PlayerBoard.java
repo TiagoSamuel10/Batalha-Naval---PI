@@ -19,7 +19,7 @@ public class PlayerBoard implements Serializable {
     private int[][] toSend;
     private int shipN = 0;
 
-    public boolean gotAPieceAttacked;
+    boolean gotAPieceAttacked;
 
     public int[][] getToSend(){
         //lightItUp();
@@ -109,7 +109,6 @@ public class PlayerBoard implements Serializable {
 
             }
         }
-        forTests();
     }
 
     public PlayerBoard() {
@@ -124,20 +123,6 @@ public class PlayerBoard implements Serializable {
     public PlayerBoard(int[][] sent){
         this();
         transformBack(sent);
-    }
-
-    void forTests(){
-        int i = 0;
-        for (int l = 0; l < LINES; l++) {
-            for (int c = 0; c < COLUMNS; c++) {
-                if(getTileAt(l,c).isPiece()){
-                    i++;
-                }
-            }
-        }
-        if(i!=20){
-           System.out.println("HAS " + i + "PIECES, NOT 20");
-        }
     }
 
     private void fillWithWater() {
@@ -230,6 +215,22 @@ public class PlayerBoard implements Serializable {
         }
     }
 
+    public String details(){
+        String s = "    ";
+        for (int i = 0; i < COLUMNS; i++) {
+            s += i + "    ";
+        }
+        s += "\n";
+        for (int i = 0; i < LINES; i++) {
+            s += i;
+            for (int c = 0; c < COLUMNS; c++) {
+                s += "    " + boardTiles[i][c].details();
+            }
+            s += "\n";
+        }
+        return s;
+    }
+
     @Override
     public String toString() {
         String s = "    ";
@@ -256,14 +257,18 @@ public class PlayerBoard implements Serializable {
         }
     }
 
-    public void placeShip(Ship toAdd) {
-        shipN++;
-        for (ShipPiece piece : toAdd.getPieces()) {
-            //System.out.println("PLACING " + piece.getClass().getSimpleName() + " AT: " + piece._x + " " + piece._y);
-            boardTiles[piece._x][piece._y] = piece;
-            pieces.add(piece);
-            toSend[piece._x][piece._y] = shipN;
+    public boolean placeShip(Ship toAdd) {
+        if(canShipBeHere(toAdd)) {
+            shipN++;
+            for (ShipPiece piece : toAdd.getPieces()) {
+                //System.out.println("PLACING " + piece.getClass().getSimpleName() + " AT: " + piece._x + " " + piece._y);
+                boardTiles[piece._x][piece._y] = piece;
+                pieces.add(piece);
+                toSend[piece._x][piece._y] = shipN;
+            }
+            return true;
         }
+        return false;
     }
 
     //region CanPlaceShip
@@ -310,14 +315,20 @@ public class PlayerBoard implements Serializable {
         return true;
     }
 
-    public boolean freeAt(int x, int y) {
-        return !getTileAt(x, y).isPiece();
+    boolean freeAt(int x, int y) {
+        if(inBounds(x, y)){
+            return !getTileAt(x, y).isPiece();
+        }
+        return true;
     }
 
     //endregion
 
     public BoardTile getTileAt(int x, int y) {
-        return boardTiles[x][y];
+        if(inBounds(x, y)){
+            return boardTiles[x][y];
+        }
+        return null;
     }
 
     @Contract(pure = true)

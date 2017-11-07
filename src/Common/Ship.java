@@ -72,7 +72,7 @@ public class Ship implements Serializable{
         if(_dir != null){
             vector = _dir.getDirectionVector();
         }
-        for (int i = 0; i < _shipType.value + 1; i++){
+        for (int i = 0; i < getSize(); i++){
             pieces[i] = new ShipPiece(
                     this,
                     startX + vector[0] * i,

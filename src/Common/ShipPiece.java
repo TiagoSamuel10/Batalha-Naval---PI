@@ -55,7 +55,7 @@ class ShipPiece extends BoardTile {
         return VISIBLE_COLOR;
     }
 
-    public String details(){
-        return "Ship at " +  _x  + ";" + _y;
+    String details(){
+        return "S";
     }
 }

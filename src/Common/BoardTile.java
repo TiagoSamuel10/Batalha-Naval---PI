@@ -55,4 +55,6 @@ public abstract class BoardTile implements Serializable {
         setVisible();
     }
 
+    abstract String details();
+
 }
