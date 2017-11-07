@@ -21,7 +21,7 @@ import java.io.IOException;
 public class GameClient extends JFrame{
 
     //FOR ONLINE
-    private final boolean online = true;
+    private final boolean online = false;
     private Client client;
     private String myName;
     private boolean canStart;
@@ -55,7 +55,7 @@ public class GameClient extends JFrame{
     private GraphicalBoard[] all = new GraphicalBoard[3];
     ////
 
-    final static Dimension DIMENSION = new Dimension(1200, 1080);
+    final static Dimension DIMENSION = new Dimension(1280, 720);
     private Container container;
     private final static String TITLE = "GAME";
     private final static int BORDER_RIGHT_SIDE_WIDTH = 200;
@@ -73,6 +73,8 @@ public class GameClient extends JFrame{
         setTitle(TITLE);
         setResizable(false);
         setLayout(null);
+        setLocationRelativeTo(null);
+        setLocation(0,0);
 
         shipsSet = false;
         canStart = false;
@@ -175,10 +177,43 @@ public class GameClient extends JFrame{
         container.add(playButton);
         container.add(nameField);
         myName = nameField.getText();
+
+
+        //LOAD DA IMAGEM
+
+        ClassLoader classLoader = getClass().getClassLoader();
+        String file = classLoader.getResource("images/BattleShip.png").getPath();
+
+        /*
+
+        setTitle("BattleShip");
+        setSize(1280, 720);
+        setLocationRelativeTo(null);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setVisible(true);
+        setLayout(new BorderLayout());
+
+        */
+
+        JLabel background = new JLabel();
+        background.setIcon(new ImageIcon(file));
+        background.setLayout(new FlowLayout());
+        background.setSize(1280,720);
+        background.setLocation(0,0);
+        JLabel l = new JLabel("Botao2");
+        JButton botao = new JButton("Botao1");
+        background.add(l);
+        background.add(botao);
+        container.add(background);
+        repaint();
+        validate();
+
         repaint();
     }
 
     private void setMainMenu() {
+
+
 
         playButton = new Button("Start game");
         playButton.setLocation(500,500);
