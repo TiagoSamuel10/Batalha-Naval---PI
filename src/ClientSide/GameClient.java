@@ -196,7 +196,7 @@ public class GameClient extends JFrame{
         */
 
 
-        //THIS WILL DO
+        //THIS WILL DO FOR NOW
 
         String imagePath = "assets/images/BattleShip.png";
 
