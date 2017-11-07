@@ -17,27 +17,17 @@ public class Network {
 		kryo.register(Register.class);
 		kryo.register(ChatMessage.class);
 		//
-		kryo.register(PlayerBoard.class);
-        kryo.register(BoardTile[][].class);
-        kryo.register(BoardTile[].class);
-        //kryo.register(ArrayList.class);
         kryo.register(int[][].class);
         kryo.register(int[].class);
         kryo.register(int.class);
-        kryo.register(Ship.class);
-        kryo.register(Ship[].class);
-        kryo.register(ShipPiece[].class);
-        kryo.register(Ship.ShipType.class);
-        kryo.register(ShipPiece.class);
-        kryo.register(Direction.class);
-        kryo.register(WaterTile.class);
-        kryo.register(BoardTile.class);
 		//
         kryo.register(IsFull.class);
         kryo.register(StartTheGame.class);
         kryo.register(Abort.class);
         kryo.register(CanStart.class);
         kryo.register(WhoseTurn.class);
+        kryo.register(String[].class);
+        kryo.register(ConnectedPlayers.class);
 	}
 
     public static class WhoseTurn{
@@ -57,6 +47,10 @@ public class Network {
 	public static class ChatMessage {
 		public String text;
 	}
+
+	public static class ConnectedPlayers{
+	    public String[] names;
+    }
 
 	public static class CanStart{
     }

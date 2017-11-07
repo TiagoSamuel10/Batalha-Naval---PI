@@ -5,84 +5,22 @@ import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.Random;
 
 public class Ship implements Serializable{
 
+    private static final Random r = new Random();
+    private final ShipType _shipType;
     private int startX;
     private int startY;
-    private final ShipType _shipType;
-    private Direction _dir;
+    private Direction dir;
     private ShipPiece[] pieces;
-    private static final Random r = new Random();
 
-    enum ShipType {
-
-        One,
-        Two,
-        Three,
-        Four;
-
-        private int value;
-
-        static {
-            One.value = 1;
-            Two.value = 2;
-            Three.value = 3;
-            Four.value = 4;
-        }
-
-        @Nullable
-        static ShipType getShipType(int value){
-            for(ShipType shipType : ShipType.values()){
-                if(shipType.value == value){
-                    return shipType;
-                }
-            }
-            return null;
-        }
-
-    }
-
-    public void setNewCoord(Point point){
-        startX = point.x;
-        startY = point.y;
-    }
-
-    public void changeDirection(){
-        _dir = _dir.getRotated();
-    }
-
-    Ship(int x, int y, Direction dir, ShipType st){
+    Ship(int x, int y, Direction _dir, ShipType st){
         _shipType = st;
         pieces = new ShipPiece[st.value];
-        setNewCoord(new Point(x, y));
-        _dir = dir;
-    }
-
-
-    ShipPiece[] getPieces(){
-        calculatePieces();
-        return pieces;
-    }
-
-    private void calculatePieces(){
-        int[] vector = new int[]{0,0};
-        if(_dir != null){
-            vector = _dir.getDirectionVector();
-        }
-        for (int i = 0; i < _shipType.ordinal() + 1; i++){
-            pieces[i] = new ShipPiece(
-                    this,
-                    startX + vector[0] * i,
-                    startY + vector[1] * i)
-            ;
-        }
-    }
-
-    public int getSize(){
-        return _shipType.ordinal() + 1;
+        setPoint(new Point(x, y));
+        dir = _dir;
     }
 
     private static Ship getOneRandomShip(PlayerBoard pb, ShipType size, Direction[] directions){
@@ -98,7 +36,7 @@ public class Ship implements Serializable{
             }
             String did = (didIt) ? "Placed" : "Could not place";
             /*System.out.printf("%s a ship at x-%d and y-%d. The " +
-                    "ship has %d size and it's dir is %s \n", did, x, y, tempShip.getSize(), tempShip._dir);*/
+                    "ship has %d size and it's dir is %s \n", did, x, y, tempShip.getSize(), tempShip.dir);*/
         }
         return tempShip;
     }
@@ -148,6 +86,38 @@ public class Ship implements Serializable{
         return temp;
     }
 
+    public void setPoint(Point point){
+        startX = point.x;
+        startY = point.y;
+    }
+
+    public void changeDirection(){
+        dir = dir.getRotated();
+    }
+
+    ShipPiece[] getPieces(){
+        calculatePieces();
+        return pieces;
+    }
+
+    private void calculatePieces(){
+        int[] vector = new int[]{0,0};
+        if(dir != null){
+            vector = dir.getDirectionVector();
+        }
+        for (int i = 0; i < getSize(); i++){
+            pieces[i] = new ShipPiece(
+                    this,
+                    startX + vector[0] * i,
+                    startY + vector[1] * i)
+            ;
+        }
+    }
+
+    public int getSize(){
+        return _shipType.value;
+    }
+
     boolean isDestroyed() {
         for (ShipPiece piece : pieces) {
             if (!piece.attacked) {
@@ -165,5 +135,33 @@ public class Ship implements Serializable{
         }
         s+= "]";
         return s;
+    }
+
+    enum ShipType {
+
+        One,
+        Two,
+        Three,
+        Four;
+
+        static {
+            One.value = 1;
+            Two.value = 2;
+            Three.value = 3;
+            Four.value = 4;
+        }
+
+        private int value;
+
+        @Nullable
+        static ShipType getShipType(int value){
+            for(ShipType shipType : ShipType.values()){
+                if(shipType.value == value){
+                    return shipType;
+                }
+            }
+            return null;
+        }
+
     }
 }

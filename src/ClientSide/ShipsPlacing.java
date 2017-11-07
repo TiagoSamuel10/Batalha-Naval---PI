@@ -12,11 +12,12 @@ class ShipsPlacing extends JLayeredPane{
     private ShipsPlacing me;
     private PlayerBoard playerBoard;
     private GraphicalBoard graphicalBoard;
-    private GameClient _Game_client;
+    private GameClient gameClient;
     private GraphShip[] ships;
 
-    ShipsPlacing(GameClient gameClient){
-        _Game_client = gameClient;
+    ShipsPlacing(GameClient _gameClient){
+
+        gameClient = _gameClient;
 
         setLayout(null);
         playerBoard = new PlayerBoard();
@@ -41,15 +42,6 @@ class ShipsPlacing extends JLayeredPane{
 
     }
 
-    void setPlayerBoard(PlayerBoard pb){
-        playerBoard = pb;
-        remove(graphicalBoard);
-        graphicalBoard = new GraphicalBoard(playerBoard);
-        graphicalBoard.lightItForNow();
-        add(graphicalBoard, 0, 7);
-        repaint();
-    }
-
     void removeShips(){
         for(int i = 0; i < ships.length; i++){
             if(ships[i] != null){
@@ -61,6 +53,15 @@ class ShipsPlacing extends JLayeredPane{
 
     PlayerBoard getPlayerBoard(){
         return playerBoard;
+    }
+
+    void setPlayerBoard(PlayerBoard pb){
+        playerBoard = pb;
+        remove(graphicalBoard);
+        graphicalBoard = new GraphicalBoard(playerBoard);
+        graphicalBoard.lightItForNow();
+        add(graphicalBoard, 0, 7);
+        repaint();
     }
 
     private class SpecialMouseListener extends MouseAdapter {
@@ -118,7 +119,7 @@ class ShipsPlacing extends JLayeredPane{
                         add(graphicalBoard, 0, 7);
                         me.repaint();
                         if (playerBoard.fullOfShips()) {
-                            _Game_client.shipsSet = true;
+                            gameClient.shipsSet = true;
                         }
                     }
                 } else {

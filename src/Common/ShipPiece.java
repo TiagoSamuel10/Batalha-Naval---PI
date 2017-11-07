@@ -1,7 +1,6 @@
 package Common;
 
 import java.awt.*;
-import java.io.Serializable;
 
 class ShipPiece extends BoardTile {
 
@@ -9,19 +8,19 @@ class ShipPiece extends BoardTile {
     private final static Color ATTACKED_COLOR_SHIP_DESTROYED = new Color(150,10,11);
     private final static Color VISIBLE_COLOR = new Color(100,100,100);
 
-    Ship _ship;
+    Ship ship;
 
-    ShipPiece(Ship ship, int x, int y) {
-        _x = x;
-        _y = y;
-        _ship = ship;
+    ShipPiece(Ship _ship, int _x, int _y) {
+        this.x = _x;
+        this.y = _y;
+        ship = _ship;
     }
 
     /*
 
     @Override
     public String toString() {
-        return "Ship at " + _x + "; " +_y;
+        return "Ship at " + x + "; " +y;
     }
 
     */
@@ -44,7 +43,7 @@ class ShipPiece extends BoardTile {
 
     @Override
     public Color getAttackedColor() {
-        if(_ship.isDestroyed()){
+        if(ship.isDestroyed()){
             return ATTACKED_COLOR_SHIP_DESTROYED;
         }
         return ATTACKED_COLOR;
@@ -55,7 +54,7 @@ class ShipPiece extends BoardTile {
         return VISIBLE_COLOR;
     }
 
-    public String details(){
-        return "Ship at " +  _x  + ";" + _y;
+    String details(){
+        return "S";
     }
 }

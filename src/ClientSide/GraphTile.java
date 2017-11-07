@@ -6,24 +6,23 @@ import Common.*;
 
 public class GraphTile extends JPanel {
 
-    private BoardTile _boardTile;
+    private BoardTile boardTile;
 
-    public GraphTile(BoardTile boardTile){
-        _boardTile = boardTile;
+    public GraphTile(BoardTile _boardTile){ boardTile = _boardTile;
     }
 
     @Override
     public void paint(Graphics g) {
-        if (_boardTile.isVisible()){
-            if(_boardTile.isAttacked()){
-                setBackground(_boardTile.getAttackedColor());
+        if (boardTile.isVisible()){
+            if(boardTile.isAttacked()){
+                setBackground(boardTile.getAttackedColor());
             }
             else {
-                setBackground(_boardTile.getVisibleColor());
+                setBackground(boardTile.getVisibleColor());
             }
         }
         else {
-            setBackground(_boardTile.getNotVisibleColor());
+            setBackground(boardTile.getNotVisibleColor());
         }
         super.paint(g);
     }

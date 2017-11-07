@@ -51,7 +51,7 @@ public class GameServer {
                 }
                 connections[count] = (BConnection)connection;
                 count++;
-                System.out.println(count);
+                System.out.println("Count : " + count);
                 if(count == 3){
                     try {
                         server.update(0);
@@ -74,8 +74,11 @@ public class GameServer {
                     if (name == null) {
                         return;
                     }
-                    //System.out.println("Name is " + name);
+                    System.out.println("Connected " + name);
                     connection.name = r.name;
+                    ConnectedPlayers connectedPlayers = new ConnectedPlayers();
+                    connectedPlayers.names = getConnectedNames();
+                    server.sendToAllTCP(connectedPlayers);
                 }
                 if(object instanceof int[][]){
                     PlayerBoard pb = new PlayerBoard((int[][]) object);
@@ -97,6 +100,10 @@ public class GameServer {
                 count--;
                 connection.id = -1;
                 if(state == GameState.waitingForPlayers){
+                    System.out.println("Disconnected " + connection.name);
+                    ConnectedPlayers connectedPlayers = new ConnectedPlayers();
+                    connectedPlayers.names = getConnectedNames();
+                    server.sendToAllTCP(connectedPlayers);
                 }
                 if(state == GameState.waitingForShips){
                     abortGame();
@@ -109,6 +116,14 @@ public class GameServer {
 
         System.out.println("Server started");
 
+    }
+
+    private String[] getConnectedNames(){
+        String[] string = new String[count];
+        for(int i = 0; i < count; i++){
+            string[i] = connections[i].name;
+        }
+        return string;
     }
 
     private boolean addToGame(PlayerBoard playerBoard){

@@ -10,9 +10,9 @@ public class Game {
     private Turns turns;
     private int currentPlayer;
     private PlayerBoard[] playerBoards;
-    public boolean isOver;
+    boolean isOver;
 
-    public Game(){
+    Game(){
         turns = new Turns();
         playerBoards = new PlayerBoard[MAX_PLAYERS];
         isOver = false;
@@ -25,6 +25,8 @@ public class Game {
         return pb;
     }
 
+    //TODO: ATTACK
+
     void attack(int id, int x, int y){
         playerBoards[id].getAttacked(x, y);
         checkIfHitAnything(id);
@@ -32,8 +34,9 @@ public class Game {
         checkGameOver();
     }
 
-    private void checkGameOver() {
+    //TODO: GAME OVER
 
+    private void checkGameOver() {
     }
 
     //TODO: SOMETHING ABOUT HITS
@@ -82,7 +85,7 @@ public class Game {
         return s;
     }
 
-    public void setPlayerBoard(PlayerBoard playerBoard, int i) {
+    void setPlayerBoard(PlayerBoard playerBoard, int i) {
         playerBoards[i] = playerBoard;
     }
 }
