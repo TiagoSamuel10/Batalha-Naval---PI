@@ -379,7 +379,7 @@ public class GameClient extends JFrame{
         names = new JList<>();
         names.setModel(new DefaultListModel<>());
         names.setSize(500, 500);
-        names.setLocation(500,500);
+        names.setLocation(100,100);
         Register r = new Register();
         r.name = myName;
         client.sendTCP(r);
@@ -437,7 +437,7 @@ public class GameClient extends JFrame{
 
         playerTurn = new JLabel();
         playerTurn.setSize(200, 100);
-        playerTurn.setLocation(500,20);
+        playerTurn.setLocation(100,20);
 
     }
 
