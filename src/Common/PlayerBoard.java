@@ -5,7 +5,6 @@ import org.jetbrains.annotations.Contract;
 import java.awt.*;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class PlayerBoard implements Serializable {
 
@@ -13,22 +12,13 @@ public class PlayerBoard implements Serializable {
     public static final int LINES = 10;
     public static final int COLUMNS = 10;
     private boolean gameOver;
-    private Ship[] ships = new Ship[10];
+
     private ArrayList<ShipPiece> pieces;
     private BoardTile[][] boardTiles;
     private int[][] toSend;
     private int shipN = 0;
 
-    boolean gotAPieceAttacked;
-
     public int[][] getToSend(){
-        //lightItUp();
-        /*
-        System.out.println(this);
-        for (int l = 0; l < LINES; l++) {
-            System.out.println(Arrays.toString(toSend[l]));
-        }
-        */
         return toSend;
     }
 
@@ -36,7 +26,7 @@ public class PlayerBoard implements Serializable {
         return check[x][y] > 0;
     }
 
-    public void transformBack(int[][] sent){
+    private void transformBack(int[][] sent){
         ArrayList<Point> toSkip = new ArrayList<>(LINES * COLUMNS);
 
         /*
@@ -116,7 +106,6 @@ public class PlayerBoard implements Serializable {
         gameOver = false;
         boardTiles = new BoardTile[LINES][COLUMNS];
         fillWithWater();
-        ships = new Ship[NUMBER_OF_BOATS];
         pieces = new ArrayList<>();
     }
 
@@ -138,13 +127,11 @@ public class PlayerBoard implements Serializable {
 
     public void getAttacked(int x, int y) {
         //NOT ATTACKED YET
-        gotAPieceAttacked = true;
         BoardTile boardTile = getTileAt(x, y);
         if (!boardTile.isVisible) {
             boardTile.setAttacked();
             // NOT A SHIP PIECE
             if (!boardTile.isPiece()) {
-                gotAPieceAttacked = false;
                 return;
             }
             pieces.remove((ShipPiece) boardTile);
@@ -249,10 +236,10 @@ public class PlayerBoard implements Serializable {
     }
 
     public void placeShips(Ship[] toAdd){
-        int i = 0;
+        //int i = 0;
         for (Ship ship : toAdd) {
-            ships[i] = ship;
-            i++;
+            //ships[i] = ship;
+            //i++;
             placeShip(ship);
         }
     }

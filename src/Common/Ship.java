@@ -5,7 +5,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.Random;
 
 public class Ship implements Serializable{
@@ -15,6 +14,7 @@ public class Ship implements Serializable{
     private final ShipType _shipType;
     private Direction _dir;
     private ShipPiece[] pieces;
+
     private static final Random r = new Random();
 
     enum ShipType {
@@ -45,7 +45,7 @@ public class Ship implements Serializable{
 
     }
 
-    public void setNewCoord(Point point){
+    public void setPoint(Point point){
         startX = point.x;
         startY = point.y;
     }
@@ -57,7 +57,7 @@ public class Ship implements Serializable{
     Ship(int x, int y, Direction dir, ShipType st){
         _shipType = st;
         pieces = new ShipPiece[st.value];
-        setNewCoord(new Point(x, y));
+        setPoint(new Point(x, y));
         _dir = dir;
     }
 

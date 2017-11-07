@@ -21,7 +21,7 @@ class GraphShip extends JPanel{
     }
 
     void changeShipPosition(Point point){
-        _ship.setNewCoord(point);
+        _ship.setPoint(point);
     }
 
     private GraphShip(Ship ship){
