@@ -1,7 +1,6 @@
 package Common;
 
 import Server.Game;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static Common.PlayerBoard.COLUMNS;
@@ -24,7 +23,7 @@ class PlayerBoardTest {
         assert (!returned);
 
         for (ShipPiece shipPiece : toAdd.getPieces()) {
-            assert (pb.freeAt(shipPiece._x, shipPiece._y));
+            assert (pb.freeAt(shipPiece.x, shipPiece.y));
         }
 
         toAdd = new Ship(6, 6, Direction.RIGHT, Ship.ShipType.Three);

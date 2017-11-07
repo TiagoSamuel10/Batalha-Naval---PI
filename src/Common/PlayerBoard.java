@@ -8,15 +8,28 @@ import java.util.ArrayList;
 
 public class PlayerBoard implements Serializable {
 
-    final static int NUMBER_OF_BOATS = 10;
     public static final int LINES = 10;
     public static final int COLUMNS = 10;
+    final static int NUMBER_OF_BOATS = 10;
     private boolean gameOver;
 
     private ArrayList<ShipPiece> pieces;
     private BoardTile[][] boardTiles;
     private int[][] toSend;
     private int shipN = 0;
+
+    public PlayerBoard() {
+        toSend = new int[LINES][COLUMNS];
+        gameOver = false;
+        boardTiles = new BoardTile[LINES][COLUMNS];
+        fillWithWater();
+        pieces = new ArrayList<>();
+    }
+
+    public PlayerBoard(int[][] sent){
+        this();
+        transformBack(sent);
+    }
 
     public int[][] getToSend(){
         return toSend;
@@ -101,19 +114,6 @@ public class PlayerBoard implements Serializable {
         }
     }
 
-    public PlayerBoard() {
-        toSend = new int[LINES][COLUMNS];
-        gameOver = false;
-        boardTiles = new BoardTile[LINES][COLUMNS];
-        fillWithWater();
-        pieces = new ArrayList<>();
-    }
-
-    public PlayerBoard(int[][] sent){
-        this();
-        transformBack(sent);
-    }
-
     private void fillWithWater() {
         for (int l = 0; l < LINES; l++) {
             for (int c = 0; c < COLUMNS; c++) {
@@ -135,7 +135,7 @@ public class PlayerBoard implements Serializable {
                 return;
             }
             pieces.remove((ShipPiece) boardTile);
-            Ship ship = ((ShipPiece) boardTile)._ship;
+            Ship ship = ((ShipPiece) boardTile).ship;
             if (ship.isDestroyed()) {
                 System.out.println("SHIP DESTROYED");
                 shipDestroyed(ship);
@@ -149,7 +149,7 @@ public class PlayerBoard implements Serializable {
     }
 
     void getAttacked(BoardTile boardTile){
-        getAttacked(boardTile._x, boardTile._y);
+        getAttacked(boardTile.x, boardTile.y);
     }
 
     public void lightsOut(){
@@ -177,7 +177,7 @@ public class PlayerBoard implements Serializable {
 
     private void shipDestroyed(Ship s) {
         for (ShipPiece piece : s.getPieces()) {
-            Point[] points = getSurroundingPoints(piece._x, piece._y);
+            Point[] points = getSurroundingPoints(piece.x, piece.y);
             for (Point point : points) {
                 if (inBounds(point.x, point.y)) {
                     getTileAt(point.x, point.y).setAttacked();
@@ -248,10 +248,10 @@ public class PlayerBoard implements Serializable {
         if(canShipBeHere(toAdd)) {
             shipN++;
             for (ShipPiece piece : toAdd.getPieces()) {
-                //System.out.println("PLACING " + piece.getClass().getSimpleName() + " AT: " + piece._x + " " + piece._y);
-                boardTiles[piece._x][piece._y] = piece;
+                //System.out.println("PLACING " + piece.getClass().getSimpleName() + " AT: " + piece.x + " " + piece.y);
+                boardTiles[piece.x][piece.y] = piece;
                 pieces.add(piece);
-                toSend[piece._x][piece._y] = shipN;
+                toSend[piece.x][piece.y] = shipN;
             }
             return true;
         }
@@ -276,13 +276,13 @@ public class PlayerBoard implements Serializable {
     public boolean canShipBeHere(Ship toAdd) {
         for (ShipPiece piece : toAdd.getPieces()) {
             //System.out.println(piece.toString());
-            boolean isInBounds = inBounds(piece._x, piece._y);
+            boolean isInBounds = inBounds(piece.x, piece.y);
             if (!isInBounds) {
                 //System.out.println("NO BOUNDS");
                 return false;
             }
-            boolean isNotAdjacent = checkSurroundings(piece._x, piece._y);
-            if (!isNotAdjacent || !freeAt(piece._x, piece._y)) {
+            boolean isNotAdjacent = checkSurroundings(piece.x, piece.y);
+            if (!isNotAdjacent || !freeAt(piece.x, piece.y)) {
                 //System.out.println("ADJACENT");
                 return false;
             }
@@ -327,10 +327,10 @@ public class PlayerBoard implements Serializable {
     public void removeShip(Ship ship) {
 
         for (ShipPiece piece : ship.getPieces()) {
-            //System.out.println("REMOVING " + piece.getClass().getSimpleName() + " AT: " + piece._x + " " + piece._y);
-            boardTiles[piece._x][piece._y] = new WaterTile(piece._x, piece._y);
+            //System.out.println("REMOVING " + piece.getClass().getSimpleName() + " AT: " + piece.x + " " + piece.y);
+            boardTiles[piece.x][piece.y] = new WaterTile(piece.x, piece.y);
             pieces.remove(piece);
-            toSend[piece._x][piece._y] = 0;
+            toSend[piece.x][piece.y] = 0;
         }
 
     }

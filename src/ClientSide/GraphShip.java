@@ -8,42 +8,20 @@ import java.awt.*;
 
 class GraphShip extends JPanel{
 
-    private Ship _ship;
+    boolean alreadyPlaced;
+    private Ship ship;
     private Dimension horizontal;
     private Dimension vertical;
-
-    boolean alreadyPlaced;
-
     private Dimension current;
 
-    Ship getShip(){
-        return _ship;
-    }
-
-    void changeShipPosition(Point point){
-        _ship.setPoint(point);
-    }
-
-    private GraphShip(Ship ship){
+    private GraphShip(Ship _ship){
         alreadyPlaced = false;
-        _ship = ship;
-        horizontal = new Dimension(BoardTile.SIZE, _ship.getSize() * BoardTile.SIZE);
-        vertical = new Dimension(_ship.getSize() * BoardTile.SIZE, BoardTile.SIZE);
+        ship = _ship;
+        horizontal = new Dimension(BoardTile.SIZE, ship.getSize() * BoardTile.SIZE);
+        vertical = new Dimension(ship.getSize() * BoardTile.SIZE, BoardTile.SIZE);
         setBackground(Color.BLACK);
         setSize(horizontal);
         current = horizontal;
-    }
-
-    void rotate(){
-        if(current == horizontal){
-            setSize(vertical);
-            current = vertical;
-        }
-        else{
-            setSize(horizontal);
-            current = horizontal;
-        }
-        _ship.changeDirection();
     }
 
     static GraphShip[] getAll(){
@@ -104,6 +82,26 @@ class GraphShip extends JPanel{
 
         return graphShip;
 
+    }
+
+    Ship getShip(){
+        return ship;
+    }
+
+    void changeShipPosition(Point point){
+        ship.setPoint(point);
+    }
+
+    void rotate(){
+        if(current == horizontal){
+            setSize(vertical);
+            current = vertical;
+        }
+        else{
+            setSize(horizontal);
+            current = horizontal;
+        }
+        ship.changeDirection();
     }
 
 }

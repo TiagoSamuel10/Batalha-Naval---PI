@@ -8,9 +8,9 @@ public class WaterTile extends BoardTile {
     private final static Color ATTACKED_COLOR = new Color(10,60,150);
     private final static Color VISIBLE_COLOR = new Color(80,140,240);
 
-    WaterTile(int x, int y){
-        _x = x;
-        _y = y;
+    WaterTile(int _x, int _y){
+        x = _x;
+        y = _y;
     }
 
     @Override
