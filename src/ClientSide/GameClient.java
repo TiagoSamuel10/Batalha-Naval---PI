@@ -240,6 +240,7 @@ public class GameClient extends JFrame{
     }
 
     private void toMainMenu(){
+
         container.removeAll();
         container.add(playButton);
         container.add(nameField);
@@ -295,6 +296,7 @@ public class GameClient extends JFrame{
             public void actionPerformed(ActionEvent e) {
                 myName = nameField.getText();
                 System.out.println(myName);
+                client.sendTCP(new Register().name = myName);
                 toWaitingWindow();
             }
         });
