@@ -30,7 +30,7 @@ public class GameClient extends JFrame{
     boolean shipsSet;
     private Client client;
     private String myName;
-    private final String address = "127.0.1";
+    private final String address = "82.154.144.197";
 
     // MAIN MENU
     private Button playButton;

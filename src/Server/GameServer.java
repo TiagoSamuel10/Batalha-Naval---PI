@@ -8,6 +8,7 @@ import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
 
 import java.io.*;
+import java.util.Arrays;
 
 public class GameServer {
 
@@ -50,9 +51,8 @@ public class GameServer {
                 if (name == null) {
                     return;
                 }
-                System.out.println(connection.getEndPoint());
-                System.out.println(connection.getRemoteAddressTCP());
-                System.out.println("ID is " + connection.getID());
+                System.out.println(connection.getRemoteAddressTCP().getPort());
+                System.out.println(connection.getRemoteAddressTCP().getAddress());
                 connection.name = r.name;
                 ConnectedPlayers connectedPlayers = new ConnectedPlayers();
                 connectedPlayers.names = getConnectedNames();
@@ -80,6 +80,7 @@ public class GameServer {
                     }
                     startTheGame();
                 }
+                System.out.println(Arrays.toString(server.getConnections()));
 
             }
 
