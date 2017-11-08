@@ -85,12 +85,7 @@ public class GameServer {
 
             private void decideWhatToDo(BConnection connection, Register r){
 
-                System.out.println("Connected port" + connection.getRemoteAddressTCP().getPort());
-                System.out.println("Connected address" + connection.getRemoteAddressTCP().getAddress());
-
                 connection.name = r.name;
-
-                System.out.println("Connected " + connection.name);
 
                 switch (state){
                     case waitingForPlayers:
@@ -100,12 +95,16 @@ public class GameServer {
                         if(count == 3){
                             startTheGame();
                         }
+                        break;
                     case waitingForShips:
                         // see if it's a new player
                         // or somebody that dropped
+                        break;
                     case playing:
+                        break;
                 }
 
+                System.out.println("Connected " + connection.name);
 
 
                 ConnectedPlayers connectedPlayers = new ConnectedPlayers();
@@ -145,17 +144,15 @@ public class GameServer {
                 connection.id = -1;
                 switch (state){
                     case waitingForShips:
+                        System.out.println("Disconnected " + connection.name);
+                        ConnectedPlayers connectedPlayers = new ConnectedPlayers();
+                        connectedPlayers.names = getConnectedNames();
+                        server.sendToAllTCP(connectedPlayers);
                     case waitingForPlayers:
+                        abortGame();
                 }
-                if(state == GameState.waitingForPlayers){
-                    System.out.println("Disconnected " + connection.name);
-                    ConnectedPlayers connectedPlayers = new ConnectedPlayers();
-                    connectedPlayers.names = getConnectedNames();
-                    server.sendToAllTCP(connectedPlayers);
-                }
-                if(state == GameState.waitingForShips){
-                    abortGame();
-                }
+                System.out.println("Count : " + count);
+                System.out.println(Arrays.toString(server.getConnections()));
             }
         });
 
@@ -192,7 +189,7 @@ public class GameServer {
         int i = 0;
         for(Connection connection : server.getConnections()){
             playersThatStarted[i] = (BConnection) connection;
-            System.out.println(playersThatStarted[i].name);
+            System.out.println("PLAYER: " + playersThatStarted[i].name);
             i++;
         }
         game = new Game();

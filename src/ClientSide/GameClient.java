@@ -81,7 +81,6 @@ public class GameClient extends JFrame{
 
         toMainMenu();
 
-
         names = new JList<>();
         names.setModel(new DefaultListModel<>());
         names.setSize(500, 500);
@@ -178,9 +177,11 @@ public class GameClient extends JFrame{
 
         client.addListener(new Listener() {
             public void connected (Connection connection) {
+                /*
                 Register register = new Register();
                 register.name = myName;
                 client.sendTCP(register);
+                */
             }
 
             public void received (Connection connection, Object object) {
@@ -228,7 +229,6 @@ public class GameClient extends JFrame{
                 }
             }.start();
         }
-
     }
 
     private void setCloseListener (final Runnable listener) {
@@ -244,8 +244,6 @@ public class GameClient extends JFrame{
         container.removeAll();
         container.add(playButton);
         container.add(nameField);
-        myName = nameField.getText();
-
 
         //LOAD DA IMAGEM
 
@@ -280,13 +278,9 @@ public class GameClient extends JFrame{
         container.add(background);
         repaint();
         validate();
-
-        repaint();
     }
 
     private void setMainMenu() {
-
-
 
         playButton = new Button("Start game");
         playButton.setLocation(500,500);
@@ -296,7 +290,9 @@ public class GameClient extends JFrame{
             public void actionPerformed(ActionEvent e) {
                 myName = nameField.getText();
                 System.out.println(myName);
-                client.sendTCP(new Register().name = myName);
+                Register r = new Register();
+                r.name = myName;
+                client.sendTCP(r);
                 toWaitingWindow();
             }
         });
@@ -386,9 +382,6 @@ public class GameClient extends JFrame{
 
     private void toWaitingWindow(){
         container.removeAll();
-        Register r = new Register();
-        r.name = myName;
-        client.sendTCP(r);
         add(names);
         repaint();
         validate();
