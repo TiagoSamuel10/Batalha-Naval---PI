@@ -25,7 +25,7 @@ public class GameClient extends JFrame{
     private final static String TITLE = "GAME";
     private final static int BORDER_RIGHT_SIDE_WIDTH = 200;
     //FOR ONLINE
-    private final boolean online = false;
+    private final boolean online = true;
     boolean shipsSet;
     private Client client;
     private String myName;
@@ -75,6 +75,12 @@ public class GameClient extends JFrame{
         setGameWindow();
 
         toMainMenu();
+
+
+        names = new JList<>();
+        names.setModel(new DefaultListModel<>());
+        names.setSize(500, 500);
+        names.setLocation(100,100);
 
     }
 
@@ -180,7 +186,6 @@ public class GameClient extends JFrame{
                 if (object instanceof StartTheGame){
                     System.out.println("GAME IS ABOUT TO START");
                     canStart = true;
-                    return;
                 }
                 if (object instanceof Abort){
                     setMainMenu();
@@ -211,7 +216,7 @@ public class GameClient extends JFrame{
             new Thread("Connect") {
                 public void run() {
                     try {
-                        client.connect(5000, "192.168.56.1", Network.port);
+                        client.connect(5000, "10.2.14.94", Network.port);
                         // Server communication after connection can go here, or in Listener#connected().
                     } catch (IOException ex) {
                         ex.printStackTrace();
@@ -376,10 +381,6 @@ public class GameClient extends JFrame{
 
     private void toWaitingWindow(){
         container.removeAll();
-        names = new JList<>();
-        names.setModel(new DefaultListModel<>());
-        names.setSize(500, 500);
-        names.setLocation(100,100);
         Register r = new Register();
         r.name = myName;
         client.sendTCP(r);
