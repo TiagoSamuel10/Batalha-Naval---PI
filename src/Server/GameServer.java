@@ -32,8 +32,6 @@ public class GameServer {
 
         server = new Server() {
             protected Connection newConnection () {
-                // By providing our own connection implementation, we can store per
-                // connection state without a connection ID to state look up.
                 return new BConnection();
             }
         };
@@ -42,14 +40,34 @@ public class GameServer {
 
         server.addListener(new Listener() {
 
-            @Override
-            public void connected(Connection connection) {
-                if(state != GameState.waitingForPlayers){
-                    connection.sendTCP(new IsFull());
-                    connection.close();
+            private boolean isANewPlayer(){
+                return true;
+            }
+
+            private void decideWhatToDo(BConnection connection, Register r){
+
+                String name = r.name;
+                if (name == null) {
                     return;
                 }
-                connections[count] = (BConnection)connection;
+                System.out.println(connection.getEndPoint());
+                System.out.println(connection.getRemoteAddressTCP());
+                System.out.println("ID is " + connection.getID());
+                connection.name = r.name;
+                ConnectedPlayers connectedPlayers = new ConnectedPlayers();
+                connectedPlayers.names = getConnectedNames();
+                server.sendToAllTCP(connectedPlayers);
+
+
+                System.out.println("Connected " + connection.name);
+
+                switch (state){
+                    case waitingForPlayers:
+                    case waitingForShips:
+                    case playing:
+                }
+
+                connections[count] = connection;
                 count++;
                 System.out.println("Count : " + count);
                 if(count == 3){
@@ -62,6 +80,7 @@ public class GameServer {
                     }
                     startTheGame();
                 }
+
             }
 
             public void received (Connection c, Object object) {
@@ -69,16 +88,7 @@ public class GameServer {
                 BConnection connection = (BConnection)c;
 
                 if(object instanceof Register){
-                    Register r = (Register) object;
-                    String name = r.name;
-                    if (name == null) {
-                        return;
-                    }
-                    System.out.println("Connected " + name);
-                    connection.name = r.name;
-                    ConnectedPlayers connectedPlayers = new ConnectedPlayers();
-                    connectedPlayers.names = getConnectedNames();
-                    server.sendToAllTCP(connectedPlayers);
+                    decideWhatToDo(connection, (Register) object);
                 }
                 if(object instanceof int[][]){
                     PlayerBoard pb = new PlayerBoard((int[][]) object);

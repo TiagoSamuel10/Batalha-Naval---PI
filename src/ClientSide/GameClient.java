@@ -24,33 +24,40 @@ public class GameClient extends JFrame{
     final static Dimension DIMENSION = new Dimension(1280, 720);
     private final static String TITLE = "GAME";
     private final static int BORDER_RIGHT_SIDE_WIDTH = 200;
+
     //FOR ONLINE
     private final boolean online = true;
     boolean shipsSet;
     private Client client;
     private String myName;
-    private boolean canStart;
+    private final String address = "127.0.1";
+
     // MAIN MENU
     private Button playButton;
     private JTextField nameField;
+
     //WAITING WINDOW
     private String[] namesArray;
     private JList<String> names;
+
     //SETTING BOATS WINDOW
     private Button goToGame;
+
     // Main Game Window
     private Button attackButton;
     private Button chatButton;
     private Button backToMenu;
     private JLabel playerTurn;
+
     //ATTACK PEOPLE
     private Button attack1;
     private Button attack2;
     private JPanel players;
-    ////
     private BufferedImage[] bufferedImages = new BufferedImage[2];
     private JLabel[] labelsToImage = new JLabel[3];
     private GraphicalBoard[] all = new GraphicalBoard[3];
+
+    //FRAME
     private Container container;
 
     GameClient() {
@@ -66,8 +73,6 @@ public class GameClient extends JFrame{
         setLocation(0,0);
 
         shipsSet = false;
-        canStart = false;
-
         serverConfigurations();
 
         setMainMenu();
@@ -185,11 +190,9 @@ public class GameClient extends JFrame{
                 }
                 if (object instanceof StartTheGame){
                     System.out.println("GAME IS ABOUT TO START");
-                    canStart = true;
                 }
                 if (object instanceof Abort){
                     setMainMenu();
-                    canStart = false;
                 }
                 if (object instanceof CanStart){
                     toGameWindow();
@@ -216,7 +219,7 @@ public class GameClient extends JFrame{
             new Thread("Connect") {
                 public void run() {
                     try {
-                        client.connect(5000, "10.2.14.94", Network.port);
+                        client.connect(5000, address, Network.port);
                         // Server communication after connection can go here, or in Listener#connected().
                     } catch (IOException ex) {
                         ex.printStackTrace();
