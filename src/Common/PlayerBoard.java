@@ -18,6 +18,8 @@ public class PlayerBoard implements Serializable {
     private int[][] toSend;
     private int shipN = 0;
 
+    //TODO: TRANSFORM INTO SIMPLE ARRAY TO SEND; IT IS ONLY USED TO PAINT
+
     public PlayerBoard() {
         toSend = new int[LINES][COLUMNS];
         gameOver = false;

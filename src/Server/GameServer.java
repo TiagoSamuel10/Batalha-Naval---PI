@@ -37,6 +37,8 @@ public class GameServer {
 
     private BConnection[] playersThatStarted;
 
+    //TODO: USE IPV4 TO IDENTIFY PEOPLE IN THE SAME NETWORK
+
     GameServer() throws IOException {
 
         state = GameState.waitingForPlayers;
@@ -132,6 +134,7 @@ public class GameServer {
                         whoseTurn.id = 0;
                         server.sendToAllTCP(whoseTurn);
                         server.sendToAllTCP(new CanStart());
+                        // SEE IF WE'RE RECEIVED EVERYTHING
                     }
                 }
 
