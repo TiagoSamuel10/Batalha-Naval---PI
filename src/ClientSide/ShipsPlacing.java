@@ -56,6 +56,7 @@ class ShipsPlacing extends JLayeredPane{
     }
 
     void setPlayerBoard(PlayerBoard pb){
+        playerBoard = pb;
         remove(graphicalBoard);
         graphicalBoard = new GraphicalBoard(pb.getToSendToPaint());
         graphicalBoard.visibleForPlayer();

@@ -18,8 +18,6 @@ public class PlayerBoard implements Serializable {
     private int[][] toSend;
     private int shipN = 0;
 
-    //TODO: TRANSFORM INTO SIMPLE ARRAY TO SEND; IT IS ONLY USED TO PAINT
-
     public PlayerBoard() {
         toSend = new int[LINES][COLUMNS];
         gameOver = false;
@@ -142,6 +140,13 @@ public class PlayerBoard implements Serializable {
 
             }
         }
+    }
+
+    public static PlayerBoard getRandomPlayerBoard(){
+        PlayerBoard pb = new PlayerBoard();
+        pb.placeShips(Ship.getRandomShips());
+        //pb.allPieces();
+        return pb;
     }
 
     private boolean isPiece(int[][] check, int x, int y){

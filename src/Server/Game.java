@@ -18,11 +18,13 @@ public class Game {
         isOver = false;
     }
 
-    public static PlayerBoard getRandomPlayerBoard(){
-        PlayerBoard pb = new PlayerBoard();
-        pb.placeShips(Ship.getRandomShips());
-        //pb.allPieces();
-        return pb;
+    boolean canStart(){
+        for (PlayerBoard pb: playerBoards ) {
+            if(pb == null){
+                return false;
+            }
+        }
+        return true;
     }
 
     //TODO: ATTACK

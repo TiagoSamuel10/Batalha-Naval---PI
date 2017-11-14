@@ -18,17 +18,18 @@ import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.*;
+import java.util.Arrays;
 import java.util.Enumeration;
 
 public class GameClient extends JFrame{
 
-    final static Point GAME_BOARD_LOCATION = new Point(200,200);
+    final static Point GAME_BOARD_LOCATION = new Point(50,50);
     final static Dimension DIMENSION = new Dimension(1280, 720);
     private final static String TITLE = "GAME";
-    private final static int BORDER_RIGHT_SIDE_WIDTH = 200;
+    private final static int BORDER_RIGHT_SIDE_WIDTH = 150;
 
     //FOR ONLINE
-    private final boolean online = false;
+    private final boolean online = true;
     boolean shipsSet;
     private Client client;
     private String myName;
@@ -81,9 +82,12 @@ public class GameClient extends JFrame{
         setAttackWindow();
         setGameWindow();
 
-        toMainMenu();
-        //toPlaceShipsScreen();
-
+        if(online) {
+            toMainMenu();
+        }
+        else{
+            toPlaceShipsScreen();
+        }
         names = new JList<>();
         names.setModel(new DefaultListModel<>());
         names.setSize(500, 500);
@@ -287,6 +291,8 @@ public class GameClient extends JFrame{
 
     //endregion
 
+    //region MainMenu
+
     private void toMainMenu(){
 
         container.removeAll();
@@ -355,20 +361,24 @@ public class GameClient extends JFrame{
         });
     }
 
+    //endregion
+
+    //region PlaceShips
+
     private void toPlaceShipsScreen(){
         container.removeAll();
         ShipsPlacing shipsPlacing = new ShipsPlacing(this);
 
         Button b = new Button("RANDOM");
 
-        b.setLocation(900,700);
+        b.setLocation(700,500);
         b.setSize(100,50);
 
         b.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 shipsSet = true;
-                PlayerBoard pb = Game.getRandomPlayerBoard();
+                PlayerBoard pb = PlayerBoard.getRandomPlayerBoard();
                 shipsPlacing.setPlayerBoard(pb);
                 shipsPlacing.removeShips();
                 shipsPlacing.repaint();
@@ -383,13 +393,11 @@ public class GameClient extends JFrame{
         goToGame.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if(shipsSet && !online){
-                    toGameWindow();
-                }
-                if(shipsSet && online){
+                if(shipsSet){
                     client.sendTCP(shipsPlacing.getPlayerBoard().getToSend());
-                    toWaitingWindow();
-                    //getPlayerTurn();
+                    all[0] = new GraphicalBoard(shipsPlacing.getPlayerBoard().getToSendToPaint());
+                    System.out.println(Arrays.deepToString(shipsPlacing.getPlayerBoard().getToSend()));
+                    //toGameWindow();
                 }
             }
         });
@@ -401,6 +409,15 @@ public class GameClient extends JFrame{
         repaint();
     }
 
+    //endregion
+
+    private void toWaitingWindow(){
+        container.removeAll();
+        add(names);
+        repaint();
+        validate();
+    }
+
     private void updateNames(){
         DefaultListModel<String> model = (DefaultListModel<String>) names.getModel();
         model.removeAllElements();
@@ -408,13 +425,6 @@ public class GameClient extends JFrame{
             System.out.println("Received player from server list " + s);
             model.addElement(s);
         }
-    }
-
-    private void toWaitingWindow(){
-        container.removeAll();
-        add(names);
-        repaint();
-        validate();
     }
 
     private void setPlayerTurn(int index){
@@ -435,6 +445,7 @@ public class GameClient extends JFrame{
     }
 
     private void setGameWindow() {
+
         attackButton = new Button("Attack");
         attackButton.setSize(100,100);
         attackButton.addActionListener(new ActionListener() {
@@ -444,16 +455,16 @@ public class GameClient extends JFrame{
                 //toAttackWindow();
             }
         });
-        attackButton.setLocation(1200 - BORDER_RIGHT_SIDE_WIDTH, DIMENSION.height/2 - 400);
+        attackButton.setLocation(DIMENSION.width - BORDER_RIGHT_SIDE_WIDTH, DIMENSION.height/2 - 200);
 
-       chatButton = new Button("Chat");
-       chatButton.setSize(100,100);
-       chatButton.addActionListener(new ActionListener() {
+        chatButton = new Button("Chat");
+        chatButton.setSize(100,100);
+        chatButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
             }
         });
-        chatButton.setLocation(1200 - BORDER_RIGHT_SIDE_WIDTH, DIMENSION.height/2);
+        chatButton.setLocation(DIMENSION.width - BORDER_RIGHT_SIDE_WIDTH, DIMENSION.height/2 + 100);
 
         backToMenu = new Button("Back to Menu");
         backToMenu.setSize(100,50);
@@ -462,7 +473,7 @@ public class GameClient extends JFrame{
             public void actionPerformed(ActionEvent e) {
             }
         });
-        backToMenu.setLocation(100, 100);
+        backToMenu.setLocation(10, 10);
 
         playerTurn = new JLabel();
         playerTurn.setSize(200, 100);

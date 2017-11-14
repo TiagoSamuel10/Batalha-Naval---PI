@@ -30,6 +30,8 @@ public class GameServer {
     private int count;
     private boolean gameStarted;
 
+    //WILL SAVE WHAT CONNECTIONS THE GAME STARTED WITH
+    //SO IT'S POSSIBLE TO KNOW IF SOMEBODY WHO DROPPED IS RECONNECTING
     private BConnection[] playersThatStarted;
 
     GameServer() throws IOException {
@@ -40,29 +42,6 @@ public class GameServer {
         timing = false;
         currentWaitedTime = 0;
         playersThatStarted = new BConnection[3];
-
-        /*
-
-        TimerTask timerTask = new TimerTask() {
-
-            @Override
-            public void run() {
-                System.out.println("TimerTask executing counter is: " + currentWaitedTime);
-                currentWaitedTime++;//increments the counter
-            }
-        };
-
-
-
-        Timer timer = new Timer("MyTimer");//create a new Timer
-
-        timer.scheduleAtFixedRate(timerTask, 0, 1000);//this line starts the timer at the same time its executed
-
-        timing = true;
-
-        started = System.currentTimeMillis();
-
-        */
 
         server = new Server() {
             protected Connection newConnection () {
@@ -116,8 +95,10 @@ public class GameServer {
                         break;
                 }
 
-                System.out.println("Connected " + connection.name);
 
+                connection.id = count - 1;
+
+                System.out.println("Connected " + connection.name);
 
                 ConnectedPlayers connectedPlayers = new ConnectedPlayers();
                 connectedPlayers.names = getConnectedNames();
@@ -137,14 +118,14 @@ public class GameServer {
                 }
                 if(object instanceof int[][]){
                     PlayerBoard pb = new PlayerBoard((int[][]) object);
-                    pb.nukeIt();
-                    System.out.println(pb);
-                    if(addToGame(connection, pb)){
+                    //ADD TO GAME
+                    game.setPlayerBoard(pb, ((BConnection) c).id);
+                    //IF WE'VE RECEIVED ALL, WE CAN START
+                    if(game.canStart()){
                         WhoseTurn whoseTurn = new WhoseTurn();
                         whoseTurn.id = 0;
                         server.sendToAllTCP(whoseTurn);
                         server.sendToAllTCP(new CanStart());
-                        // SEE IF WE'RE RECEIVED EVERYTHING
                     }
                 }
 
