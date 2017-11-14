@@ -2,47 +2,70 @@ package ClientSide;
 
 import Common.BoardTile;
 import Common.PlayerBoard;
+import Common.ShipPiece;
+import Common.WaterTile;
 
 import javax.swing.*;
 import java.awt.*;
+
+import static Common.PlayerBoard.COLUMNS;
+import static Common.PlayerBoard.LINES;
 
 class GraphicalBoard extends JPanel {
 
     static final int BORDER = 1;
     static final Dimension SIZE = new Dimension(
-            PlayerBoard.LINES * (BoardTile.SIZE + BORDER),
-            PlayerBoard.COLUMNS * (BoardTile.SIZE + BORDER)
+            LINES * (BoardTile.SIZE + BORDER),
+            COLUMNS * (BoardTile.SIZE + BORDER)
     );
 
-    PlayerBoard _playerBoard;
+    String[][] currentBoard;
 
-    void lightItForNow(){
-        _playerBoard.lightItUp();
+    void visibleForPlayer(){
+        for (int l = 0; l < LINES; l++) {
+            for (int c = 0; c < COLUMNS; c++) {
+                if(currentBoard[l][c].getBytes()[0] == 'W'){
+                    getComponent(l * COLUMNS + c).setBackground(WaterTile.COLOR_TO_SHOW);
+                }
+                else{
+                    getComponent(l * COLUMNS + c).setBackground(ShipPiece.COLOR_TO_SHOW);
+                }
+            }
+        }
     }
 
-    void intoDarknessWeGo(){
-        _playerBoard.lightsOut();
-    }
+    GraphicalBoard (String[][] board){
 
-    GraphicalBoard(PlayerBoard playerBoard){
-        _playerBoard = playerBoard;
-         addTiles();
-    }
+        currentBoard = board;
 
-    private void addTiles(){
         setLayout(null);
         int multiplier = (BoardTile.SIZE + BORDER);
-        for (int x = 0; x < PlayerBoard.LINES; x++) {
-            for (int y = 0; y < PlayerBoard.COLUMNS; y++) {
-                BoardTile bt = _playerBoard.getTileAt(x, y);
-                GraphTile graphTile = new GraphTile(bt);
-                Point p = new Point(bt.getPointCoordinates());
-                p.setLocation(p.y * multiplier, p.x * multiplier);
+
+        for (int l = 0; l < LINES; l++) {
+            for (int c = 0; c < COLUMNS; c++) {
+                GraphTile graphTile = new GraphTile();
+                Point p = new Point(c * multiplier, l * multiplier);
                 graphTile.setLocation(p);
                 graphTile.setSize(BoardTile.SIZE, BoardTile.SIZE);
+                switch (board[l][c]){
+                    case ShipPiece.ATTACKED_SHIP_DESTROYED_STRING:
+                        graphTile.setColor(ShipPiece.ATTACKED_COLOR);
+                        break;
+                    case ShipPiece.ATTACKED_STRING:
+                        graphTile.setColor(ShipPiece.ATTACKED_COLOR);
+                        break;
+                    case ShipPiece.NOT_ATTACKED_STRING:
+                    case WaterTile.NOT_VISIBLE_STRING:
+                        graphTile.setColor(BoardTile.NOT_VISIBLE_COLOR);
+                        break;
+                    case WaterTile.ATTACKED_OR_VISIBLE_STRING:
+                        graphTile.setColor(WaterTile.ATTACKED_COLOR);
+                        break;
+                }
                 add(graphTile);
             }
         }
+
         setSize(SIZE);
         setLocation(GameClient.GAME_BOARD_LOCATION);
     }

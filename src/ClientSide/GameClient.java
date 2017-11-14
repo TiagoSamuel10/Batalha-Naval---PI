@@ -17,6 +17,8 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.net.*;
+import java.util.Enumeration;
 
 public class GameClient extends JFrame{
 
@@ -26,11 +28,11 @@ public class GameClient extends JFrame{
     private final static int BORDER_RIGHT_SIDE_WIDTH = 200;
 
     //FOR ONLINE
-    private final boolean online = true;
+    private final boolean online = false;
     boolean shipsSet;
     private Client client;
     private String myName;
-    private final String address = "82.154.144.197";
+    private final String address = "82.154.150.145";
 
     // MAIN MENU
     private Button playButton;
@@ -80,6 +82,7 @@ public class GameClient extends JFrame{
         setGameWindow();
 
         toMainMenu();
+        //toPlaceShipsScreen();
 
         names = new JList<>();
         names.setModel(new DefaultListModel<>());
@@ -92,7 +95,46 @@ public class GameClient extends JFrame{
         GameClient c = new GameClient();
     }
 
-    //region server stuff
+    private static InetAddress getMeIPV4() throws UnknownHostException {
+        try {
+            InetAddress closestOneFound = null;
+            // GET AND ITERATE ALL NETWORK CARDS
+            Enumeration networkInterfaces = NetworkInterface.getNetworkInterfaces();
+            while (networkInterfaces.hasMoreElements()) {
+                NetworkInterface networkInterface = (NetworkInterface) networkInterfaces.nextElement();
+                // GO THROUGH ALL IP ADDRESSES OF THIS CARD...
+                Enumeration inetAddresses = networkInterface.getInetAddresses();
+                while(inetAddresses.hasMoreElements()) {
+                    InetAddress inetAddress = (InetAddress) inetAddresses.nextElement();
+                    if (!inetAddress.isLoopbackAddress()) {
+                        if (inetAddress.isSiteLocalAddress()) {
+                            //YEAH BOY, FOUND IT
+                            return inetAddress;
+                        } else if (closestOneFound == null) {
+                            //FOUND ONE, MIGHT NOT BE WHAT WE WANT
+                            //BUT LET'S STORE IT IN CASE WE DON'T FIND EXACTLY WHAT WE WANT
+                            closestOneFound = inetAddress;
+                        }
+                    }
+                }
+            }
+            if (closestOneFound != null) {
+                // NOT IPV4, but will have to do
+                return closestOneFound;
+            }
+            //FOUND NOTHING
+            //WILL TRY THE JDK ONE
+            InetAddress jdkSuppliedAddress = InetAddress.getLocalHost();
+            if (jdkSuppliedAddress == null) {
+                throw new UnknownHostException("The JDK INetAddress.getLocalHost() method unexpectedly returned null.");
+            }
+            return jdkSuppliedAddress;
+        } catch (Exception e) {
+            UnknownHostException unknownHostException = new UnknownHostException("Failed to determine LAN address: " + e);
+            unknownHostException.initCause(e);
+            throw unknownHostException;
+        }
+    }
 
     private static BufferedImage createImage(JPanel panel) {
         int w = panel.getWidth();
@@ -103,9 +145,6 @@ public class GameClient extends JFrame{
             panel.paint(g);
         }catch (Exception e){
             e.printStackTrace();
-            PlayerBoard pb = ((GraphicalBoard) panel)._playerBoard;
-            pb.lightItUp();
-            System.out.println(pb);
         }
         return bufferedImage;
     }
@@ -160,7 +199,7 @@ public class GameClient extends JFrame{
         return new Point(defX,defY);
     }
 
-    //endregion
+    //region serverstuff
 
     private void serverConfigurations(){
         client = new Client();
@@ -190,7 +229,7 @@ public class GameClient extends JFrame{
                     return;
                 }
                 if (object instanceof StartTheGame){
-                    System.out.println("GAME IS ABOUT TO START");
+                    toPlaceShipsScreen();
                 }
                 if (object instanceof Abort){
                     setMainMenu();
@@ -211,6 +250,13 @@ public class GameClient extends JFrame{
                     updateNames();
                     repaint();
                     validate();
+                }
+                if (object instanceof YourBoardToPaint){
+                    all[0] = new GraphicalBoard(((YourBoardToPaint)object).board);
+                }
+                if (object instanceof EnemiesBoardsToPaint){
+                    all[1] = new GraphicalBoard(((EnemiesBoardsToPaint)object).board1);
+                    all[2] = new GraphicalBoard(((EnemiesBoardsToPaint)object).board2);
                 }
             }
         });
@@ -239,28 +285,13 @@ public class GameClient extends JFrame{
         });
     }
 
+    //endregion
+
     private void toMainMenu(){
 
         container.removeAll();
         container.add(playButton);
         container.add(nameField);
-
-        //LOAD DA IMAGEM
-
-        //ClassLoader classLoader = getClass().getClassLoader();
-        //String file = classLoader.getResource("images/BattleShip.png").getPath();
-
-        /*
-
-        setTitle("BattleShip");
-        setSize(1280, 720);
-        setLocationRelativeTo(null);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setVisible(true);
-        setLayout(new BorderLayout());
-
-        */
-
 
         //THIS WILL DO FOR NOW
 
@@ -269,12 +300,8 @@ public class GameClient extends JFrame{
         JLabel background = new JLabel();
         background.setIcon(new ImageIcon(imagePath));
         background.setLayout(new FlowLayout());
-        background.setSize(1280,720);
+        background.setSize(DIMENSION);
         background.setLocation(0,0);
-        JLabel l = new JLabel("Botao2");
-        JButton botao = new JButton("Botao1");
-        background.add(l);
-        background.add(botao);
         container.add(background);
         repaint();
         validate();
@@ -292,6 +319,11 @@ public class GameClient extends JFrame{
                 System.out.println(myName);
                 Register r = new Register();
                 r.name = myName;
+                try {
+                    r.adress = getMeIPV4().toString();
+                } catch (UnknownHostException e1) {
+                    e1.printStackTrace();
+                }
                 client.sendTCP(r);
                 toWaitingWindow();
             }
@@ -323,7 +355,7 @@ public class GameClient extends JFrame{
         });
     }
 
-    private void placeShipsScreen(){
+    private void toPlaceShipsScreen(){
         container.removeAll();
         ShipsPlacing shipsPlacing = new ShipsPlacing(this);
 
@@ -352,12 +384,10 @@ public class GameClient extends JFrame{
             @Override
             public void actionPerformed(ActionEvent e) {
                 if(shipsSet && !online){
-                    all[0] = new GraphicalBoard(shipsPlacing.getPlayerBoard());
                     toGameWindow();
                 }
                 if(shipsSet && online){
                     client.sendTCP(shipsPlacing.getPlayerBoard().getToSend());
-                    all[0] = new GraphicalBoard(shipsPlacing.getPlayerBoard());
                     toWaitingWindow();
                     //getPlayerTurn();
                 }
@@ -397,7 +427,7 @@ public class GameClient extends JFrame{
         container.add(chatButton);
         container.add(backToMenu);
         GraphicalBoard me = all[0];
-        me.lightItForNow();
+        me.visibleForPlayer();
         container.add(me);
         container.add(playerTurn);
         repaint();
@@ -551,7 +581,6 @@ public class GameClient extends JFrame{
         add(backToMenu);
 
         add(all[who]);
-
 
         repaint();
         validate();

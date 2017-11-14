@@ -33,12 +33,40 @@ public class PlayerBoard implements Serializable {
         transformBack(sent);
     }
 
-    public int[][] getToSend(){
-        return toSend;
+    public String[][] getToSendToPaint(){
+        String[][] board = new String[LINES][COLUMNS];
+        BoardTile bt;
+        for (int l = 0; l < LINES; l++) {
+            for (int c = 0; c < COLUMNS; c++) {
+                bt = getTileAt(l, c);
+                if(bt.isPiece()){
+                    ShipPiece sp = (ShipPiece) bt;
+                    if(sp.attacked && sp.ship.isDestroyed()){
+                        board[l][c] = ShipPiece.ATTACKED_SHIP_DESTROYED_STRING;
+                    }
+                    else if(sp.attacked && !sp.ship.isDestroyed()){
+                        board[l][c] = ShipPiece.ATTACKED_STRING;
+                    }
+                    else{
+                        board[l][c] = ShipPiece.NOT_ATTACKED_STRING;
+                    }
+                }
+                else{
+                    if(bt.isAttacked()){
+                        board[l][c] = WaterTile.NOT_VISIBLE_STRING;
+                    }
+                    else{
+                        board[l][c] = WaterTile.ATTACKED_OR_VISIBLE_STRING;
+                    }
+                }
+            }
+        }
+        return board;
+
     }
 
-    private boolean isPiece(int[][] check, int x, int y){
-        return check[x][y] > 0;
+    public int[][] getToSend(){
+        return toSend;
     }
 
     private void transformBack(int[][] sent){
@@ -114,6 +142,10 @@ public class PlayerBoard implements Serializable {
 
             }
         }
+    }
+
+    private boolean isPiece(int[][] check, int x, int y){
+        return check[x][y] > 0;
     }
 
     private void fillWithWater() {
@@ -324,7 +356,6 @@ public class PlayerBoard implements Serializable {
     private boolean inBounds(int x, int y) {
         return (x < LINES && x >= 0) && (y < COLUMNS && y >= 0);
     }
-
 
     public void removeShip(Ship ship) {
 

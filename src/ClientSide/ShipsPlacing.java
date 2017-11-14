@@ -26,8 +26,6 @@ class ShipsPlacing extends JLayeredPane{
         setSize(GameClient.DIMENSION);
         setBackground(Color.WHITE);
 
-        graphicalBoard = new GraphicalBoard(playerBoard);
-
         addMouseListener(new SpecialMouseListener());
         addMouseMotionListener(new SpecialMouseListener());
 
@@ -37,8 +35,10 @@ class ShipsPlacing extends JLayeredPane{
             add(graphShip, 1, 5);
         }
 
+        graphicalBoard = new GraphicalBoard(playerBoard.getToSendToPaint());
+        graphicalBoard.visibleForPlayer();
+
         add(graphicalBoard, 0, 7);
-        graphicalBoard.lightItForNow();
 
     }
 
@@ -56,10 +56,9 @@ class ShipsPlacing extends JLayeredPane{
     }
 
     void setPlayerBoard(PlayerBoard pb){
-        playerBoard = pb;
         remove(graphicalBoard);
-        graphicalBoard = new GraphicalBoard(playerBoard);
-        graphicalBoard.lightItForNow();
+        graphicalBoard = new GraphicalBoard(pb.getToSendToPaint());
+        graphicalBoard.visibleForPlayer();
         add(graphicalBoard, 0, 7);
         repaint();
     }
@@ -86,8 +85,8 @@ class ShipsPlacing extends JLayeredPane{
                 if(currentFocused.alreadyPlaced){
                     playerBoard.removeShip(currentFocused.getShip());
                     remove(graphicalBoard);
-                    graphicalBoard = new GraphicalBoard(playerBoard);
-                    graphicalBoard.lightItForNow();
+                    graphicalBoard = new GraphicalBoard(playerBoard.getToSendToPaint());
+                    graphicalBoard.visibleForPlayer();
                     add(graphicalBoard, 0,7);
                     me.repaint();
                 }
@@ -114,8 +113,8 @@ class ShipsPlacing extends JLayeredPane{
                         currentFocused.alreadyPlaced = true;
                         currentFocused.setBackground(new Color(1f, 0f, 0f, 0.0f));
                         remove(graphicalBoard);
-                        graphicalBoard = new GraphicalBoard(playerBoard);
-                        graphicalBoard.lightItForNow();
+                        graphicalBoard = new GraphicalBoard(playerBoard.getToSendToPaint());
+                        graphicalBoard.visibleForPlayer();
                         add(graphicalBoard, 0, 7);
                         me.repaint();
                         if (playerBoard.fullOfShips()) {

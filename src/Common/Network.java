@@ -3,6 +3,8 @@ package Common;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.EndPoint;
 
+import java.net.Inet4Address;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import Common.*;
 
@@ -20,6 +22,7 @@ public class Network {
         kryo.register(int[][].class);
         kryo.register(int[].class);
         kryo.register(int.class);
+        kryo.register(String.class);
 		//
         kryo.register(IsFull.class);
         kryo.register(StartTheGame.class);
@@ -28,7 +31,17 @@ public class Network {
         kryo.register(WhoseTurn.class);
         kryo.register(String[].class);
         kryo.register(ConnectedPlayers.class);
+        kryo.register(YourBoardToPaint.class);
 	}
+
+    public static class EnemiesBoardsToPaint{
+        public String[][] board1;
+        public String[][] board2;
+    }
+
+	public static class YourBoardToPaint{
+	    public String[][] board;
+    }
 
     public static class WhoseTurn{
 	    public int id;
@@ -42,6 +55,7 @@ public class Network {
 
 	public static class Register {
 		public String name;
+		public String adress;
 	}
 
 	public static class ChatMessage {

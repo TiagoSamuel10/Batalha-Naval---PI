@@ -5,8 +5,11 @@ import java.awt.*;
 
 public class WaterTile extends BoardTile {
 
-    private final static Color ATTACKED_COLOR = new Color(10,60,150);
-    private final static Color VISIBLE_COLOR = new Color(80,140,240);
+    public final static Color ATTACKED_COLOR = new Color(10,60,150);
+    public final static Color COLOR_TO_SHOW = new Color(80,140,240);
+
+    public static final String NOT_VISIBLE_STRING = "W";
+    public static final String ATTACKED_OR_VISIBLE_STRING = "WV";
 
     WaterTile(int _x, int _y){
         x = _x;
@@ -36,7 +39,7 @@ public class WaterTile extends BoardTile {
 
     @Override
     public Color getVisibleColor() {
-        return VISIBLE_COLOR;
+        return COLOR_TO_SHOW;
     }
 
     String details(){

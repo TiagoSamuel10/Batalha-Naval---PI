@@ -7,13 +7,8 @@ import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
 
-import javax.swing.*;
 import java.io.*;
-import java.net.InetAddress;
-import java.sql.Timestamp;
 import java.util.Arrays;
-import java.util.Timer;
-import java.util.TimerTask;
 
 public class GameServer {
 
@@ -26,7 +21,7 @@ public class GameServer {
     private final static long TIME_TO_WAIT = 1000 * 60 ;
     private boolean timing;
     private long currentWaitedTime;
-    private boolean disconnectWhileFull;
+    private boolean disconnectedWhenWaitingForShips;
     private long started;
 
     private GameState state;
@@ -37,13 +32,11 @@ public class GameServer {
 
     private BConnection[] playersThatStarted;
 
-    //TODO: USE IPV4 TO IDENTIFY PEOPLE IN THE SAME NETWORK
-
     GameServer() throws IOException {
 
         state = GameState.waitingForPlayers;
 
-        disconnectWhileFull = false;
+        disconnectedWhenWaitingForShips = false;
         timing = false;
         currentWaitedTime = 0;
         playersThatStarted = new BConnection[3];
@@ -88,19 +81,36 @@ public class GameServer {
             private void decideWhatToDo(BConnection connection, Register r){
 
                 connection.name = r.name;
+                connection.address = r.adress;
+                System.out.println(connection.address);
 
                 switch (state){
                     case waitingForPlayers:
-                        //normal
                         count++;
-                        //ver se chegou a 3
                         if(count == 3){
-                            startTheGame();
+                            sendReadyForShips();
                         }
                         break;
                     case waitingForShips:
                         // see if it's a new player
                         // or somebody that dropped
+                        if(disconnectedWhenWaitingForShips){
+                            boolean old = true;
+                            for (BConnection c: playersThatStarted) {
+                                if(c.address.equalsIgnoreCase(r.adress)){
+                                    count++;
+                                    System.out.println("RETURNED BOY");
+                                    break;
+                                }
+                                old = false;
+                            }
+                            if(!old) {
+                                connection.sendTCP(new IsFull());
+                            }
+                        }
+                        else{
+                            connection.sendTCP(new IsFull());
+                        }
                         break;
                     case playing:
                         break;
@@ -144,7 +154,6 @@ public class GameServer {
                 BConnection connection = (BConnection)c;
                 //System.out.println("LEFT: " + connection.name);
                 count--;
-                connection.id = -1;
                 switch (state){
                     case waitingForShips:
                         System.out.println("Disconnected " + connection.name);
@@ -152,7 +161,7 @@ public class GameServer {
                         connectedPlayers.names = getConnectedNames();
                         server.sendToAllTCP(connectedPlayers);
                     case waitingForPlayers:
-                        abortGame();
+                        handleLeavingWhileShips();
                 }
                 System.out.println("Count : " + count);
                 System.out.println(Arrays.toString(server.getConnections()));
@@ -183,12 +192,16 @@ public class GameServer {
             return false;
     }
 
+    private void handleLeavingWhileShips(){
+        disconnectedWhenWaitingForShips = true;
+    }
+
     private void abortGame() {
         state = GameState.waitingForPlayers;
         server.sendToAllTCP(new StartTheGame());
     }
 
-    private void startTheGame() {
+    private void sendReadyForShips() {
         int i = 0;
         for(Connection connection : server.getConnections()){
             playersThatStarted[i] = (BConnection) connection;
@@ -198,13 +211,12 @@ public class GameServer {
         game = new Game();
         server.sendToAllTCP(new StartTheGame());
         state = GameState.waitingForShips;
-
     }
 
     static class BConnection extends Connection {
         String name;
         int id;
-        InetAddress inetAddress;
+        String address;
 
         BConnection(){
             id = -1;

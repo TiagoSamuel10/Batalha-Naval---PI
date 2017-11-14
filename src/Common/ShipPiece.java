@@ -2,11 +2,15 @@ package Common;
 
 import java.awt.*;
 
-class ShipPiece extends BoardTile {
+public class ShipPiece extends BoardTile {
 
-    private final static Color ATTACKED_COLOR = new Color(20,20,20);
-    private final static Color ATTACKED_COLOR_SHIP_DESTROYED = new Color(150,10,11);
-    private final static Color VISIBLE_COLOR = new Color(100,100,100);
+    public final static Color ATTACKED_COLOR = new Color(20,20,20);
+    public final static Color ATTACKED_COLOR_SHIP_DESTROYED = new Color(150,10,11);
+    public final static Color COLOR_TO_SHOW = new Color(100,100,100);
+
+    public static final String NOT_ATTACKED_STRING = "P";
+    public static final String ATTACKED_STRING = "PA";
+    public static final String ATTACKED_SHIP_DESTROYED_STRING = "PD";
 
     Ship ship;
 
@@ -51,7 +55,7 @@ class ShipPiece extends BoardTile {
 
     @Override
     public Color getVisibleColor() {
-        return VISIBLE_COLOR;
+        return COLOR_TO_SHOW;
     }
 
     String details(){

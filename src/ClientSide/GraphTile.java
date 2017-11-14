@@ -8,11 +8,24 @@ public class GraphTile extends JPanel {
 
     private BoardTile boardTile;
 
+    private Color toPaint;
+
+    public GraphTile(){
+        this(new Color(0,0,0));
+    }
+
+    public GraphTile(Color _toPaint){
+        setColor(_toPaint);
+    }
+
+    public void setColor(Color _toPaint){
+        toPaint = _toPaint;
+    }
+
     public GraphTile(BoardTile _boardTile){ boardTile = _boardTile;
     }
 
-    @Override
-    public void paint(Graphics g) {
+    public void oldPaint(Graphics g){
         if (boardTile.isVisible()){
             if(boardTile.isAttacked()){
                 setBackground(boardTile.getAttackedColor());
@@ -24,6 +37,12 @@ public class GraphTile extends JPanel {
         else {
             setBackground(boardTile.getNotVisibleColor());
         }
+        super.paint(g);
+    }
+
+    @Override
+    public void paint(Graphics g) {
+        setBackground(toPaint);
         super.paint(g);
     }
 

@@ -6,7 +6,7 @@ import java.io.Serializable;
 public abstract class BoardTile implements Serializable {
 
     public static final int SIZE = 50;
-    private final static Color NOT_VISIBLE_COLOR = new Color(100,100,100);
+    public final static Color NOT_VISIBLE_COLOR = new Color(100,100,100);
     public Image image = null;
     int x, y;
     boolean isVisible;
