@@ -18,8 +18,8 @@ public class Ship implements Serializable{
 
     Ship(int x, int y, Direction _dir, ShipType st){
         _shipType = st;
-        pieces = new ShipPiece[st.value];
         setPoint(new Point(x, y));
+        pieces = new ShipPiece[st.value];
         dir = _dir;
     }
 
@@ -57,7 +57,7 @@ public class Ship implements Serializable{
         };
     }
 
-    public static Ship[] getRandomShips(){
+    static Ship[] getRandomShips(){
         ShipType[] types = new ShipType[]{
                 ShipType.Four, ShipType.Three, ShipType.Three,
                 ShipType.Two, ShipType.Two, ShipType.Two,
@@ -96,11 +96,15 @@ public class Ship implements Serializable{
     }
 
     ShipPiece[] getPieces(){
-        calculatePieces();
         return pieces;
     }
 
-    private void calculatePieces(){
+    ShipPiece[] computeAndGetPieces(){
+        computePieces();
+        return pieces;
+    }
+
+    private void computePieces(){
         int[] vector = new int[]{0,0};
         if(dir != null){
             vector = dir.getDirectionVector();
@@ -118,9 +122,19 @@ public class Ship implements Serializable{
         return _shipType.value;
     }
 
+    boolean isDestroyedSpecial() {
+        for (ShipPiece piece : computeAndGetPieces()) {
+            if (!piece.isAttacked()) {
+                System.out.println(this);
+                return false;
+            }
+        }
+        return true;
+    }
+
     boolean isDestroyed() {
         for (ShipPiece piece : pieces) {
-            if (!piece.attacked) {
+            if (!piece.isAttacked()) {
                 return false;
             }
         }
@@ -130,10 +144,11 @@ public class Ship implements Serializable{
     @Override
     public String toString() {
         String s = "[";
-        for(int i = 0; i < pieces.length; i++){
-            s += pieces[i].details() + ", ";
+        s += "Ship at " + startX + "+" + startY + " dir: " + dir +
+                ", shipType: " + _shipType + "\n";
+        for (ShipPiece sp : pieces) {
+            s += "+ " + sp.details() + "\n";
         }
-        s+= "]";
         return s;
     }
 

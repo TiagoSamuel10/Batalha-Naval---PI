@@ -279,7 +279,21 @@ public class GameClient extends JFrame{
                 }
 
                 if (object instanceof AnAttackResponse && attackedAndWaitingResponse){
-                    System.out.println(((AnAttackResponse) object).hitAnything);
+                    AnAttackResponse response = (AnAttackResponse) object;
+                    attackedAndWaitingResponse = false;
+                    switch (localIDAttacking) {
+                        case 1:
+                            container.remove(ene1);
+                            ene1 = new GraphicalBoard(response.newAttackedBoard);
+                            add(ene1);
+                        case 2:
+                            container.remove(ene2);
+                            ene2 = new GraphicalBoard(response.newAttackedBoard);
+                            add(ene2);
+                    }
+                    repaint();
+                    validate();
+                    System.out.println(response.hitAnything);
                 }
             }
         });

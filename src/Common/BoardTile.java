@@ -32,6 +32,7 @@ public abstract class BoardTile implements Serializable {
     boolean isVisible() {
         return visible;
     }
+
     boolean isAttacked() {
         return attacked;
     }

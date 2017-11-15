@@ -50,6 +50,7 @@ public class Network {
     }
 
     public static class AnAttackResponse{
+	    public String[][] newAttackedBoard;
 	    public boolean hitAnything;
     }
 

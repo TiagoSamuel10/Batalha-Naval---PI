@@ -125,8 +125,8 @@ public class GameServer {
                 if(object instanceof int[][]){
                     PlayerBoard pb = new PlayerBoard((int[][]) object);
                     //ADD TO GAME
-                    System.out.println("ADDING TO : " + connection.myID +
-                            "WHICH IS" + connection.name);
+                    //System.out.println("ADDING TO: " + connection.myID +
+                    //        " WHICH IS " + connection.name);
                     game.setPlayerBoard(pb, connection.myID);
                     //IF WE'VE RECEIVED ALL, WE CAN START
                     if(game.canStart()){
@@ -141,13 +141,16 @@ public class GameServer {
                 if (object instanceof  AnAttackAttempt){
                     AnAttackAttempt attempt = (AnAttackAttempt) object;
                     //System.out.println(connection.myID % attempt.clientID);
-                    System.out.println(attempt.l+"\n"+ attempt.c);
+                    //System.out.println(attempt.l+"\n"+ attempt.c);
                     boolean result = game.attack(
                             connection.myID % attempt.clientID,
                             attempt.l,
                             attempt.c);
                     AnAttackResponse response = new AnAttackResponse();
                     response.hitAnything = result;
+                    response.newAttackedBoard = game.getPlayerBoard(
+                            connection.myID % attempt.clientID).getToSendToPaint()
+                    ;
                     if(result){
                         System.out.println("ATTACKED SOME SHIT");
                     }
@@ -180,8 +183,8 @@ public class GameServer {
                 for(int i = 0; i < playersThatStarted.length; i++){
                     EnemiesBoardsToPaint enemiesBoardsToPaint = new EnemiesBoardsToPaint();
                     int own = playersThatStarted[i].myID;
-                    System.out.println("OWN IS : " + own);
-                    System.out.println("PLAYER IS : " + playersThatStarted[i].name);
+                    //System.out.println("OWN IS : " + own);
+                    //System.out.println("PLAYER IS : " + playersThatStarted[i].name);
                     enemiesBoardsToPaint.board1 = game.getPlayerBoard((own + 1) % 3).getToSendToPaint();
                     enemiesBoardsToPaint.board2 = game.getPlayerBoard((own + 2) % 3).getToSendToPaint();
                     playersThatStarted[i].sendTCP(enemiesBoardsToPaint);

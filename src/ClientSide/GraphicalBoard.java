@@ -32,6 +32,7 @@ class GraphicalBoard extends JPanel {
                 Point p = new Point(c * multiplier, l * multiplier);
                 graphTile.setLocation(p);
                 graphTile.setSize(BoardTile.SIZE, BoardTile.SIZE);
+                System.out.println("HAVE " + board[l][c]);
                 switch (board[l][c]){
                     case ShipPiece.ATTACKED_SHIP_DESTROYED_STRING:
                         graphTile.setColor(ShipPiece.COLOR_ATTACKED_SHIP_DESTROYED);

@@ -5,6 +5,7 @@ import org.jetbrains.annotations.Contract;
 import java.awt.*;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class PlayerBoard implements Serializable {
 
@@ -31,6 +32,17 @@ public class PlayerBoard implements Serializable {
         transformBack(sent);
     }
 
+    void seeAllShips(){
+        Ship old = null;
+        for (ShipPiece piece: pieces) {
+            if (!piece.ship.equals(old)) {
+                System.out.println(piece.ship);
+                old = piece.ship;
+            }
+        }
+    }
+
+
     //TODO: BUILD IT AS WE GO
 
     public String[][] getToSendToPaint(){
@@ -40,17 +52,21 @@ public class PlayerBoard implements Serializable {
         for (int l = 0; l < LINES; l++) {
             for (int c = 0; c < COLUMNS; c++) {
                 bt = getTileAt(l, c);
-                System.out.println(bt.details());
                 if(bt.isPiece()){
                     ShipPiece sp = (ShipPiece) bt;
-                    if(sp.attacked && sp.ship.isDestroyed()){
+                    System.out.println(sp.details());
+                    System.out.println(sp.ship.isDestroyed());
+                    if(sp.isAttacked() && sp.ship.isDestroyed()){
                         board[l][c] = ShipPiece.ATTACKED_SHIP_DESTROYED_STRING;
+                        System.out.println("DESTROYED HERE");
                     }
-                    else if(sp.attacked && !sp.ship.isDestroyed()){
+                    if(sp.isAttacked() && !sp.ship.isDestroyed()){
                         board[l][c] = ShipPiece.ATTACKED_STRING;
+                        System.out.println("NOT DESTROYED");
                     }
-                    else{
+                    if(!sp.isAttacked()){
                         board[l][c] = ShipPiece.NOT_ATTACKED_STRING;
+                        System.out.println("NOT VIS");
                     }
                 }
                 else{
@@ -64,6 +80,8 @@ public class PlayerBoard implements Serializable {
                 //System.out.println(board[l][c]);
             }
         }
+        System.out.println(Arrays.deepToString(board));
+        seeAllShips();
         return board;
 
     }
@@ -137,7 +155,7 @@ public class PlayerBoard implements Serializable {
                         d = Direction.RIGHT;
                     }
                     Ship tempShip = new Ship(l, c, d, st);
-                    tempShip.getPieces();
+                    tempShip.computeAndGetPieces();
                     //System.out.println(tempShip);
                     placeShip(tempShip);
                     count += size;
@@ -184,8 +202,9 @@ public class PlayerBoard implements Serializable {
                 System.out.println("SHIP DESTROYED");
                 shipDestroyed(ship);
             }
+            return true;
         }
-        return true;
+        return false;
     }
 
     public void getAttacked(Point point){
@@ -274,7 +293,7 @@ public class PlayerBoard implements Serializable {
     public boolean placeShip(Ship toAdd) {
         if(canShipBeHere(toAdd)) {
             shipN++;
-            for (ShipPiece piece : toAdd.getPieces()) {
+            for (ShipPiece piece : toAdd.computeAndGetPieces()) {
                 //System.out.println("PLACING " + piece.getClass().getSimpleName() + " AT: " + piece.x + " " + piece.y);
                 boardTiles[piece.x][piece.y] = piece;
                 pieces.add(piece);
@@ -301,7 +320,7 @@ public class PlayerBoard implements Serializable {
     }
 
     public boolean canShipBeHere(Ship toAdd) {
-        for (ShipPiece piece : toAdd.getPieces()) {
+        for (ShipPiece piece : toAdd.computeAndGetPieces()) {
             //System.out.println(piece.toString());
             boolean isInBounds = inBounds(piece.x, piece.y);
             if (!isInBounds) {
@@ -352,7 +371,7 @@ public class PlayerBoard implements Serializable {
 
     public void removeShip(Ship ship) {
 
-        for (ShipPiece piece : ship.getPieces()) {
+        for (ShipPiece piece : ship.computeAndGetPieces()) {
             //System.out.println("REMOVING " + piece.getClass().getSimpleName() + " AT: " + piece.x + " " + piece.y);
             boardTiles[piece.x][piece.y] = new WaterTile(piece.x, piece.y);
             pieces.remove(piece);

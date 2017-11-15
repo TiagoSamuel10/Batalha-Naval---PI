@@ -1,6 +1,5 @@
 package Common;
 
-import Server.Game;
 import org.junit.jupiter.api.Test;
 
 import static Common.PlayerBoard.COLUMNS;
@@ -22,7 +21,7 @@ class PlayerBoardTest {
         boolean returned = pb.placeShip(toAdd);
         assert (!returned);
 
-        for (ShipPiece shipPiece : toAdd.getPieces()) {
+        for (ShipPiece shipPiece : toAdd.computeAndGetPieces()) {
             assert (pb.freeAt(shipPiece.x, shipPiece.y));
         }
 

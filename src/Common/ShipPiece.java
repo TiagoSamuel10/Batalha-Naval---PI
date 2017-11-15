@@ -38,6 +38,6 @@ public class ShipPiece extends BoardTile {
     }
 
     String details(){
-        return "S";
+        return "ShipPiece at " + this.x + "+" + this.y + " and is visible: " + isVisible() + " and is attacked " + isAttacked();
     }
 }
