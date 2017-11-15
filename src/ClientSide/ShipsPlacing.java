@@ -11,7 +11,7 @@ class ShipsPlacing extends JLayeredPane{
 
     private ShipsPlacing me;
     private PlayerBoard playerBoard;
-    private GraphicalBoard graphicalBoard;
+    private MyGraphBoard selfGraphBoard;
     private GameClient gameClient;
     private GraphShip[] ships;
 
@@ -35,10 +35,9 @@ class ShipsPlacing extends JLayeredPane{
             add(graphShip, 1, 5);
         }
 
-        graphicalBoard = new GraphicalBoard(playerBoard.getToSendToPaint());
-        graphicalBoard.visibleForPlayer();
+        selfGraphBoard = new MyGraphBoard(playerBoard.getToSendToPaint());
 
-        add(graphicalBoard, 0, 7);
+        add(selfGraphBoard, 0, 7);
 
     }
 
@@ -57,10 +56,9 @@ class ShipsPlacing extends JLayeredPane{
 
     void setPlayerBoard(PlayerBoard pb){
         playerBoard = pb;
-        remove(graphicalBoard);
-        graphicalBoard = new GraphicalBoard(pb.getToSendToPaint());
-        graphicalBoard.visibleForPlayer();
-        add(graphicalBoard, 0, 7);
+        remove(selfGraphBoard);
+        selfGraphBoard = new MyGraphBoard(pb.getToSendToPaint());
+        add(selfGraphBoard, 0, 7);
         repaint();
     }
 
@@ -85,10 +83,9 @@ class ShipsPlacing extends JLayeredPane{
                 System.out.println(currentFocused);
                 if(currentFocused.alreadyPlaced){
                     playerBoard.removeShip(currentFocused.getShip());
-                    remove(graphicalBoard);
-                    graphicalBoard = new GraphicalBoard(playerBoard.getToSendToPaint());
-                    graphicalBoard.visibleForPlayer();
-                    add(graphicalBoard, 0,7);
+                    remove(selfGraphBoard);
+                    selfGraphBoard = new MyGraphBoard(playerBoard.getToSendToPaint());
+                    add(selfGraphBoard, 0,7);
                     me.repaint();
                 }
             }catch (ClassCastException exc){
@@ -113,10 +110,9 @@ class ShipsPlacing extends JLayeredPane{
                         playerBoard.placeShip(currentFocused.getShip());
                         currentFocused.alreadyPlaced = true;
                         currentFocused.setBackground(new Color(1f, 0f, 0f, 0.0f));
-                        remove(graphicalBoard);
-                        graphicalBoard = new GraphicalBoard(playerBoard.getToSendToPaint());
-                        graphicalBoard.visibleForPlayer();
-                        add(graphicalBoard, 0, 7);
+                        remove(selfGraphBoard);
+                        selfGraphBoard = new MyGraphBoard(playerBoard.getToSendToPaint());
+                        add(selfGraphBoard, 0, 7);
                         me.repaint();
                         if (playerBoard.fullOfShips()) {
                             gameClient.shipsSet = true;

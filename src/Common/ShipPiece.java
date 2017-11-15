@@ -4,9 +4,10 @@ import java.awt.*;
 
 public class ShipPiece extends BoardTile {
 
-    public final static Color ATTACKED_COLOR = new Color(20,20,20);
-    public final static Color ATTACKED_COLOR_SHIP_DESTROYED = new Color(150,10,11);
-    public final static Color COLOR_TO_SHOW = new Color(100,100,100);
+    public final static Color COLOR_ATTACKED = new Color(150,10,11);
+    public final static Color COLOR_ATTACKED_SHIP_DESTROYED = new Color(20,20,20);
+
+    public final static Color COLOR_TO_SHOW = new Color(139,69,19);
 
     public static final String NOT_ATTACKED_STRING = "P";
     public static final String ATTACKED_STRING = "PA";
@@ -48,9 +49,9 @@ public class ShipPiece extends BoardTile {
     @Override
     public Color getAttackedColor() {
         if(ship.isDestroyed()){
-            return ATTACKED_COLOR_SHIP_DESTROYED;
+            return COLOR_ATTACKED_SHIP_DESTROYED;
         }
-        return ATTACKED_COLOR;
+        return COLOR_ATTACKED;
     }
 
     @Override

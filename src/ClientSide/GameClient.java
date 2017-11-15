@@ -5,8 +5,6 @@ import Common.Network;
 import Common.Network.*;
 import Common.PlayerBoard;
 
-import Server.Game;
-
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
@@ -23,13 +21,13 @@ import java.util.Enumeration;
 
 public class GameClient extends JFrame{
 
-    final static Point GAME_BOARD_LOCATION = new Point(50,50);
+    final static Point GAME_BOARD_LOCATION = new Point(75,75);
     final static Dimension DIMENSION = new Dimension(1280, 720);
     private final static String TITLE = "GAME";
     private final static int BORDER_RIGHT_SIDE_WIDTH = 150;
 
     //FOR ONLINE
-    private final boolean online = true;
+    private final boolean online = false;
     boolean shipsSet;
     private Client client;
     private String myName;
@@ -56,10 +54,21 @@ public class GameClient extends JFrame{
     private Button attack1;
     private Button attack2;
     private JPanel players;
-    private BufferedImage[] bufferedImages = new BufferedImage[2];
-    private JLabel[] labelsToImage = new JLabel[3];
-    private GraphicalBoard[] all = new GraphicalBoard[3];
 
+    private Button backToGame;
+
+    //GRAPHICS
+
+    private GraphicalBoard me;
+
+    private GraphicalBoard ene1;
+    private BufferedImage ene1Buffered;
+    private JLabel ene1ImageToShow;
+
+    private GraphicalBoard ene2;
+    private BufferedImage ene2Buffered;
+    private JLabel ene2ImageToShow;
+    
     //FRAME
     private Container container;
 
@@ -79,7 +88,7 @@ public class GameClient extends JFrame{
         serverConfigurations();
 
         setMainMenu();
-        setAttackWindow();
+        setChooseAttackWindow();
         setGameWindow();
 
         if(online) {
@@ -233,12 +242,14 @@ public class GameClient extends JFrame{
                     return;
                 }
                 if (object instanceof StartTheGame){
+                    System.out.println("TO SHIP SCREEN");
                     toPlaceShipsScreen();
                 }
                 if (object instanceof Abort){
                     setMainMenu();
                 }
                 if (object instanceof CanStart){
+                    System.out.println("STARTING THE GAME");
                     toGameWindow();
                 }
                 if (object instanceof WhoseTurn){
@@ -256,11 +267,13 @@ public class GameClient extends JFrame{
                     validate();
                 }
                 if (object instanceof YourBoardToPaint){
-                    all[0] = new GraphicalBoard(((YourBoardToPaint)object).board);
+                    System.out.println("MY BOARD TO PAINT");
+                    me = new GraphicalBoard(((YourBoardToPaint)object).board);
                 }
                 if (object instanceof EnemiesBoardsToPaint){
-                    all[1] = new GraphicalBoard(((EnemiesBoardsToPaint)object).board1);
-                    all[2] = new GraphicalBoard(((EnemiesBoardsToPaint)object).board2);
+                    System.out.println("ENEMIES BOARDS TO PAINT");
+                    ene1 = new GraphicalBoard(((EnemiesBoardsToPaint)object).board1);
+                    ene2 = new GraphicalBoard(((EnemiesBoardsToPaint)object).board2);
                 }
             }
         });
@@ -297,6 +310,8 @@ public class GameClient extends JFrame{
 
         container.removeAll();
         container.add(playButton);
+
+        nameField.requestFocus();
         container.add(nameField);
 
         //THIS WILL DO FOR NOW
@@ -331,6 +346,7 @@ public class GameClient extends JFrame{
                     e1.printStackTrace();
                 }
                 client.sendTCP(r);
+                setTitle(getTitle() + myName);
                 toWaitingWindow();
             }
         });
@@ -395,8 +411,8 @@ public class GameClient extends JFrame{
             public void actionPerformed(ActionEvent e) {
                 if(shipsSet){
                     client.sendTCP(shipsPlacing.getPlayerBoard().getToSend());
-                    all[0] = new GraphicalBoard(shipsPlacing.getPlayerBoard().getToSendToPaint());
-                    System.out.println(Arrays.deepToString(shipsPlacing.getPlayerBoard().getToSend()));
+                    me = new MyGraphBoard(shipsPlacing.getPlayerBoard().getToSendToPaint());
+                    //System.out.println(Arrays.deepToString(shipsPlacing.getPlayerBoard().getToSend()));
                     //toGameWindow();
                 }
             }
@@ -436,8 +452,6 @@ public class GameClient extends JFrame{
         container.add(attackButton);
         container.add(chatButton);
         container.add(backToMenu);
-        GraphicalBoard me = all[0];
-        me.visibleForPlayer();
         container.add(me);
         container.add(playerTurn);
         repaint();
@@ -451,8 +465,7 @@ public class GameClient extends JFrame{
         attackButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                //all[turns.getCurrent()].intoDarknessWeGo();
-                //toAttackWindow();
+                toChooseAttackWindow();
             }
         });
         attackButton.setLocation(DIMENSION.width - BORDER_RIGHT_SIDE_WIDTH, DIMENSION.height/2 - 200);
@@ -481,81 +494,101 @@ public class GameClient extends JFrame{
 
     }
 
-    private void toAttackWindow(){
+    private void toChooseAttackWindow(){
         container.removeAll();
-
-        /*
 
         //TODO: Labels correctly
 
         attack1.setLabel("PLAYER " + "1");
         attack2.setLabel("PLAYER " + "2");
 
-        bufferedImages[0] = createImage(all[player1 - 1]);
-        labelsToImage[0].setIcon(new ImageIcon(bufferedImages[0]));
+        ene1Buffered = createImage(ene1);
+        ene1ImageToShow.setIcon(new ImageIcon(ene1Buffered));
 
-
-        if(turns.remaining() > 1){
-            bufferedImages[1] = createImage(all[player2 - 1]);
-            labelsToImage[1].setIcon(new ImageIcon(bufferedImages[1]));
-        }
-
-        */
+        ene2Buffered = createImage(ene2);
+        ene2ImageToShow.setIcon(new ImageIcon(ene2Buffered));
 
         container.add(players);
         repaint();
         validate();
     }
 
-    private void setAttackWindow(){
-        attack1 = new Button("PLAYER 2");
+    private void setChooseAttackWindow(){
+        attack1 = new Button("PLAYER 1");
         attack1.setLocation(350, 600);
         attack1.setSize(150, 50);
         attack1.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                setBoardToAttack(Integer.valueOf(attack1.getLabel().substring(7)) - 1);
+                toAttackingWindow(ene1);
             }
         });
 
-        attack2 = new Button("PLAYER 3");
+        attack2 = new Button("PLAYER 2");
         attack2.setLocation(750, 600);
         attack2.setSize(150, 50);
         attack2.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                setBoardToAttack(Integer.valueOf(attack2.getLabel().substring(7)) - 1);
+                toAttackingWindow(ene2);
+            }
+        });
+
+        backToGame = new Button("Back to Game");
+        backToGame.setLocation(700, 10);
+        backToGame.setSize(100,50);
+        backToGame.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                toGameWindow();
             }
         });
 
         players = new JPanel(null);
 
-        labelsToImage[0] = new JLabel();
-        labelsToImage[1] = new JLabel();
+        ene1ImageToShow = new JLabel();
+        ene2ImageToShow = new JLabel();
 
-        labelsToImage[0].setLocation(25, 50);
-        labelsToImage[1].setLocation(650, 50);
+        ene1ImageToShow.setLocation(25, 50);
+        ene2ImageToShow.setLocation(650, 50);
 
-        labelsToImage[0].setSize(GraphicalBoard.SIZE);
-        labelsToImage[1].setSize(GraphicalBoard.SIZE);
+        ene1ImageToShow.setSize(GraphicalBoard.SIZE);
+        ene2ImageToShow.setSize(GraphicalBoard.SIZE);
 
         players.add(attack1);
         players.add(attack2);
-        players.add(labelsToImage[0]);
-        players.add(labelsToImage[1]);
+        players.add(ene1ImageToShow);
+        players.add(ene2ImageToShow);
+        players.add(backToGame);
         players.setLocation(0,0);
         players.setSize(DIMENSION);
 
     }
 
-    private void setBoardToAttack(int who) {
+    public Component findComponentAt(MouseEvent e) {
+        return findComponentAt(e.getPoint());
+    }
+
+    private void toAttackingWindow(GraphicalBoard graphicalBoard) {
         container.removeAll();
         repaint();
         validate();
 
+        //TODO: NOT LET PLAYER SPAM CLICK
+
         MouseListener mouseListener = new MouseListener() {
+
+            private float toWait = 1;
+
             @Override
-            public void mouseClicked(MouseEvent e) {}
+            public void mouseClicked(MouseEvent e) {
+                Component found = findComponentAt(e);
+                if(found instanceof GraphTile){
+                    GraphTile gFound = (GraphTile)found;
+                    System.out.println(gFound.getL());
+                    System.out.println(gFound.getC());
+                }
+            }
 
             @Override
             public void mousePressed(MouseEvent e) {
@@ -579,8 +612,9 @@ public class GameClient extends JFrame{
 
         addMouseListener(mouseListener);
 
-        Button backToMenu = new Button("Back to Server.Game");
-        backToMenu.setSize(0,0);
+        Button backToMenu = new Button("Back to Game");
+        backToMenu.setSize(100,50);
+        backToMenu.setLocation(700,100);
         backToMenu.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -590,8 +624,7 @@ public class GameClient extends JFrame{
 
 
         add(backToMenu);
-
-        add(all[who]);
+        add(graphicalBoard);
 
         repaint();
         validate();

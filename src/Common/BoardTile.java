@@ -6,7 +6,7 @@ import java.io.Serializable;
 public abstract class BoardTile implements Serializable {
 
     public static final int SIZE = 50;
-    public final static Color NOT_VISIBLE_COLOR = new Color(100,100,100);
+    public final static Color COLOR_NOT_VISIBLE = new Color(100,100,100);
     public Image image = null;
     int x, y;
     boolean isVisible;
@@ -25,7 +25,7 @@ public abstract class BoardTile implements Serializable {
     abstract String details();
 
     public Color getNotVisibleColor(){
-        return NOT_VISIBLE_COLOR;
+        return COLOR_NOT_VISIBLE;
     }
 
     public boolean isVisible() {

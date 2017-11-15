@@ -59,6 +59,8 @@ public class GameServer {
 
             private void decideWhatToDo(BConnection connection, Register r){
 
+                boolean ready = false;
+
                 connection.name = r.name;
                 connection.address = r.adress;
                 System.out.println(connection.address);
@@ -67,7 +69,7 @@ public class GameServer {
                     case waitingForPlayers:
                         count++;
                         if(count == 3){
-                            sendReadyForShips();
+                            ready = true;
                         }
                         break;
                     case waitingForShips:
@@ -95,10 +97,10 @@ public class GameServer {
                         break;
                 }
 
-
-                connection.id = count - 1;
+                connection.myID = count - 1;
 
                 System.out.println("Connected " + connection.name);
+                System.out.println("Connected myID becomes: " + connection.myID);
 
                 ConnectedPlayers connectedPlayers = new ConnectedPlayers();
                 connectedPlayers.names = getConnectedNames();
@@ -106,6 +108,10 @@ public class GameServer {
 
                 System.out.println("Count : " + count);
                 System.out.println(Arrays.toString(server.getConnections()));
+
+                if(ready){
+                    sendReadyForShips();
+                }
 
             }
 
@@ -119,11 +125,14 @@ public class GameServer {
                 if(object instanceof int[][]){
                     PlayerBoard pb = new PlayerBoard((int[][]) object);
                     //ADD TO GAME
-                    game.setPlayerBoard(pb, ((BConnection) c).id);
+                    System.out.println("ADDING TO : " + connection.myID +
+                            "WHICH IS" + connection.name);
+                    game.setPlayerBoard(pb, connection.myID);
                     //IF WE'VE RECEIVED ALL, WE CAN START
                     if(game.canStart()){
                         WhoseTurn whoseTurn = new WhoseTurn();
                         whoseTurn.id = 0;
+                        sendOthersBoards();
                         server.sendToAllTCP(whoseTurn);
                         server.sendToAllTCP(new CanStart());
                     }
@@ -132,7 +141,7 @@ public class GameServer {
             }
 
             public void disconnected (Connection c) {
-                BConnection connection = (BConnection)c;
+                BConnection connection = (BConnection) c;
                 //System.out.println("LEFT: " + connection.name);
                 count--;
                 switch (state){
@@ -147,12 +156,35 @@ public class GameServer {
                 System.out.println("Count : " + count);
                 System.out.println(Arrays.toString(server.getConnections()));
             }
+
+            private void sendOthersBoards(){
+                for(int i = 0; i < playersThatStarted.length; i++){
+                    EnemiesBoardsToPaint enemiesBoardsToPaint = new EnemiesBoardsToPaint();
+                    int own = playersThatStarted[i].myID;
+                    System.out.println("OWN IS : " + own);
+                    System.out.println("PLAYER IS : " + playersThatStarted[i].name);
+                    enemiesBoardsToPaint.board1 = game.getPlayerBoard((own + 1) % 3).getToSendToPaint();
+                    enemiesBoardsToPaint.board2 = game.getPlayerBoard((own + 2) % 3).getToSendToPaint();
+                    int right = findRightID(own, playersThatStarted[i]);
+                    server.sendToTCP(right, enemiesBoardsToPaint);
+                }
+            }
         });
 
         server.bind(Network.port);
         server.start();
         System.out.println("Server started");
 
+    }
+
+    private int findRightID(int mine, BConnection bConnection){
+        for (Connection connection : server.getConnections()  ) {
+            if(((BConnection) connection).myID == mine){
+                return connection.getID();
+            }
+        }
+        System.out.println("Could not find it");
+        return -999;
     }
 
     private String[] getConnectedNames(){
@@ -163,14 +195,6 @@ public class GameServer {
             i++;
         }
         return string;
-    }
-
-    private boolean addToGame(BConnection connection, PlayerBoard playerBoard){
-            if(connection.id == -1){
-                game.setPlayerBoard(playerBoard, connection.id);
-                return true;
-            }
-            return false;
     }
 
     private void handleLeavingWhileShips(){
@@ -186,7 +210,8 @@ public class GameServer {
         int i = 0;
         for(Connection connection : server.getConnections()){
             playersThatStarted[i] = (BConnection) connection;
-            System.out.println("PLAYER: " + playersThatStarted[i].name);
+            //System.out.println("PLAYER: " + playersThatStarted[i].name);
+            //System.out.println("ID IS: " +  playersThatStarted[i].myID);
             i++;
         }
         game = new Game();
@@ -195,12 +220,13 @@ public class GameServer {
     }
 
     static class BConnection extends Connection {
+
         String name;
-        int id;
+        int myID;
         String address;
 
         BConnection(){
-            id = -1;
+            myID = -1;
         }
     }
 

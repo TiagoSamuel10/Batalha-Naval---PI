@@ -31,12 +31,16 @@ public class PlayerBoard implements Serializable {
         transformBack(sent);
     }
 
+    //TODO: BUILD IT AS WE GO
+
     public String[][] getToSendToPaint(){
+        System.out.println("--------------");
         String[][] board = new String[LINES][COLUMNS];
         BoardTile bt;
         for (int l = 0; l < LINES; l++) {
             for (int c = 0; c < COLUMNS; c++) {
                 bt = getTileAt(l, c);
+                System.out.println(bt.details());
                 if(bt.isPiece()){
                     ShipPiece sp = (ShipPiece) bt;
                     if(sp.attacked && sp.ship.isDestroyed()){
@@ -51,12 +55,13 @@ public class PlayerBoard implements Serializable {
                 }
                 else{
                     if(bt.isAttacked()){
-                        board[l][c] = WaterTile.NOT_VISIBLE_STRING;
-                    }
-                    else{
                         board[l][c] = WaterTile.ATTACKED_OR_VISIBLE_STRING;
                     }
+                    else{
+                        board[l][c] = WaterTile.NOT_VISIBLE_STRING;
+                    }
                 }
+                System.out.println(board[l][c]);
             }
         }
         return board;
@@ -233,7 +238,7 @@ public class PlayerBoard implements Serializable {
         }
     }
 
-    public void lightItUp() {
+    void lightItUp() {
         for (int l = 0; l < LINES; l++) {
             for (int c = 0; c < COLUMNS; c++) {
                 boardTiles[l][c].isVisible = true;

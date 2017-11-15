@@ -23,15 +23,17 @@ public class Network {
         kryo.register(int[].class);
         kryo.register(int.class);
         kryo.register(String.class);
+        kryo.register(String[].class);
+        kryo.register(String[][].class);
 		//
         kryo.register(IsFull.class);
         kryo.register(StartTheGame.class);
         kryo.register(Abort.class);
         kryo.register(CanStart.class);
         kryo.register(WhoseTurn.class);
-        kryo.register(String[].class);
         kryo.register(ConnectedPlayers.class);
         kryo.register(YourBoardToPaint.class);
+        kryo.register(EnemiesBoardsToPaint.class);
 	}
 
     public static class EnemiesBoardsToPaint{

@@ -44,7 +44,7 @@ public class Game {
     //TODO: SOMETHING ABOUT HITS
 
     private void checkIfHitAnything(int id) {
-        //playerBoards[id].getLastHit();
+        //playerBoards[myID].getLastHit();
     }
 
     //TODO: SOMETHING ABOUT GAME OVER
@@ -89,5 +89,9 @@ public class Game {
 
     void setPlayerBoard(PlayerBoard playerBoard, int i) {
         playerBoards[i] = playerBoard;
+    }
+
+    PlayerBoard getPlayerBoard(int i){
+        return playerBoards[i];
     }
 }
