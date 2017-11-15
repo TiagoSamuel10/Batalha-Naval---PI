@@ -19,7 +19,7 @@ public class WaterTile extends BoardTile {
 
     @Override
     public String toString() {
-        if(isVisible){
+        if(visible){
             if(attacked){
                 return "HW";
             }
@@ -31,16 +31,6 @@ public class WaterTile extends BoardTile {
     @Override
     boolean isPiece() {
         return false;
-    }
-
-    @Override
-    public Color getAttackedColor() {
-        return COLOR_ATTACKED_OR_VISIBLE;
-    }
-
-    @Override
-    public Color getVisibleColor() {
-        return COLOR_TO_SHOW;
     }
 
     String details(){

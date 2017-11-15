@@ -40,11 +40,8 @@ class GraphicalBoard extends JPanel {
                         graphTile.setColor(ShipPiece.COLOR_ATTACKED);
                         break;
                     case ShipPiece.NOT_ATTACKED_STRING:
-                        graphTile.setColor(BoardTile.COLOR_NOT_VISIBLE);
-                        System.out.println("NOT VISIBLE SHIP");
                     case WaterTile.NOT_VISIBLE_STRING:
                         graphTile.setColor(BoardTile.COLOR_NOT_VISIBLE);
-                        System.out.println("NOT VISIBLE WATER");
                         break;
                     case WaterTile.ATTACKED_OR_VISIBLE_STRING:
                         graphTile.setColor(WaterTile.COLOR_ATTACKED_OR_VISIBLE);

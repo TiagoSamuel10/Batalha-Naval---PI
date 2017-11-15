@@ -21,18 +21,9 @@ public class ShipPiece extends BoardTile {
         ship = _ship;
     }
 
-    /*
-
     @Override
     public String toString() {
-        return "Ship at " + x + "; " +y;
-    }
-
-    */
-
-    @Override
-    public String toString() {
-        if(isVisible){
+        if(visible){
             if(attacked){
                 return "HS";
             }
@@ -44,19 +35,6 @@ public class ShipPiece extends BoardTile {
     @Override
     boolean isPiece() {
         return true;
-    }
-
-    @Override
-    public Color getAttackedColor() {
-        if(ship.isDestroyed()){
-            return COLOR_ATTACKED_SHIP_DESTROYED;
-        }
-        return COLOR_ATTACKED;
-    }
-
-    @Override
-    public Color getVisibleColor() {
-        return COLOR_TO_SHOW;
     }
 
     String details(){

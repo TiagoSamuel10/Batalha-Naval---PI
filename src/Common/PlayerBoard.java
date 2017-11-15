@@ -34,7 +34,7 @@ public class PlayerBoard implements Serializable {
     //TODO: BUILD IT AS WE GO
 
     public String[][] getToSendToPaint(){
-        System.out.println("--------------");
+        //System.out.println("--------------");
         String[][] board = new String[LINES][COLUMNS];
         BoardTile bt;
         for (int l = 0; l < LINES; l++) {
@@ -61,7 +61,7 @@ public class PlayerBoard implements Serializable {
                         board[l][c] = WaterTile.NOT_VISIBLE_STRING;
                     }
                 }
-                System.out.println(board[l][c]);
+                //System.out.println(board[l][c]);
             }
         }
         return board;
@@ -93,7 +93,7 @@ public class PlayerBoard implements Serializable {
                     continue;
                 }
                 //IT'S A PIECE
-                if(isPiece(sent, l, c)){
+                if(aPieceInTheArray(sent, l, c)){
                     //look in directions
                     int x = l;
                     int y = c + 1;
@@ -103,7 +103,7 @@ public class PlayerBoard implements Serializable {
                     //HORIZONTAL
 
                     while(inBounds(x, y)){
-                        if(isPiece(sent, x, y)){
+                        if(aPieceInTheArray(sent, x, y)){
                             size++;
                             foundHorizontal = true;
                             toSkip.add(new Point(x, y));
@@ -121,7 +121,7 @@ public class PlayerBoard implements Serializable {
 
                     if(!foundHorizontal){
                         while(inBounds(x, y)){
-                            if(isPiece(sent, x, y)){
+                            if(aPieceInTheArray(sent, x, y)){
                                 size++;
                                 toSkip.add(new Point(x, y));
                                 x++;
@@ -154,7 +154,7 @@ public class PlayerBoard implements Serializable {
         return pb;
     }
 
-    private boolean isPiece(int[][] check, int x, int y){
+    private boolean aPieceInTheArray(int[][] check, int x, int y){
         return check[x][y] > 0;
     }
 
@@ -169,14 +169,14 @@ public class PlayerBoard implements Serializable {
 
     //region attacked
 
-    public void getAttacked(int x, int y) {
+    public boolean getAttacked(int x, int y) {
         //NOT ATTACKED YET
         BoardTile boardTile = getTileAt(x, y);
-        if (!boardTile.isVisible) {
+        if (boardTile.canAttack()) {
             boardTile.setAttacked();
             // NOT A SHIP PIECE
             if (!boardTile.isPiece()) {
-                return;
+                return false;
             }
             pieces.remove((ShipPiece) boardTile);
             Ship ship = ((ShipPiece) boardTile).ship;
@@ -185,38 +185,21 @@ public class PlayerBoard implements Serializable {
                 shipDestroyed(ship);
             }
         }
-        checkGameOver();
+        return true;
     }
 
     public void getAttacked(Point point){
         getAttacked(point.x, point.y);
     }
 
-    void getAttacked(BoardTile boardTile){
-        getAttacked(boardTile.x, boardTile.y);
-    }
-
-    public void lightsOut(){
-        for (int l = 0; l < LINES; l++) {
-            for (int c = 0; c < COLUMNS; c++) {
-                if(!getTileAt(l,c).attacked){
-                    getTileAt(l,c).isVisible = false;
-                }
-            }
-        }
-    }
-
     //endregion
 
     public boolean isGameOver(){
-        return gameOver;
+        return pieces.isEmpty();
     }
 
     private void checkGameOver() {
         gameOver = pieces.isEmpty();
-        if(gameOver){
-            lightItUp();
-        }
     }
 
     private void shipDestroyed(Ship s) {
@@ -241,12 +224,12 @@ public class PlayerBoard implements Serializable {
     void lightItUp() {
         for (int l = 0; l < LINES; l++) {
             for (int c = 0; c < COLUMNS; c++) {
-                boardTiles[l][c].isVisible = true;
+                boardTiles[l][c].visible = true;
             }
         }
     }
 
-    public String details(){
+    String details(){
         String s = "    ";
         for (int i = 0; i < COLUMNS; i++) {
             s += i + "    ";
@@ -279,7 +262,7 @@ public class PlayerBoard implements Serializable {
         return s;
     }
 
-    public void placeShips(Ship[] toAdd){
+    void placeShips(Ship[] toAdd){
         //int i = 0;
         for (Ship ship : toAdd) {
             //ships[i] = ship;
@@ -355,7 +338,7 @@ public class PlayerBoard implements Serializable {
 
     //endregion
 
-    public BoardTile getTileAt(int x, int y) {
+    BoardTile getTileAt(int x, int y) {
         if(inBounds(x, y)){
             return boardTiles[x][y];
         }

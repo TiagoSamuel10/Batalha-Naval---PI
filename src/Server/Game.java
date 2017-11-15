@@ -27,24 +27,15 @@ public class Game {
         return true;
     }
 
-    //TODO: ATTACK
-
-    void attack(int id, int x, int y){
-        playerBoards[id].getAttacked(x, y);
-        checkIfHitAnything(id);
-        checkGameOverFor(id);
-        checkGameOver();
+    boolean attack(int id, int x, int y){
+        return playerBoards[id].getAttacked(x, y);
+        //checkGameOverFor(id);
+        //checkGameOver();
     }
 
     //TODO: GAME OVER
 
     private void checkGameOver() {
-    }
-
-    //TODO: SOMETHING ABOUT HITS
-
-    private void checkIfHitAnything(int id) {
-        //playerBoards[myID].getLastHit();
     }
 
     //TODO: SOMETHING ABOUT GAME OVER
@@ -55,26 +46,6 @@ public class Game {
             // TODO: REMOVE THE OPTION TO ATTACK HIM ON OTHERS
             turns.removePlayer(id);
         }
-    }
-
-    private void start() {
-        for(int i = 0; i < MAX_PLAYERS; i++){
-            playerBoards[i] = new PlayerBoard();
-            addRandomBoatsTo(playerBoards[i]);
-            turns.addPlayer(i);
-            //playerBoards[i].lightItUp();
-        }
-        //currentPlayer = new Random().nextInt(allowed.size());
-        currentPlayer = 0;
-
-    }
-
-    private void changeTurn(){
-        currentPlayer = turns.nextPlayerIndex();
-    }
-
-    private void addRandomBoatsTo(PlayerBoard pb){
-        pb.placeShips(Ship.getRandomShips());
     }
 
     @Override

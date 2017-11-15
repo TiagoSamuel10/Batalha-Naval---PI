@@ -16,7 +16,6 @@ import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.*;
-import java.util.Arrays;
 import java.util.Enumeration;
 
 public class GameClient extends JFrame{
@@ -27,7 +26,7 @@ public class GameClient extends JFrame{
     private final static int BORDER_RIGHT_SIDE_WIDTH = 150;
 
     //FOR ONLINE
-    private final boolean online = false;
+    private final boolean online = true;
     boolean shipsSet;
     private Client client;
     private String myName;
@@ -54,6 +53,8 @@ public class GameClient extends JFrame{
     private Button attack1;
     private Button attack2;
     private JPanel players;
+    private int localIDAttacking;
+    private boolean attackedAndWaitingResponse;
 
     private Button backToGame;
 
@@ -92,6 +93,7 @@ public class GameClient extends JFrame{
         setGameWindow();
 
         if(online) {
+            attackedAndWaitingResponse = false;
             toMainMenu();
         }
         else{
@@ -275,6 +277,10 @@ public class GameClient extends JFrame{
                     ene1 = new GraphicalBoard(((EnemiesBoardsToPaint)object).board1);
                     ene2 = new GraphicalBoard(((EnemiesBoardsToPaint)object).board2);
                 }
+
+                if (object instanceof AnAttackResponse && attackedAndWaitingResponse){
+                    System.out.println(((AnAttackResponse) object).hitAnything);
+                }
             }
         });
 
@@ -341,7 +347,7 @@ public class GameClient extends JFrame{
                 Register r = new Register();
                 r.name = myName;
                 try {
-                    r.adress = getMeIPV4().toString();
+                    r.address = getMeIPV4().toString();
                 } catch (UnknownHostException e1) {
                     e1.printStackTrace();
                 }
@@ -521,6 +527,7 @@ public class GameClient extends JFrame{
             @Override
             public void actionPerformed(ActionEvent e) {
                 toAttackingWindow(ene1);
+                localIDAttacking = 1;
             }
         });
 
@@ -531,6 +538,7 @@ public class GameClient extends JFrame{
             @Override
             public void actionPerformed(ActionEvent e) {
                 toAttackingWindow(ene2);
+                localIDAttacking = 2;
             }
         });
 
@@ -585,8 +593,12 @@ public class GameClient extends JFrame{
                 Component found = findComponentAt(e);
                 if(found instanceof GraphTile){
                     GraphTile gFound = (GraphTile)found;
-                    System.out.println(gFound.getL());
-                    System.out.println(gFound.getC());
+                    AnAttackAttempt anAttackAttempt = new AnAttackAttempt();
+                    anAttackAttempt.c = gFound.getC();
+                    anAttackAttempt.l = gFound.getL();
+                    anAttackAttempt.clientID = localIDAttacking;
+                    client.sendTCP(anAttackAttempt);
+                    attackedAndWaitingResponse = true;
                 }
             }
 

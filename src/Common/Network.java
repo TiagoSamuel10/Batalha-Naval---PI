@@ -34,11 +34,23 @@ public class Network {
         kryo.register(ConnectedPlayers.class);
         kryo.register(YourBoardToPaint.class);
         kryo.register(EnemiesBoardsToPaint.class);
+        kryo.register(AnAttackAttempt.class);
+        kryo.register(AnAttackResponse.class);
 	}
 
     public static class EnemiesBoardsToPaint{
         public String[][] board1;
         public String[][] board2;
+    }
+
+    public static class AnAttackAttempt{
+	    public int clientID;
+	    public int l;
+	    public int c;
+    }
+
+    public static class AnAttackResponse{
+	    public boolean hitAnything;
     }
 
 	public static class YourBoardToPaint{
@@ -57,7 +69,7 @@ public class Network {
 
 	public static class Register {
 		public String name;
-		public String adress;
+		public String address;
 	}
 
 	public static class ChatMessage {

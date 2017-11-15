@@ -62,7 +62,7 @@ public class GameServer {
                 boolean ready = false;
 
                 connection.name = r.name;
-                connection.address = r.adress;
+                connection.address = r.address;
                 System.out.println(connection.address);
 
                 switch (state){
@@ -78,7 +78,7 @@ public class GameServer {
                         if(disconnectedWhenWaitingForShips){
                             boolean old = true;
                             for (BConnection c: playersThatStarted) {
-                                if(c.address.equalsIgnoreCase(r.adress)){
+                                if(c.address.equalsIgnoreCase(r.address)){
                                     count++;
                                     System.out.println("RETURNED BOY");
                                     break;
@@ -138,6 +138,25 @@ public class GameServer {
                     }
                 }
 
+                if (object instanceof  AnAttackAttempt){
+                    AnAttackAttempt attempt = (AnAttackAttempt) object;
+                    //System.out.println(connection.myID % attempt.clientID);
+                    System.out.println(attempt.l+"\n"+ attempt.c);
+                    boolean result = game.attack(
+                            connection.myID % attempt.clientID,
+                            attempt.l,
+                            attempt.c);
+                    AnAttackResponse response = new AnAttackResponse();
+                    response.hitAnything = result;
+                    if(result){
+                        System.out.println("ATTACKED SOME SHIT");
+                    }
+                    else{
+                        System.out.println("MISSED");
+                    }
+                    connection.sendTCP(response);
+                }
+
             }
 
             public void disconnected (Connection c) {
@@ -165,8 +184,7 @@ public class GameServer {
                     System.out.println("PLAYER IS : " + playersThatStarted[i].name);
                     enemiesBoardsToPaint.board1 = game.getPlayerBoard((own + 1) % 3).getToSendToPaint();
                     enemiesBoardsToPaint.board2 = game.getPlayerBoard((own + 2) % 3).getToSendToPaint();
-                    int right = findRightID(own, playersThatStarted[i]);
-                    server.sendToTCP(right, enemiesBoardsToPaint);
+                    playersThatStarted[i].sendTCP(enemiesBoardsToPaint);
                 }
             }
         });
