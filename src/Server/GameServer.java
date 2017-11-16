@@ -142,24 +142,47 @@ public class GameServer {
                     AnAttackAttempt attempt = (AnAttackAttempt) object;
                     //System.out.println(connection.myID % attempt.clientID);
                     //System.out.println(attempt.l+"\n"+ attempt.c);
+
+                    int toAttackID = (connection.myID + attempt.clientID) % 3;
+
                     boolean result = game.attack(
-                            connection.myID % attempt.clientID,
+                            toAttackID,
                             attempt.l,
                             attempt.c);
+
                     AnAttackResponse response = new AnAttackResponse();
                     response.hitAnything = result;
-                    response.newAttackedBoard = game.getPlayerBoard(
-                            connection.myID % attempt.clientID).getToSendToPaint()
-                    ;
-                    if(result){
-                        System.out.println("ATTACKED SOME SHIT");
-                    }
-                    else{
-                        System.out.println("MISSED");
-                    }
-                    connection.sendTCP(response);
-                }
 
+                    String[][] attackedOne = game.getPlayerBoard(toAttackID).getToSendToPaint();
+
+                    response.newAttackedBoard = attackedOne;
+                    connection.sendTCP(response);
+
+                    printConnections();
+
+                    //SEND TO OTHERS
+
+                    //TO THE GUY NOT ATTACKED
+
+                    int idToSum = 1;
+
+                    if(attempt.clientID == 1){
+                        idToSum = 2;
+                    }
+
+                    EnemyBoardToPaint eb = new EnemyBoardToPaint();
+                    eb.newAttackedBoard = attackedOne;
+                    eb.id = idToSum;
+
+                    int otherClientID = (connection.myID + idToSum) % 3;
+
+                    playersThatStarted[otherClientID].sendTCP(eb);
+
+                    //TO THE ATTACKED
+                    YourBoardToPaint attacked = new YourBoardToPaint();
+                    attacked.board = attackedOne;
+                    playersThatStarted[toAttackID].sendTCP(attacked);
+                }
             }
 
             public void disconnected (Connection c) {
@@ -190,22 +213,29 @@ public class GameServer {
                     playersThatStarted[i].sendTCP(enemiesBoardsToPaint);
                 }
             }
+
+            private void printConnections(){
+                for (BConnection connection : playersThatStarted  ) {
+                    System.out.println(connection.name + " has ID: "+ connection.myID);
+                }
+            }
+
+
+            private BConnection findConnectionWithID(int id){
+                for (BConnection connection : playersThatStarted  ) {
+                    if(connection.myID == id){
+                        return connection;
+                    }
+                }
+                return null;
+            }
+
         });
 
         server.bind(Network.port);
         server.start();
         System.out.println("Server started");
 
-    }
-
-    private int findRightID(int mine, BConnection bConnection){
-        for (Connection connection : server.getConnections()  ) {
-            if(((BConnection) connection).myID == mine){
-                return connection.getID();
-            }
-        }
-        System.out.println("Could not find it");
-        return -999;
     }
 
     private String[] getConnectedNames(){

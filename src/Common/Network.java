@@ -36,6 +36,7 @@ public class Network {
         kryo.register(EnemiesBoardsToPaint.class);
         kryo.register(AnAttackAttempt.class);
         kryo.register(AnAttackResponse.class);
+        kryo.register(EnemyBoardToPaint.class);
 	}
 
     public static class EnemiesBoardsToPaint{
@@ -47,6 +48,11 @@ public class Network {
 	    public int clientID;
 	    public int l;
 	    public int c;
+    }
+
+    public static class EnemyBoardToPaint{
+        public String[][] newAttackedBoard;
+        public int id;
     }
 
     public static class AnAttackResponse{

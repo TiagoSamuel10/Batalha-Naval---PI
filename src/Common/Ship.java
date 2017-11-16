@@ -14,6 +14,8 @@ public class Ship implements Serializable{
     private int startX;
     private int startY;
     private Direction dir;
+
+    private boolean alreadyCalculated;
     private ShipPiece[] pieces;
 
     Ship(int x, int y, Direction _dir, ShipType st){
@@ -21,6 +23,7 @@ public class Ship implements Serializable{
         setPoint(new Point(x, y));
         pieces = new ShipPiece[st.value];
         dir = _dir;
+        alreadyCalculated = false;
     }
 
     private static Ship getOneRandomShip(PlayerBoard pb, ShipType size, Direction[] directions){
@@ -96,15 +99,15 @@ public class Ship implements Serializable{
     }
 
     ShipPiece[] getPieces(){
-        return pieces;
-    }
-
-    ShipPiece[] computeAndGetPieces(){
+        if(alreadyCalculated) {
+            return pieces;
+        }
         computePieces();
         return pieces;
     }
 
     private void computePieces(){
+        alreadyCalculated = true;
         int[] vector = new int[]{0,0};
         if(dir != null){
             vector = dir.getDirectionVector();
@@ -120,16 +123,6 @@ public class Ship implements Serializable{
 
     public int getSize(){
         return _shipType.value;
-    }
-
-    boolean isDestroyedSpecial() {
-        for (ShipPiece piece : computeAndGetPieces()) {
-            if (!piece.isAttacked()) {
-                System.out.println(this);
-                return false;
-            }
-        }
-        return true;
     }
 
     boolean isDestroyed() {

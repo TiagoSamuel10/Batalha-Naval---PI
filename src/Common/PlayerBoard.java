@@ -54,19 +54,19 @@ public class PlayerBoard implements Serializable {
                 bt = getTileAt(l, c);
                 if(bt.isPiece()){
                     ShipPiece sp = (ShipPiece) bt;
-                    System.out.println(sp.details());
-                    System.out.println(sp.ship.isDestroyed());
+                    //System.out.println(sp.details());
+                    //System.out.println(sp.ship.isDestroyed());
                     if(sp.isAttacked() && sp.ship.isDestroyed()){
                         board[l][c] = ShipPiece.ATTACKED_SHIP_DESTROYED_STRING;
-                        System.out.println("DESTROYED HERE");
+                        //System.out.println("DESTROYED HERE");
                     }
                     if(sp.isAttacked() && !sp.ship.isDestroyed()){
                         board[l][c] = ShipPiece.ATTACKED_STRING;
-                        System.out.println("NOT DESTROYED");
+                        //System.out.println("NOT DESTROYED");
                     }
                     if(!sp.isAttacked()){
                         board[l][c] = ShipPiece.NOT_ATTACKED_STRING;
-                        System.out.println("NOT VIS");
+                        //System.out.println("NOT VIS");
                     }
                 }
                 else{
@@ -80,8 +80,8 @@ public class PlayerBoard implements Serializable {
                 //System.out.println(board[l][c]);
             }
         }
-        System.out.println(Arrays.deepToString(board));
-        seeAllShips();
+        //System.out.println(Arrays.deepToString(board));
+        //seeAllShips();
         return board;
 
     }
@@ -155,7 +155,7 @@ public class PlayerBoard implements Serializable {
                         d = Direction.RIGHT;
                     }
                     Ship tempShip = new Ship(l, c, d, st);
-                    tempShip.computeAndGetPieces();
+                    tempShip.getPieces();
                     //System.out.println(tempShip);
                     placeShip(tempShip);
                     count += size;
@@ -199,7 +199,7 @@ public class PlayerBoard implements Serializable {
             pieces.remove((ShipPiece) boardTile);
             Ship ship = ((ShipPiece) boardTile).ship;
             if (ship.isDestroyed()) {
-                System.out.println("SHIP DESTROYED");
+                //System.out.println("SHIP DESTROYED");
                 shipDestroyed(ship);
             }
             return true;
@@ -293,7 +293,7 @@ public class PlayerBoard implements Serializable {
     public boolean placeShip(Ship toAdd) {
         if(canShipBeHere(toAdd)) {
             shipN++;
-            for (ShipPiece piece : toAdd.computeAndGetPieces()) {
+            for (ShipPiece piece : toAdd.getPieces()) {
                 //System.out.println("PLACING " + piece.getClass().getSimpleName() + " AT: " + piece.x + " " + piece.y);
                 boardTiles[piece.x][piece.y] = piece;
                 pieces.add(piece);
@@ -320,7 +320,7 @@ public class PlayerBoard implements Serializable {
     }
 
     public boolean canShipBeHere(Ship toAdd) {
-        for (ShipPiece piece : toAdd.computeAndGetPieces()) {
+        for (ShipPiece piece : toAdd.getPieces()) {
             //System.out.println(piece.toString());
             boolean isInBounds = inBounds(piece.x, piece.y);
             if (!isInBounds) {
@@ -371,7 +371,7 @@ public class PlayerBoard implements Serializable {
 
     public void removeShip(Ship ship) {
 
-        for (ShipPiece piece : ship.computeAndGetPieces()) {
+        for (ShipPiece piece : ship.getPieces()) {
             //System.out.println("REMOVING " + piece.getClass().getSimpleName() + " AT: " + piece.x + " " + piece.y);
             boardTiles[piece.x][piece.y] = new WaterTile(piece.x, piece.y);
             pieces.remove(piece);

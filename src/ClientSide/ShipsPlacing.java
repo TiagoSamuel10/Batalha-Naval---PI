@@ -80,7 +80,7 @@ class ShipsPlacing extends JLayeredPane{
             try{
                 currentFocused = (GraphShip) me.findComponentAt(e.getPoint());
                 currentFocused.setBackground(Color.BLACK);
-                System.out.println(currentFocused);
+                //System.out.println(currentFocused);
                 if(currentFocused.alreadyPlaced){
                     playerBoard.removeShip(currentFocused.getShip());
                     remove(selfGraphBoard);

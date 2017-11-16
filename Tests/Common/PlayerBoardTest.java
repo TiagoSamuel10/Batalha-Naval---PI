@@ -21,7 +21,7 @@ class PlayerBoardTest {
         boolean returned = pb.placeShip(toAdd);
         assert (!returned);
 
-        for (ShipPiece shipPiece : toAdd.computeAndGetPieces()) {
+        for (ShipPiece shipPiece : toAdd.getPieces()) {
             assert (pb.freeAt(shipPiece.x, shipPiece.y));
         }
 

@@ -30,7 +30,7 @@ public class GameClient extends JFrame{
     boolean shipsSet;
     private Client client;
     private String myName;
-    private final String address = "82.154.150.145";
+    private final String address = "localhost";
 
     // MAIN MENU
     private Button playButton;
@@ -214,6 +214,22 @@ public class GameClient extends JFrame{
         return new Point(defX,defY);
     }
 
+    private void updateEnemyBoard(int whose, String[][] toPaint){
+        switch (whose) {
+            case 1:
+                container.remove(ene1);
+                ene1 = new GraphicalBoard(toPaint);
+                add(ene1);
+                break;
+            case 2:
+                container.remove(ene2);
+                ene2 = new GraphicalBoard(toPaint);
+                add(ene2);
+                break;
+        }
+        repaint();
+    }
+
     //region serverstuff
 
     private void serverConfigurations(){
@@ -270,7 +286,9 @@ public class GameClient extends JFrame{
                 }
                 if (object instanceof YourBoardToPaint){
                     System.out.println("MY BOARD TO PAINT");
-                    me = new GraphicalBoard(((YourBoardToPaint)object).board);
+                    remove(me);
+                    me = new MyGraphBoard(((YourBoardToPaint)object).board);
+                    container.add(me);
                 }
                 if (object instanceof EnemiesBoardsToPaint){
                     System.out.println("ENEMIES BOARDS TO PAINT");
@@ -278,21 +296,16 @@ public class GameClient extends JFrame{
                     ene2 = new GraphicalBoard(((EnemiesBoardsToPaint)object).board2);
                 }
 
+                if (object instanceof EnemyBoardToPaint){
+                    System.out.println("ENEMY BOARD TO PAINT");
+                    EnemyBoardToPaint enemyBoardToPaint = (EnemyBoardToPaint) object;
+                    updateEnemyBoard(enemyBoardToPaint.id, enemyBoardToPaint.newAttackedBoard);
+                }
+
                 if (object instanceof AnAttackResponse && attackedAndWaitingResponse){
                     AnAttackResponse response = (AnAttackResponse) object;
                     attackedAndWaitingResponse = false;
-                    switch (localIDAttacking) {
-                        case 1:
-                            container.remove(ene1);
-                            ene1 = new GraphicalBoard(response.newAttackedBoard);
-                            add(ene1);
-                        case 2:
-                            container.remove(ene2);
-                            ene2 = new GraphicalBoard(response.newAttackedBoard);
-                            add(ene2);
-                    }
-                    repaint();
-                    validate();
+                    updateEnemyBoard(localIDAttacking, response.newAttackedBoard);
                     System.out.println(response.hitAnything);
                 }
             }
@@ -472,8 +485,8 @@ public class GameClient extends JFrame{
         container.add(attackButton);
         container.add(chatButton);
         container.add(backToMenu);
-        container.add(me);
         container.add(playerTurn);
+        container.add(me);
         repaint();
         validate();
     }
