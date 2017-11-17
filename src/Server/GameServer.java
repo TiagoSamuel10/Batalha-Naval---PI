@@ -194,10 +194,15 @@ public class GameServer {
                         currentPlayer = (currentPlayer + 1) % 3;
                         WhoseTurn whoseTurn = new WhoseTurn();
                         whoseTurn.name = players[currentPlayer].name;
-                        server.sendToAllTCP(whoseTurn);
+                        sendToAllExcept(currentPlayer, whoseTurn);
                         players[currentPlayer].sendTCP(new YourTurn());
                     }
                 }
+            }
+
+            private void sendToAllExcept(int i, Object object){
+                players[(i + 4) % 3].sendTCP(object);
+                players[(i + 5) % 3].sendTCP(object);
             }
 
             public void disconnected (Connection c) {

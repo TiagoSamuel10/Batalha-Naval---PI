@@ -261,6 +261,7 @@ public class GameClient extends JFrame{
                 if (object instanceof WhoseTurn){
                     WhoseTurn whoseTurn = (WhoseTurn) object;
                     System.out.println(whoseTurn.name);
+                    iCanAttack = false;
                     setTurnLabel(whoseTurn.name);
                 }
                 if (object instanceof ConnectedPlayers){
@@ -293,7 +294,6 @@ public class GameClient extends JFrame{
                 if (object instanceof AnAttackResponse){
                     AnAttackResponse response = (AnAttackResponse) object;
                     updateEnemyBoard(localIDAttacking, response.newAttackedBoard);
-                    iCanAttack = response.hitAnything;
                 }
 
                 if (object instanceof YourTurn){
