@@ -3,11 +3,6 @@ package Common;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.EndPoint;
 
-import java.net.Inet4Address;
-import java.net.InetAddress;
-import java.util.ArrayList;
-import Common.*;
-
 // This class is a convenient place to keep things common to both the client and server.
 public class Network {
 
@@ -27,7 +22,7 @@ public class Network {
         kryo.register(String[][].class);
 		//
         kryo.register(IsFull.class);
-        kryo.register(StartTheGame.class);
+        kryo.register(ReadyForShips.class);
         kryo.register(Abort.class);
         kryo.register(CanStart.class);
         kryo.register(WhoseTurn.class);
@@ -37,6 +32,7 @@ public class Network {
         kryo.register(AnAttackAttempt.class);
         kryo.register(AnAttackResponse.class);
         kryo.register(EnemyBoardToPaint.class);
+        kryo.register(YourTurn.class);
 	}
 
     public static class EnemiesBoardsToPaint{
@@ -65,13 +61,16 @@ public class Network {
     }
 
     public static class WhoseTurn{
-	    public int id;
+	    public String name;
+    }
+
+    public static class YourTurn{
     }
 
 	public static class Abort{
     }
 
-	public static class StartTheGame{
+	public static class ReadyForShips {
     }
 
 	public static class Register {

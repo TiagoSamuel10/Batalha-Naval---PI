@@ -5,16 +5,11 @@ import Common.Ship;
 
 public class Game {
 
-    private static final int MAX_PLAYERS = 3;
-
-    private Turns turns;
-    private int currentPlayer;
     private PlayerBoard[] playerBoards;
-    boolean isOver;
+    private boolean isOver;
 
     Game(){
-        turns = new Turns();
-        playerBoards = new PlayerBoard[MAX_PLAYERS];
+        playerBoards = new PlayerBoard[3];
         isOver = false;
     }
 
@@ -44,7 +39,6 @@ public class Game {
         if(playerBoards[id].isGameOver()){
             // TODO: SEND TO CLIENT THAT HE HAS LOST
             // TODO: REMOVE THE OPTION TO ATTACK HIM ON OTHERS
-            turns.removePlayer(id);
         }
     }
 

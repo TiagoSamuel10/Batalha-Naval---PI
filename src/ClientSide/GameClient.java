@@ -54,7 +54,8 @@ public class GameClient extends JFrame{
     private Button attack2;
     private JPanel players;
     private int localIDAttacking;
-    private boolean attackedAndWaitingResponse;
+    private boolean inAttackWindow;
+    private boolean iCanAttack;
 
     private Button backToGame;
 
@@ -73,7 +74,11 @@ public class GameClient extends JFrame{
     //FRAME
     private Container container;
 
-    GameClient() {
+    public static void main(String[] args){
+        GameClient c = new GameClient();
+    }
+
+    public GameClient() {
 
         container = getContentPane();
         setVisible(true);
@@ -86,6 +91,7 @@ public class GameClient extends JFrame{
         setLocation(0,0);
 
         shipsSet = false;
+        iCanAttack = false;
         serverConfigurations();
 
         setMainMenu();
@@ -93,7 +99,7 @@ public class GameClient extends JFrame{
         setGameWindow();
 
         if(online) {
-            attackedAndWaitingResponse = false;
+            inAttackWindow = false;
             toMainMenu();
         }
         else{
@@ -103,12 +109,9 @@ public class GameClient extends JFrame{
         names.setModel(new DefaultListModel<>());
         names.setSize(500, 500);
         names.setLocation(100,100);
-
     }
 
-    public static void main(String[] args){
-        GameClient c = new GameClient();
-    }
+    //region other stuff
 
     private static InetAddress getMeIPV4() throws UnknownHostException {
         try {
@@ -214,23 +217,9 @@ public class GameClient extends JFrame{
         return new Point(defX,defY);
     }
 
-    private void updateEnemyBoard(int whose, String[][] toPaint){
-        switch (whose) {
-            case 1:
-                container.remove(ene1);
-                ene1 = new GraphicalBoard(toPaint);
-                add(ene1);
-                break;
-            case 2:
-                container.remove(ene2);
-                ene2 = new GraphicalBoard(toPaint);
-                add(ene2);
-                break;
-        }
-        repaint();
-    }
+    //endregion
 
-    //region serverstuff
+    //region Server Stuff
 
     private void serverConfigurations(){
         client = new Client();
@@ -257,9 +246,8 @@ public class GameClient extends JFrame{
             public void received (Connection connection, Object object) {
                 if (object instanceof IsFull){
                     System.out.println(object);
-                    return;
                 }
-                if (object instanceof StartTheGame){
+                if (object instanceof ReadyForShips){
                     System.out.println("TO SHIP SCREEN");
                     toPlaceShipsScreen();
                 }
@@ -272,10 +260,8 @@ public class GameClient extends JFrame{
                 }
                 if (object instanceof WhoseTurn){
                     WhoseTurn whoseTurn = (WhoseTurn) object;
-                    System.out.println(whoseTurn.id);
-                    if(whoseTurn.id != -1){
-                        setPlayerTurn(whoseTurn.id);
-                    }
+                    System.out.println(whoseTurn.name);
+                    setTurnLabel(whoseTurn.name);
                 }
                 if (object instanceof ConnectedPlayers){
                     ConnectedPlayers connectedPlayers = (ConnectedPlayers) object;
@@ -289,11 +275,13 @@ public class GameClient extends JFrame{
                     remove(me);
                     me = new MyGraphBoard(((YourBoardToPaint)object).board);
                     container.add(me);
+                    repaint();
                 }
                 if (object instanceof EnemiesBoardsToPaint){
                     System.out.println("ENEMIES BOARDS TO PAINT");
                     ene1 = new GraphicalBoard(((EnemiesBoardsToPaint)object).board1);
                     ene2 = new GraphicalBoard(((EnemiesBoardsToPaint)object).board2);
+                    setLabels();
                 }
 
                 if (object instanceof EnemyBoardToPaint){
@@ -302,11 +290,15 @@ public class GameClient extends JFrame{
                     updateEnemyBoard(enemyBoardToPaint.id, enemyBoardToPaint.newAttackedBoard);
                 }
 
-                if (object instanceof AnAttackResponse && attackedAndWaitingResponse){
+                if (object instanceof AnAttackResponse){
                     AnAttackResponse response = (AnAttackResponse) object;
-                    attackedAndWaitingResponse = false;
                     updateEnemyBoard(localIDAttacking, response.newAttackedBoard);
-                    System.out.println(response.hitAnything);
+                    iCanAttack = response.hitAnything;
+                }
+
+                if (object instanceof YourTurn){
+                    iCanAttack = true;
+                    setTurnLabel("ME");
                 }
             }
         });
@@ -370,6 +362,10 @@ public class GameClient extends JFrame{
             @Override
             public void actionPerformed(ActionEvent e) {
                 myName = nameField.getText();
+                if(myName.equals("")){
+                    //TODO: WARN THE PLAYER
+                    return;
+                }
                 System.out.println(myName);
                 Register r = new Register();
                 r.name = myName;
@@ -460,6 +456,26 @@ public class GameClient extends JFrame{
 
     //endregion
 
+    private void updateEnemyBoard(int whose, String[][] toPaint){
+        switch (whose) {
+            case 1:
+                container.remove(ene1);
+                ene1 = new GraphicalBoard(toPaint);
+                if(inAttackWindow){
+                    container.add(ene1);
+                }
+                break;
+            case 2:
+                container.remove(ene2);
+                ene2 = new GraphicalBoard(toPaint);
+                if(inAttackWindow){
+                    container.add(ene2);
+                }
+                break;
+        }
+        repaint();
+    }
+
     private void toWaitingWindow(){
         container.removeAll();
         add(names);
@@ -476,8 +492,8 @@ public class GameClient extends JFrame{
         }
     }
 
-    private void setPlayerTurn(int index){
-        playerTurn.setText("Player " + index + " is playing now");
+    private void setTurnLabel(String what){
+        playerTurn.setText(what);
     }
 
     private void toGameWindow(){
@@ -489,6 +505,21 @@ public class GameClient extends JFrame{
         container.add(me);
         repaint();
         validate();
+    }
+
+    private void setLabels(){
+        boolean first = false;
+        for (String s : namesArray) {
+            if (s.equals(myName)) {
+                continue;
+            }
+            if (!first) {
+                attack1.setLabel(s);
+                first = true;
+                continue;
+            }
+            attack2.setLabel(s);
+        }
     }
 
     private void setGameWindow() {
@@ -529,11 +560,6 @@ public class GameClient extends JFrame{
 
     private void toChooseAttackWindow(){
         container.removeAll();
-
-        //TODO: Labels correctly
-
-        attack1.setLabel("PLAYER " + "1");
-        attack2.setLabel("PLAYER " + "2");
 
         ene1Buffered = createImage(ene1);
         ene1ImageToShow.setIcon(new ImageIcon(ene1Buffered));
@@ -600,7 +626,7 @@ public class GameClient extends JFrame{
 
     }
 
-    public Component findComponentAt(MouseEvent e) {
+    private Component findComponentAt(MouseEvent e) {
         return findComponentAt(e.getPoint());
     }
 
@@ -608,6 +634,8 @@ public class GameClient extends JFrame{
         container.removeAll();
         repaint();
         validate();
+
+        inAttackWindow = true;
 
         //TODO: NOT LET PLAYER SPAM CLICK
 
@@ -617,15 +645,16 @@ public class GameClient extends JFrame{
 
             @Override
             public void mouseClicked(MouseEvent e) {
-                Component found = findComponentAt(e);
-                if(found instanceof GraphTile){
-                    GraphTile gFound = (GraphTile)found;
-                    AnAttackAttempt anAttackAttempt = new AnAttackAttempt();
-                    anAttackAttempt.c = gFound.getC();
-                    anAttackAttempt.l = gFound.getL();
-                    anAttackAttempt.clientID = localIDAttacking;
-                    client.sendTCP(anAttackAttempt);
-                    attackedAndWaitingResponse = true;
+                if(iCanAttack) {
+                    Component found = findComponentAt(e);
+                    if (found instanceof GraphTile) {
+                        GraphTile gFound = (GraphTile) found;
+                        AnAttackAttempt anAttackAttempt = new AnAttackAttempt();
+                        anAttackAttempt.c = gFound.getC();
+                        anAttackAttempt.l = gFound.getL();
+                        anAttackAttempt.clientID = localIDAttacking;
+                        client.sendTCP(anAttackAttempt);
+                    }
                 }
             }
 
@@ -657,6 +686,7 @@ public class GameClient extends JFrame{
         backToMenu.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                inAttackWindow = false;
                 toGameWindow();
             }
         });
