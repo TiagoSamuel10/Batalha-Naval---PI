@@ -197,6 +197,14 @@ public class GameServer {
                         sendToAllExcept(currentPlayer, whoseTurn);
                         players[currentPlayer].sendTCP(new YourTurn());
                     }
+                    else{
+                        if(game.isGameOverFor(toAttackID)){
+                            System.out.println("MAN DOWN!");
+                            if(game.gameIsOver()){
+                                System.out.println("YOU WON BOY!");
+                            }
+                        }
+                    }
                 }
             }
 

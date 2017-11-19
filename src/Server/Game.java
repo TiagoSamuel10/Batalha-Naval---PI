@@ -1,16 +1,14 @@
 package Server;
 
 import Common.PlayerBoard;
-import Common.Ship;
 
 public class Game {
 
     private PlayerBoard[] playerBoards;
-    private boolean isOver;
+    private int whoWon;
 
     Game(){
         playerBoards = new PlayerBoard[3];
-        isOver = false;
     }
 
     boolean canStart(){
@@ -25,21 +23,31 @@ public class Game {
     boolean attack(int id, int x, int y){
         return playerBoards[id].getAttacked(x, y);
         //checkGameOverFor(id);
-        //checkGameOver();
+        //gameIsOver();
     }
 
-    //TODO: GAME OVER
-
-    private void checkGameOver() {
+    boolean gameIsOver() {
+        int i = 0;
+        int id = 0;
+        for (PlayerBoard pb: playerBoards ){
+            if(pb.isGameOver()){
+                i++;
+            }
+            if(i == 2){
+                whoWon = id;
+                return true;
+            }
+            id++;
+        }
+        return false;
     }
 
     //TODO: SOMETHING ABOUT GAME OVER
+    //TODO: SEND TO CLIENT THAT HE HAS LOST
+    //TODO: REMOVE THE OPTION TO ATTACK HIM ON OTHERS
 
-    private void checkGameOverFor(int id) {
-        if(playerBoards[id].isGameOver()){
-            // TODO: SEND TO CLIENT THAT HE HAS LOST
-            // TODO: REMOVE THE OPTION TO ATTACK HIM ON OTHERS
-        }
+    boolean isGameOverFor(int id) {
+        return (playerBoards[id].isGameOver());
     }
 
     @Override
@@ -58,5 +66,9 @@ public class Game {
 
     PlayerBoard getPlayerBoard(int i){
         return playerBoards[i];
+    }
+
+    public int getWhoWon() {
+        return whoWon;
     }
 }

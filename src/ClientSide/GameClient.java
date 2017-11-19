@@ -648,6 +648,7 @@ public class GameClient extends JFrame{
                 if(iCanAttack) {
                     Component found = findComponentAt(e);
                     if (found instanceof GraphTile) {
+                        iCanAttack = false;
                         GraphTile gFound = (GraphTile) found;
                         AnAttackAttempt anAttackAttempt = new AnAttackAttempt();
                         anAttackAttempt.c = gFound.getC();

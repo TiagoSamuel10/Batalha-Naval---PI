@@ -217,10 +217,6 @@ public class PlayerBoard implements Serializable {
         return pieces.isEmpty();
     }
 
-    private void checkGameOver() {
-        gameOver = pieces.isEmpty();
-    }
-
     private void shipDestroyed(Ship s) {
         for (ShipPiece piece : s.getPieces()) {
             Point[] points = getSurroundingPoints(piece.x, piece.y);
