@@ -132,7 +132,7 @@ public class GameServer {
                     //IF WE'VE RECEIVED ALL, WE CAN START
                     if(game.canStart()){
 
-                        sendOthersIDs();
+                        sendOthersDetails();
                         sendOthersBoards();
 
                         WhoseTurn whoseTurn = new WhoseTurn();
@@ -145,6 +145,7 @@ public class GameServer {
                 }
 
                 if (object instanceof  AnAttackAttempt){
+
                     AnAttackAttempt attempt = (AnAttackAttempt) object;
 
                     System.out.println(connection.name + " IS ATTACKING " +
@@ -160,13 +161,14 @@ public class GameServer {
                     AnAttackResponse response = new AnAttackResponse();
                     response.again = canGoAgain;
                     response.newAttackedBoard = attackedOne;
+
                     connection.sendTCP(response);
 
                     //TO THE GUY NOT ATTACKED
 
                     EnemyBoardToPaint eb = new EnemyBoardToPaint();
                     eb.newAttackedBoard = attackedOne;
-                    eb.id = attempt.otherID;
+                    eb.id = attempt.toAttackID;
 
                     players[attempt.otherID].sendTCP(eb);
 
@@ -194,12 +196,16 @@ public class GameServer {
                 }
             }
 
-            private void sendOthersIDs() {
+            private void sendOthersDetails() {
                 for(int i = 0; i < players.length; i++){
-                    GameIDs ids = new GameIDs();
-                    ids.ene1 = (i + 1) % 3;
-                    ids.ene2 = (i + 2) % 3;
-                    players[i].sendTCP(ids);
+                    OthersSpecs send = new OthersSpecs();
+                    send.ene1 = (i + 1) % 3;
+                    send.ene2 = (i + 2) % 3;
+
+                    send.ene1n = players[(i + 1) % 3].name;
+                    send.ene2n = players[(i + 2) % 3].name;
+
+                    players[i].sendTCP(send);
                 }
             }
 
