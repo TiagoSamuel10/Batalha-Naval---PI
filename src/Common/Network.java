@@ -33,7 +33,23 @@ public class Network {
         kryo.register(AnAttackResponse.class);
         kryo.register(EnemyBoardToPaint.class);
         kryo.register(YourTurn.class);
+        kryo.register(YouDead.class);
+        kryo.register(PlayerDied.class);
+        kryo.register(GameIDs.class);
 	}
+
+	public static class GameIDs{
+	    public int ene1;
+	    public int ene2;
+    }
+
+	public static class YouDead{
+
+    }
+
+    public static class PlayerDied{
+	    public int who;
+    }
 
     public static class EnemiesBoardsToPaint{
         public String[][] board1;
@@ -41,7 +57,8 @@ public class Network {
     }
 
     public static class AnAttackAttempt{
-	    public int clientID;
+	    public int otherID;
+	    public int toAttackID;
 	    public int l;
 	    public int c;
     }
@@ -53,7 +70,7 @@ public class Network {
 
     public static class AnAttackResponse{
 	    public String[][] newAttackedBoard;
-	    public boolean hitAnything;
+	    public boolean again;
     }
 
 	public static class YourBoardToPaint{

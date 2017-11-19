@@ -22,7 +22,7 @@ public class Game {
 
     boolean attack(int id, int x, int y){
         return playerBoards[id].getAttacked(x, y);
-        //checkGameOverFor(id);
+        //checkGameOverFor(toAttackID);
         //gameIsOver();
     }
 

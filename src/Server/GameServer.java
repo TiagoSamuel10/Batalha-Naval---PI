@@ -8,7 +8,6 @@ import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
 
 import java.io.*;
-import java.util.Arrays;
 
 public class GameServer {
 
@@ -132,8 +131,14 @@ public class GameServer {
                     game.setPlayerBoard(pb, connection.myID);
                     //IF WE'VE RECEIVED ALL, WE CAN START
                     if(game.canStart()){
+
+                        sendOthersIDs();
                         sendOthersBoards();
-                        server.sendToAllTCP(new WhoseTurn().name = players[0].name);
+
+                        WhoseTurn whoseTurn = new WhoseTurn();
+                        whoseTurn.name = players[0].name;
+                        server.sendToAllTCP(whoseTurn);
+
                         players[0].sendTCP(new YourTurn());
                         server.sendToAllTCP(new CanStart());
                     }
@@ -142,55 +147,35 @@ public class GameServer {
                 if (object instanceof  AnAttackAttempt){
                     AnAttackAttempt attempt = (AnAttackAttempt) object;
 
-                    int toAttackID = (connection.myID + attempt.clientID) % 3;
+                    System.out.println(connection.name + " IS ATTACKING " +
+                            players[attempt.toAttackID].name);
 
-                    System.out.println("ATTACKING " + players[toAttackID].name);
-
-                    boolean hit = game.attack(
-                            toAttackID,
+                    boolean canGoAgain = game.attack(
+                            attempt.toAttackID,
                             attempt.l,
                             attempt.c);
 
-                    String[][] attackedOne = game.getPlayerBoard(toAttackID).getToSendToPaint();
+                    String[][] attackedOne = game.getPlayerBoard(attempt.toAttackID).getToSendToPaint();
 
                     AnAttackResponse response = new AnAttackResponse();
-                    response.hitAnything = hit;
+                    response.again = canGoAgain;
                     response.newAttackedBoard = attackedOne;
                     connection.sendTCP(response);
 
-                    //SEND TO OTHERS
-
                     //TO THE GUY NOT ATTACKED
-
-                    int idToSum = 1;
-
-                    if(attempt.clientID == 1){
-                        idToSum = 2;
-                    }
-
-                    int otherClientID = (connection.myID + idToSum) % 3;
-
-                    int localID;
-
-                    if(toAttackID == (otherClientID + 1 )% 3 ){
-                        localID = 1;
-                    }
-                    else{
-                        localID = 2;
-                    }
 
                     EnemyBoardToPaint eb = new EnemyBoardToPaint();
                     eb.newAttackedBoard = attackedOne;
-                    eb.id = localID;
+                    eb.id = attempt.otherID;
 
-                    players[otherClientID].sendTCP(eb);
+                    players[attempt.otherID].sendTCP(eb);
 
                     //TO THE ATTACKED
                     YourBoardToPaint attacked = new YourBoardToPaint();
                     attacked.board = attackedOne;
-                    players[toAttackID].sendTCP(attacked);
+                    players[attempt.toAttackID].sendTCP(attacked);
 
-                    if(!hit){
+                    if(!canGoAgain){
                         currentPlayer = (currentPlayer + 1) % 3;
                         WhoseTurn whoseTurn = new WhoseTurn();
                         whoseTurn.name = players[currentPlayer].name;
@@ -198,13 +183,23 @@ public class GameServer {
                         players[currentPlayer].sendTCP(new YourTurn());
                     }
                     else{
-                        if(game.isGameOverFor(toAttackID)){
+                        System.out.println("HIT");
+                        if(game.isGameOverFor(attempt.toAttackID)){
                             System.out.println("MAN DOWN!");
                             if(game.gameIsOver()){
                                 System.out.println("YOU WON BOY!");
                             }
                         }
                     }
+                }
+            }
+
+            private void sendOthersIDs() {
+                for(int i = 0; i < players.length; i++){
+                    GameIDs ids = new GameIDs();
+                    ids.ene1 = (i + 1) % 3;
+                    ids.ene2 = (i + 2) % 3;
+                    players[i].sendTCP(ids);
                 }
             }
 
@@ -251,15 +246,6 @@ public class GameServer {
                 }
             }
 
-
-            private BConnection findConnectionWithID(int id){
-                for (BConnection connection : players) {
-                    if(connection.myID == id){
-                        return connection;
-                    }
-                }
-                return null;
-            }
 
         });
 

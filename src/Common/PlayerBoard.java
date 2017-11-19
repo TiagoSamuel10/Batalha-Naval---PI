@@ -204,11 +204,7 @@ public class PlayerBoard implements Serializable {
             }
             return true;
         }
-        return false;
-    }
-
-    public void getAttacked(Point point){
-        getAttacked(point.x, point.y);
+        return true;
     }
 
     //endregion

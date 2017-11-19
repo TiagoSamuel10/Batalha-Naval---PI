@@ -52,8 +52,7 @@ public class GameClient extends JFrame{
     //ATTACK PEOPLE
     private Button attack1;
     private Button attack2;
-    private JPanel players;
-    private int localIDAttacking;
+    private JPanel playersPanel;
     private boolean inAttackWindow;
     private boolean iCanAttack;
 
@@ -63,6 +62,13 @@ public class GameClient extends JFrame{
 
     private GraphicalBoard me;
 
+    private EnemyLocal lastAttacked;
+
+    private EnemyLocal ene1;
+    private EnemyLocal ene2;
+
+    /*
+
     private GraphicalBoard ene1;
     private BufferedImage ene1Buffered;
     private JLabel ene1ImageToShow;
@@ -70,6 +76,8 @@ public class GameClient extends JFrame{
     private GraphicalBoard ene2;
     private BufferedImage ene2Buffered;
     private JLabel ene2ImageToShow;
+
+    */
     
     //FRAME
     private Container container;
@@ -78,7 +86,7 @@ public class GameClient extends JFrame{
         GameClient c = new GameClient();
     }
 
-    public GameClient() {
+    GameClient() {
 
         container = getContentPane();
         setVisible(true);
@@ -95,16 +103,20 @@ public class GameClient extends JFrame{
         serverConfigurations();
 
         setMainMenu();
-        setChooseAttackWindow();
-        setGameWindow();
 
         if(online) {
             inAttackWindow = false;
             toMainMenu();
+            ene1 = new EnemyLocal();
+            ene2 = new EnemyLocal();
         }
         else{
             toPlaceShipsScreen();
         }
+
+        setChooseAttackWindow();
+        setGameWindow();
+
         names = new JList<>();
         names.setModel(new DefaultListModel<>());
         names.setSize(500, 500);
@@ -271,6 +283,24 @@ public class GameClient extends JFrame{
                     repaint();
                     validate();
                 }
+
+                if (object instanceof GameIDs){
+                    GameIDs gameIDs = ((GameIDs) object);
+
+
+                    //ene1.localID = 1;
+                    ene1.serverID = gameIDs.ene1;
+                    ene1.alive = true;
+
+                    //ene2.localID = 2;
+                    ene2.serverID = gameIDs.ene2;
+                    ene2.alive = true;
+
+                    System.out.println(myName + "has as 1: " + ene1.serverID);
+                    System.out.println(myName + "has as 2: " + ene2.serverID);
+
+                }
+
                 if (object instanceof YourBoardToPaint){
                     System.out.println("MY BOARD TO PAINT");
                     remove(me);
@@ -280,8 +310,8 @@ public class GameClient extends JFrame{
                 }
                 if (object instanceof EnemiesBoardsToPaint){
                     System.out.println("ENEMIES BOARDS TO PAINT");
-                    ene1 = new GraphicalBoard(((EnemiesBoardsToPaint)object).board1);
-                    ene2 = new GraphicalBoard(((EnemiesBoardsToPaint)object).board2);
+                    ene1.b = new GraphicalBoard(((EnemiesBoardsToPaint)object).board1);
+                    ene2.b = new GraphicalBoard(((EnemiesBoardsToPaint)object).board2);
                     setLabels();
                 }
 
@@ -293,12 +323,22 @@ public class GameClient extends JFrame{
 
                 if (object instanceof AnAttackResponse){
                     AnAttackResponse response = (AnAttackResponse) object;
-                    updateEnemyBoard(localIDAttacking, response.newAttackedBoard);
+                    updateEnemyBoard(lastAttacked.serverID, response.newAttackedBoard);
+                    iCanAttack = response.again;
                 }
 
                 if (object instanceof YourTurn){
                     iCanAttack = true;
                     setTurnLabel("ME");
+                }
+
+                if (object instanceof YouDead){
+                    JOptionPane.showMessageDialog(container, "You've died");
+                    toMainMenu();
+                }
+
+                if (object instanceof PlayerDied){
+                    removeEnemyBoard(((PlayerDied) object).who);
                 }
             }
         });
@@ -457,21 +497,33 @@ public class GameClient extends JFrame{
     //endregion
 
     private void updateEnemyBoard(int whose, String[][] toPaint){
-        switch (whose) {
-            case 1:
-                container.remove(ene1);
-                ene1 = new GraphicalBoard(toPaint);
-                if(inAttackWindow){
-                    container.add(ene1);
-                }
-                break;
-            case 2:
-                container.remove(ene2);
-                ene2 = new GraphicalBoard(toPaint);
-                if(inAttackWindow){
-                    container.add(ene2);
-                }
-                break;
+        if(whose == ene1.serverID){
+            container.remove(ene1.b);
+            ene1.b = new GraphicalBoard(toPaint);
+            if(inAttackWindow){
+                container.add(ene1.b);
+            }
+        }
+        if(whose == ene2.serverID){
+            container.remove(ene2.b);
+            ene2.b = new GraphicalBoard(toPaint);
+            if(inAttackWindow){
+                container.add(ene2.b);
+            }
+        }
+        repaint();
+    }
+
+
+    private void removeEnemyBoard(int who){
+        if(who == ene1.serverID){
+            container.remove(ene1.b);
+            playersPanel.remove(ene1.b);
+            ene1.alive = false;
+        }if(who == ene1.serverID){
+            container.remove(ene2.b);
+            playersPanel.remove(ene2.b);
+            ene2.alive = false;
         }
         repaint();
     }
@@ -553,21 +605,21 @@ public class GameClient extends JFrame{
         backToMenu.setLocation(10, 10);
 
         playerTurn = new JLabel();
-        playerTurn.setSize(200, 100);
-        playerTurn.setLocation(100,20);
+        playerTurn.setSize(250, 100);
+        playerTurn.setLocation(300,10);
 
     }
 
     private void toChooseAttackWindow(){
         container.removeAll();
 
-        ene1Buffered = createImage(ene1);
-        ene1ImageToShow.setIcon(new ImageIcon(ene1Buffered));
+        ene1.buffered = createImage(ene1.b);
+        ene1.image.setIcon(new ImageIcon(ene1.buffered));
 
-        ene2Buffered = createImage(ene2);
-        ene2ImageToShow.setIcon(new ImageIcon(ene2Buffered));
+        ene2.buffered = createImage(ene2.b);
+        ene2.image.setIcon(new ImageIcon(ene2.buffered));
 
-        container.add(players);
+        container.add(playersPanel);
         repaint();
         validate();
     }
@@ -580,7 +632,6 @@ public class GameClient extends JFrame{
             @Override
             public void actionPerformed(ActionEvent e) {
                 toAttackingWindow(ene1);
-                localIDAttacking = 1;
             }
         });
 
@@ -591,7 +642,6 @@ public class GameClient extends JFrame{
             @Override
             public void actionPerformed(ActionEvent e) {
                 toAttackingWindow(ene2);
-                localIDAttacking = 2;
             }
         });
 
@@ -605,24 +655,24 @@ public class GameClient extends JFrame{
             }
         });
 
-        players = new JPanel(null);
+        playersPanel = new JPanel(null);
 
-        ene1ImageToShow = new JLabel();
-        ene2ImageToShow = new JLabel();
+        ene1.image = new JLabel();
+        ene2.image = new JLabel();
 
-        ene1ImageToShow.setLocation(25, 50);
-        ene2ImageToShow.setLocation(650, 50);
+        ene1.image.setLocation(25, 50);
+        ene2.image.setLocation(650, 50);
 
-        ene1ImageToShow.setSize(GraphicalBoard.SIZE);
-        ene2ImageToShow.setSize(GraphicalBoard.SIZE);
+        ene1.image.setSize(GraphicalBoard.SIZE);
+        ene1.image.setSize(GraphicalBoard.SIZE);
 
-        players.add(attack1);
-        players.add(attack2);
-        players.add(ene1ImageToShow);
-        players.add(ene2ImageToShow);
-        players.add(backToGame);
-        players.setLocation(0,0);
-        players.setSize(DIMENSION);
+        playersPanel.add(attack1);
+        playersPanel.add(attack2);
+        playersPanel.add(ene1.image);
+        playersPanel.add(ene1.image);
+        playersPanel.add(backToGame);
+        playersPanel.setLocation(0,0);
+        playersPanel.setSize(DIMENSION);
 
     }
 
@@ -630,18 +680,12 @@ public class GameClient extends JFrame{
         return findComponentAt(e.getPoint());
     }
 
-    private void toAttackingWindow(GraphicalBoard graphicalBoard) {
+    private void toAttackingWindow(EnemyLocal ene) {
         container.removeAll();
-        repaint();
-        validate();
 
         inAttackWindow = true;
 
-        //TODO: NOT LET PLAYER SPAM CLICK
-
         MouseListener mouseListener = new MouseListener() {
-
-            private float toWait = 1;
 
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -653,7 +697,16 @@ public class GameClient extends JFrame{
                         AnAttackAttempt anAttackAttempt = new AnAttackAttempt();
                         anAttackAttempt.c = gFound.getC();
                         anAttackAttempt.l = gFound.getL();
-                        anAttackAttempt.clientID = localIDAttacking;
+                        anAttackAttempt.toAttackID = ene.serverID;
+
+                        EnemyLocal other = ene1;
+
+                        if(ene.equals(ene1)){
+                            other = ene2;
+                        }
+
+                        anAttackAttempt.otherID = other.serverID;
+
                         client.sendTCP(anAttackAttempt);
                     }
                 }
@@ -687,16 +740,27 @@ public class GameClient extends JFrame{
         backToMenu.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                lastAttacked = ene;
                 inAttackWindow = false;
                 toGameWindow();
+                removeMouseListener(mouseListener);
             }
         });
 
 
         add(backToMenu);
-        add(graphicalBoard);
+        add(ene.b);
 
         repaint();
         validate();
+    }
+
+    private static class EnemyLocal {
+        //private int localID;
+        private int serverID;
+        private GraphicalBoard b;
+        private BufferedImage buffered;
+        private JLabel image;
+        private boolean alive;
     }
 }
