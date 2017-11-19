@@ -35,12 +35,15 @@ public class Network {
         kryo.register(YourTurn.class);
         kryo.register(YouDead.class);
         kryo.register(PlayerDied.class);
-        kryo.register(GameIDs.class);
+        kryo.register(OthersSpecs.class);
 	}
 
-	public static class GameIDs{
+	public static class OthersSpecs {
 	    public int ene1;
 	    public int ene2;
+
+	    public String ene1n;
+        public String ene2n;
     }
 
 	public static class YouDead{
