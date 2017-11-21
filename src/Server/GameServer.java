@@ -14,15 +14,12 @@ public class GameServer {
     private enum GameState{
         waitingForPlayers,
         waitingForShips,
-        playing
+        playing,
+        playing2left
     }
 
     private final static long TIME_TO_WAIT = 1000 * 60 ;
-    private boolean timing;
     private long currentWaitedTime;
-
-
-    private long started;
 
     private GameState state;
     private Game game;
@@ -42,8 +39,7 @@ public class GameServer {
         state = GameState.waitingForPlayers;
 
         disconnectedWhenWaitingForShips = false;
-        timing = false;
-        currentWaitedTime = 0;
+
         players = new BConnection[3];
 
         server = new Server() {
@@ -77,6 +73,11 @@ public class GameServer {
                         players[nextID] = connection;
                         count++;
                         nextID++;
+                        if(count == 3){
+                            sendReadyForShips();
+                        }else{
+                            sendConnections();
+                        }
                         break;
                     case waitingForShips:
                         // see if it's a new player
@@ -95,6 +96,7 @@ public class GameServer {
                         }
                         break;
                     case playing:
+                    case playing2left:
                         break;
                 }
 
@@ -102,15 +104,8 @@ public class GameServer {
                 //System.out.println("Connected " + connection.name);
                 //System.out.println("Connected myID becomes: " + connection.myID);
 
-                ConnectedPlayers connectedPlayers = new ConnectedPlayers();
-                connectedPlayers.names = getConnectedNames();
-                server.sendToAllTCP(connectedPlayers);
 
                 System.out.println("Count : " + count);
-
-                if(count == 3){
-                    sendReadyForShips();
-                }
 
                 printConnections();
 
@@ -135,6 +130,8 @@ public class GameServer {
                         sendOthersDetails();
                         sendOthersBoards();
 
+                        state = GameState.playing;
+
                         WhoseTurn whoseTurn = new WhoseTurn();
                         whoseTurn.name = players[0].name;
                         server.sendToAllTCP(whoseTurn);
@@ -145,55 +142,97 @@ public class GameServer {
                 }
 
                 if (object instanceof  AnAttackAttempt){
+                    processAttack(connection, (AnAttackAttempt) object);
+                }
+            }
 
-                    AnAttackAttempt attempt = (AnAttackAttempt) object;
+            private void processAttack(BConnection connection, AnAttackAttempt a){
 
-                    System.out.println(connection.name + " IS ATTACKING " +
-                            players[attempt.toAttackID].name);
+                System.out.println(connection.name + " IS ATTACKING " +
+                        players[a.toAttackID].name);
 
-                    boolean canGoAgain = game.attack(
-                            attempt.toAttackID,
-                            attempt.l,
-                            attempt.c);
+                boolean canGoAgain = game.attack(
+                        a.toAttackID,
+                        a.l,
+                        a.c
+                );
 
-                    String[][] attackedOne = game.getPlayerBoard(attempt.toAttackID).getToSendToPaint();
+                String[][] attackedOne = game.getPlayerBoard(a.toAttackID).getToSendToPaint();
 
-                    AnAttackResponse response = new AnAttackResponse();
-                    response.again = canGoAgain;
-                    response.newAttackedBoard = attackedOne;
+                AnAttackResponse response = new AnAttackResponse();
+                response.again = canGoAgain;
+                response.newAttackedBoard = attackedOne;
 
-                    connection.sendTCP(response);
 
-                    //TO THE GUY NOT ATTACKED
+                // TO THE ATTACKED GUY
 
-                    EnemyBoardToPaint eb = new EnemyBoardToPaint();
-                    eb.newAttackedBoard = attackedOne;
-                    eb.id = attempt.toAttackID;
+                YourBoardToPaint attacked = new YourBoardToPaint();
+                attacked.board = attackedOne;
 
-                    players[attempt.otherID].sendTCP(eb);
 
-                    //TO THE ATTACKED
-                    YourBoardToPaint attacked = new YourBoardToPaint();
-                    attacked.board = attackedOne;
-                    players[attempt.toAttackID].sendTCP(attacked);
+                switch (state){
+                    case playing:
+                        //TO THE GUY THAT ATTACKED
+                        connection.sendTCP(response);
 
-                    if(!canGoAgain){
-                        currentPlayer = (currentPlayer + 1) % 3;
-                        WhoseTurn whoseTurn = new WhoseTurn();
-                        whoseTurn.name = players[currentPlayer].name;
-                        sendToAllExcept(currentPlayer, whoseTurn);
-                        players[currentPlayer].sendTCP(new YourTurn());
-                    }
-                    else{
-                        System.out.println("HIT");
-                        if(game.isGameOverFor(attempt.toAttackID)){
-                            System.out.println("MAN DOWN!");
-                            if(game.gameIsOver()){
-                                System.out.println("YOU WON BOY!");
+                        //TO THE GUY NOT ATTACKED
+
+                        EnemyBoardToPaint eb = new EnemyBoardToPaint();
+                        eb.newAttackedBoard = attackedOne;
+                        eb.id = a.toAttackID;
+                        players[a.otherID].sendTCP(eb);
+
+                        //TO THE ATTACKED
+                        players[a.toAttackID].sendTCP(attacked);
+
+                        if(!canGoAgain){
+                            currentPlayer = (currentPlayer + 1) % 3;
+                            WhoseTurn whoseTurn = new WhoseTurn();
+                            whoseTurn.name = players[currentPlayer].name;
+                            sendToAllExcept(currentPlayer, whoseTurn);
+                            players[currentPlayer].sendTCP(new YourTurn());
+                        }
+                        else{
+                            System.out.println("HIT");
+                            if(game.isGameOverFor(a.toAttackID)){
+                                System.out.println("MAN DOWN!");
+                                state = GameState.playing2left;
+                                players[a.toAttackID].sendTCP(new YouDead());
+                                PlayerDied playerDied = new PlayerDied();
+                                playerDied.who = a.toAttackID;
+                                sendToAllExcept(a.toAttackID, playerDied);
                             }
                         }
-                    }
+
+
+                        break;
+                    case playing2left:
+
+                        connection.sendTCP(response);
+
+                        players[a.toAttackID].sendTCP(attacked);
+
+                        if(!canGoAgain){
+                            currentPlayer = a.toAttackID;
+                            WhoseTurn whoseTurn = new WhoseTurn();
+                            whoseTurn.name = players[currentPlayer].name;
+                            sendToAllExcept(currentPlayer, whoseTurn);
+                            players[currentPlayer].sendTCP(new YourTurn());
+                        }
+                        else{
+                            System.out.println("HIT");
+                            if(game.isGameOverFor(a.toAttackID)){
+                                //GAME IS OVER
+                                players[a.toAttackID].sendTCP(new YouDead());
+                                players[currentPlayer].sendTCP(new YouWon());
+                                state = GameState.waitingForPlayers;
+                            }
+                        }
+
+                        break;
                 }
+
+
             }
 
             private void sendOthersDetails() {
@@ -218,11 +257,12 @@ public class GameServer {
                 BConnection connection = (BConnection) c;
                 System.out.println("Disconnected " + connection.name);
                 count--;
+                if(count < 0){
+                    count = 0;
+                }
                 switch (state){
                     case waitingForPlayers:
-                        ConnectedPlayers connectedPlayers = new ConnectedPlayers();
-                        connectedPlayers.names = getConnectedNames();
-                        server.sendToAllTCP(connectedPlayers);
+                        sendConnections();
                         nextID = connection.myID;
                         break;
                     case waitingForShips:
@@ -252,6 +292,25 @@ public class GameServer {
                 }
             }
 
+            private void sendConnections(){
+                ConnectedPlayers connectedPlayers = new ConnectedPlayers();
+                connectedPlayers.names = getConnectedNames();
+                if(connectedPlayers.names != null) {
+                    server.sendToAllTCP(connectedPlayers);
+                }
+            }
+
+            private String[] getConnectedNames(){
+                if(count > 0) {
+                    String[] string = new String[count];
+                    for (int i = 0; i < count; i++) {
+                        string[i] = players[i].name;
+                    }
+
+                    return string;
+                }
+                return null;
+            }
 
         });
 
@@ -259,14 +318,6 @@ public class GameServer {
         server.start();
         System.out.println("Server started");
 
-    }
-
-    private String[] getConnectedNames(){
-        String[] string = new String[count];
-        for (int i = 0; i < count; i++) {
-            string[i] = players[i].name;
-        }
-        return string;
     }
 
     private void handleLeavingWhileShips(){

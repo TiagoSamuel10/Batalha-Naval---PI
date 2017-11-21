@@ -5,7 +5,6 @@ import Common.PlayerBoard;
 public class Game {
 
     private PlayerBoard[] playerBoards;
-    private int whoWon;
 
     Game(){
         playerBoards = new PlayerBoard[3];
@@ -22,29 +21,24 @@ public class Game {
 
     boolean attack(int id, int x, int y){
         return playerBoards[id].getAttacked(x, y);
-        //checkGameOverFor(toAttackID);
-        //gameIsOver();
+    }
+
+    void removePlayer(int id){
+
     }
 
     boolean gameIsOver() {
         int i = 0;
-        int id = 0;
         for (PlayerBoard pb: playerBoards ){
             if(pb.isGameOver()){
                 i++;
             }
             if(i == 2){
-                whoWon = id;
                 return true;
             }
-            id++;
         }
         return false;
     }
-
-    //TODO: SOMETHING ABOUT GAME OVER
-    //TODO: SEND TO CLIENT THAT HE HAS LOST
-    //TODO: REMOVE THE OPTION TO ATTACK HIM ON OTHERS
 
     boolean isGameOverFor(int id) {
         return (playerBoards[id].isGameOver());
@@ -66,9 +60,5 @@ public class Game {
 
     PlayerBoard getPlayerBoard(int i){
         return playerBoards[i];
-    }
-
-    public int getWhoWon() {
-        return whoWon;
     }
 }

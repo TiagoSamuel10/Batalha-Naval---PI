@@ -20,17 +20,28 @@ import java.util.Enumeration;
 
 public class GameClient extends JFrame{
 
+    private enum WindowE{
+        MainMenu,
+        Waiting,
+        Ships,
+        MainGame,
+        ChoosingEnemy,
+        Attacking
+    }
+
+    private WindowE window;
+
     final static Point GAME_BOARD_LOCATION = new Point(75,75);
     final static Dimension DIMENSION = new Dimension(1280, 720);
     private final static String TITLE = "GAME";
-    private final static int BORDER_RIGHT_SIDE_WIDTH = 150;
+    private final static int BORDER_RIGHT_SIDE_WIDTH = 300;
 
     //FOR ONLINE
     private final boolean online = true;
     boolean shipsSet;
     private Client client;
     private String myName;
-    private final String address = "localhost";
+    private final String address = "192.168.1.2";
 
     // MAIN MENU
     private Button playButton;
@@ -50,10 +61,8 @@ public class GameClient extends JFrame{
     private JLabel playerTurn;
 
     //ATTACK PEOPLE
-    private Button attack1;
-    private Button attack2;
     private JPanel playersPanel;
-    private boolean inAttackWindow;
+    private MyMouse mouseListener;
     private boolean iCanAttack;
 
     private Button backToGame;
@@ -66,18 +75,6 @@ public class GameClient extends JFrame{
 
     private EnemyLocal ene1;
     private EnemyLocal ene2;
-
-    /*
-
-    private GraphicalBoard ene1;
-    private BufferedImage ene1Buffered;
-    private JLabel ene1ImageToShow;
-
-    private GraphicalBoard ene2;
-    private BufferedImage ene2Buffered;
-    private JLabel ene2ImageToShow;
-
-    */
     
     //FRAME
     private Container container;
@@ -105,7 +102,6 @@ public class GameClient extends JFrame{
         setMainMenu();
 
         if(online) {
-            inAttackWindow = false;
             toMainMenu();
             ene1 = new EnemyLocal();
             ene2 = new EnemyLocal();
@@ -115,7 +111,7 @@ public class GameClient extends JFrame{
         }
 
         setChooseAttackWindow();
-        setGameWindow();
+        setMainGameWindow();
 
         names = new JList<>();
         names.setModel(new DefaultListModel<>());
@@ -234,6 +230,7 @@ public class GameClient extends JFrame{
     //region Server Stuff
 
     private void serverConfigurations(){
+
         client = new Client();
         client.start();
 
@@ -259,16 +256,12 @@ public class GameClient extends JFrame{
                 if (object instanceof IsFull){
                     System.out.println(object);
                 }
-                if (object instanceof ReadyForShips){
-                    System.out.println("TO SHIP SCREEN");
-                    toPlaceShipsScreen();
-                }
                 if (object instanceof Abort){
                     setMainMenu();
                 }
                 if (object instanceof CanStart){
                     System.out.println("STARTING THE GAME");
-                    toGameWindow();
+                    toMainGameWindow();
                 }
                 if (object instanceof WhoseTurn){
                     WhoseTurn whoseTurn = (WhoseTurn) object;
@@ -277,38 +270,40 @@ public class GameClient extends JFrame{
                     setTurnLabel(whoseTurn.name);
                 }
                 if (object instanceof ConnectedPlayers){
+                    System.out.println("CONNECTED PLAYERS");
                     ConnectedPlayers connectedPlayers = (ConnectedPlayers) object;
                     namesArray = connectedPlayers.names;
                     updateNames();
-                    repaint();
-                    validate();
+                    toWaitingWindow();
                 }
 
+                if (object instanceof ReadyForShips){
+                    System.out.println("TO SHIP SCREEN");
+                    toPlaceShipsScreen();
+                }
                 if (object instanceof OthersSpecs){
                     OthersSpecs othersSpecs = ((OthersSpecs) object);
 
-
-                    //ene1.localID = 1;
                     ene1.serverID = othersSpecs.ene1;
                     ene1.alive = true;
                     ene1.name = othersSpecs.ene1n;
 
-                    //ene2.localID = 2;
                     ene2.serverID = othersSpecs.ene2;
                     ene2.alive = true;
                     ene2.name = othersSpecs.ene2n;
 
-                    System.out.println(myName + " has as 1(index): " + ene1.serverID);
-                    System.out.println(myName + " has as 2(index): " + ene2.serverID);
+                    //System.out.println(myName + " has as 1(index): " + ene1.serverID);
+                    //System.out.println(myName + " has as 2(index): " + ene2.serverID);
 
                 }
 
                 if (object instanceof YourBoardToPaint){
                     System.out.println("MY BOARD TO PAINT");
-                    remove(me);
+                    container.remove(me);
                     me = new MyGraphBoard(((YourBoardToPaint)object).board);
                     container.add(me);
                     repaint();
+                    validate();
                 }
                 if (object instanceof EnemiesBoardsToPaint){
                     System.out.println("ENEMIES BOARDS TO PAINT");
@@ -340,8 +335,14 @@ public class GameClient extends JFrame{
                 }
 
                 if (object instanceof PlayerDied){
+                    System.out.println("Player died");
                     removeEnemyBoard(((PlayerDied) object).who);
                 }
+
+                if (object instanceof YouWon){
+                    JOptionPane.showMessageDialog(container, "You WON!");
+                }
+
             }
         });
 
@@ -429,10 +430,13 @@ public class GameClient extends JFrame{
 
     private void toMainMenu(){
 
+        window = WindowE.MainMenu;
+
         container.removeAll();
+
         container.add(playButton);
 
-        nameField.requestFocus();
+        nameField.grabFocus();
         container.add(nameField);
 
         //THIS WILL DO FOR NOW
@@ -444,6 +448,7 @@ public class GameClient extends JFrame{
         background.setLayout(new FlowLayout());
         background.setSize(DIMENSION);
         background.setLocation(0,0);
+
         container.add(background);
         repaint();
         validate();
@@ -454,7 +459,11 @@ public class GameClient extends JFrame{
     //region PlaceShips
 
     private void toPlaceShipsScreen(){
+
         container.removeAll();
+
+        window = WindowE.Ships;
+
         ShipsPlacing shipsPlacing = new ShipsPlacing(this);
 
         Button b = new Button("RANDOM");
@@ -474,7 +483,6 @@ public class GameClient extends JFrame{
             }
         });
 
-
         goToGame = new Button("PLAY");
         goToGame.setLocation(900,500);
         goToGame.setSize(100,50);
@@ -485,63 +493,72 @@ public class GameClient extends JFrame{
                     me = new MyGraphBoard(shipsPlacing.getPlayerBoard().getToSendToPaint());
                     client.sendTCP(shipsPlacing.getPlayerBoard().getToSend());
                     //System.out.println(Arrays.deepToString(shipsPlacing.getPlayerBoard().getToSend()));
-                    //toGameWindow();
+                    //toMainGameWindow();
                 }
             }
         });
 
-        add(goToGame);
-        add(b);
-
+        container.add(goToGame);
+        container.add(b);
         container.add(shipsPlacing);
         repaint();
+        validate();
     }
 
     //endregion
 
     private void updateEnemyBoard(int whose, String[][] toPaint){
-        if(whose == ene1.serverID){
-            container.remove(ene1.b);
-            ene1.b = new GraphicalBoard(toPaint);
-            if(inAttackWindow){
-                container.add(ene1.b);
-            }
+        EnemyLocal toUpdate = ene1;
+
+        if(whose == ene2.serverID){
+            toUpdate = ene2;
         }
-        else if(whose == ene2.serverID){
-            container.remove(ene2.b);
-            ene2.b = new GraphicalBoard(toPaint);
-            if(inAttackWindow){
-                container.add(ene2.b);
-            }
+
+        container.remove(toUpdate.b);
+        toUpdate.b = new GraphicalBoard(toPaint);
+
+        if(window == WindowE.Attacking){
+            container.add(toUpdate.b);
         }
+
         repaint();
+        validate();
     }
 
     private void updateEnemyBoard(EnemyLocal enemyLocal, String[][] toPaint){
         container.remove(enemyLocal.b);
         enemyLocal.b = new GraphicalBoard(toPaint);
-        if(inAttackWindow){
+        if(window == WindowE.Attacking){
             container.add(enemyLocal.b);
         }
         repaint();
+        validate();
     }
 
     private void removeEnemyBoard(int who){
-        if(who == ene1.serverID){
-            container.remove(ene1.b);
-            playersPanel.remove(ene1.b);
-            ene1.alive = false;
-        }if(who == ene1.serverID){
-            container.remove(ene2.b);
-            playersPanel.remove(ene2.b);
-            ene2.alive = false;
+        EnemyLocal enemyLocal = ene1;
+        if(who == ene2.serverID){
+            enemyLocal = ene2;
         }
-        repaint();
+        enemyLocal.image.setLocation(GAME_BOARD_LOCATION.x + 100 , GAME_BOARD_LOCATION.y + 50);
+        enemyLocal.attack.setLocation(enemyLocal.image.getLocation().x, enemyLocal.image.getLocation().y + 50);
+        playersPanel.remove(enemyLocal.attack);
+        playersPanel.remove(enemyLocal.image);
+        playersPanel.remove(enemyLocal.b);
+        enemyLocal.alive = false;
+        container.remove(playersPanel);
+        if(window == WindowE.Attacking){
+            removeMouseListener(mouseListener);
+            System.out.println("HERE" + "died " + enemyLocal+ "... and from server " +
+                    who);
+            toChooseAttackWindow();
+        }
     }
 
     private void toWaitingWindow(){
+        window = WindowE.Waiting;
         container.removeAll();
-        add(names);
+        container.add(names);
         repaint();
         validate();
     }
@@ -560,11 +577,11 @@ public class GameClient extends JFrame{
     }
 
     private void setLabels(){
-        attack1.setLabel(ene1.name);
-        attack2.setLabel(ene2.name);
+        ene1.attack.setLabel(ene1.name);
+        ene2.attack.setLabel(ene2.name);
     }
 
-    private void setGameWindow() {
+    private void setMainGameWindow() {
 
         attackButton = new Button("Attack");
         attackButton.setSize(100,100);
@@ -600,7 +617,8 @@ public class GameClient extends JFrame{
 
     }
 
-    private void toGameWindow(){
+    private void toMainGameWindow(){
+        window = WindowE.MainGame;
         container.removeAll();
         container.add(attackButton);
         container.add(chatButton);
@@ -612,23 +630,24 @@ public class GameClient extends JFrame{
     }
 
     private void setChooseAttackWindow(){
-        attack1 = new Button("PLAYER 1");
-        attack1.setLocation(350, 600);
-        attack1.setSize(150, 50);
-        attack1.addActionListener(new ActionListener() {
+        ene1.attack = new Button("PLAYER 1");
+        ene1.attack.setLocation(350, 600);
+        ene1.attack.setSize(150, 50);
+        ene1.attack.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 toAttackingWindow(ene1);
             }
         });
 
-        attack2 = new Button("PLAYER 2");
-        attack2.setLocation(750, 600);
-        attack2.setSize(150, 50);
-        attack2.addActionListener(new ActionListener() {
+        ene2.attack = new Button("PLAYER 2");
+        ene2.attack.setLocation(750, 600);
+        ene2.attack.setSize(150, 50);
+        ene2.attack.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 toAttackingWindow(ene2);
+
             }
         });
 
@@ -638,7 +657,7 @@ public class GameClient extends JFrame{
         backToGame.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                toGameWindow();
+                toMainGameWindow();
             }
         });
 
@@ -653,24 +672,38 @@ public class GameClient extends JFrame{
         ene1.image.setSize(GraphicalBoard.SIZE);
         ene2.image.setSize(GraphicalBoard.SIZE);
 
-        playersPanel.add(attack1);
-        playersPanel.add(attack2);
+        playersPanel.add(ene1.attack);
+        playersPanel.add(ene2.attack);
         playersPanel.add(ene1.image);
         playersPanel.add(ene2.image);
         playersPanel.add(backToGame);
         playersPanel.setLocation(0,0);
         playersPanel.setSize(DIMENSION);
 
+        mouseListener = new MyMouse();
+
     }
 
     private void toChooseAttackWindow(){
+
+        window = WindowE.ChoosingEnemy;
+
         container.removeAll();
 
-        ene1.buffered = createImage(ene1.b);
-        ene1.image.setIcon(new ImageIcon(ene1.buffered));
+        if(ene1.alive) {
+            ene1.buffered = createImage(ene1.b);
+            ene1.image.setIcon(new ImageIcon(ene1.buffered));
+        }
 
-        ene2.buffered = createImage(ene2.b);
-        ene2.image.setIcon(new ImageIcon(ene2.buffered));
+        if(ene2.alive){
+            if(ene2.b != null){
+                ene2.buffered = createImage(ene2.b);
+                ene2.image.setIcon(new ImageIcon(ene2.buffered));
+            }
+            else{
+                System.out.println("IS NULL");
+            }
+        }
 
         container.add(playersPanel);
         repaint();
@@ -682,61 +715,14 @@ public class GameClient extends JFrame{
     }
 
     private void toAttackingWindow(EnemyLocal ene) {
+
+        window = WindowE.Attacking;
+
         container.removeAll();
 
-        inAttackWindow = true;
         lastAttacked = ene;
 
-        MouseListener mouseListener = new MouseListener() {
-
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if(iCanAttack) {
-                    Component found = findComponentAt(e);
-                    if (found instanceof GraphTile) {
-                        iCanAttack = false;
-                        GraphTile gFound = (GraphTile) found;
-                        AnAttackAttempt anAttackAttempt = new AnAttackAttempt();
-                        anAttackAttempt.c = gFound.getC();
-                        anAttackAttempt.l = gFound.getL();
-                        anAttackAttempt.toAttackID = ene.serverID;
-
-                        EnemyLocal other = ene1;
-
-                        if(ene.equals(ene1)){
-                            System.out.println("HERE");
-                            other = ene2;
-                        }
-
-                        anAttackAttempt.otherID = other.serverID;
-
-                        System.out.println(myName + " sending other as index: " +  other.serverID);
-                        System.out.println(myName + " attacking other as index: " +  ene.serverID);
-
-                        client.sendTCP(anAttackAttempt);
-                    }
-                }
-            }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-
-            }
-        };
+        mouseListener.ene = ene;
 
         addMouseListener(mouseListener);
 
@@ -746,13 +732,10 @@ public class GameClient extends JFrame{
         backToMenu.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                lastAttacked = ene;
-                inAttackWindow = false;
-                toGameWindow();
+                toMainGameWindow();
                 removeMouseListener(mouseListener);
             }
         });
-
 
         add(backToMenu);
         add(ene.b);
@@ -761,13 +744,67 @@ public class GameClient extends JFrame{
         validate();
     }
 
+    private class MyMouse implements MouseListener{
+
+        EnemyLocal ene;
+
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            if (iCanAttack) {
+                Component found = findComponentAt(e);
+                if (found instanceof GraphTile) {
+                    iCanAttack = false;
+                    GraphTile gFound = (GraphTile) found;
+                    AnAttackAttempt anAttackAttempt = new AnAttackAttempt();
+                    anAttackAttempt.c = gFound.getC();
+                    anAttackAttempt.l = gFound.getL();
+                    anAttackAttempt.toAttackID = ene.serverID;
+
+                    EnemyLocal other = ene1;
+
+                    if (ene.equals(ene1)) {
+                        //System.out.println("HERE");
+                        other = ene2;
+                    }
+
+                    anAttackAttempt.otherID = other.serverID;
+
+                    //System.out.println(myName + " sending other as index: " +  other.serverID);
+                    //System.out.println(myName + " attacking other as index: " +  ene.serverID);
+
+                    client.sendTCP(anAttackAttempt);
+                }
+            }
+        }
+
+        @Override
+        public void mousePressed(MouseEvent e) {
+
+        }
+
+        @Override
+        public void mouseReleased(MouseEvent e) {
+
+        }
+
+        @Override
+        public void mouseEntered(MouseEvent e) {
+
+        }
+
+        @Override
+        public void mouseExited(MouseEvent e) {
+
+        }
+    }
+
     private static class EnemyLocal {
-        //private int localID;
         private int serverID;
         private GraphicalBoard b;
         private BufferedImage buffered;
         private JLabel image;
-        private boolean alive;
+        private boolean alive = true;
         private String name;
+        private Button attack;
     }
 }
