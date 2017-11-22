@@ -1,8 +1,5 @@
 package Common;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import java.awt.*;
 import java.io.Serializable;
 import java.util.Random;
@@ -44,7 +41,6 @@ public class Ship implements Serializable{
         return tempShip;
     }
 
-    @NotNull
     public static Ship[] getFreshShips(){
         return new Ship[]{
                 new Ship(0,0,Direction.DOWN, ShipType.Four),
@@ -161,7 +157,6 @@ public class Ship implements Serializable{
 
         private int value;
 
-        @Nullable
         static ShipType getShipType(int value){
             for(ShipType shipType : ShipType.values()){
                 if(shipType.value == value){

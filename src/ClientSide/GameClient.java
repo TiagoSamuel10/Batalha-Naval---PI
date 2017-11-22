@@ -8,14 +8,14 @@ import Common.PlayerBoard;
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
-import org.jetbrains.annotations.Nullable;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.*;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 
 public class GameClient extends JFrame{
@@ -41,7 +41,7 @@ public class GameClient extends JFrame{
     boolean shipsSet;
     private Client client;
     private String myName;
-    private final String address = "192.168.1.2";
+    private final String address = "localhost";
 
     // MAIN MENU
     private Button playButton;
@@ -84,6 +84,7 @@ public class GameClient extends JFrame{
     }
 
     GameClient() {
+ 
 
         container = getContentPane();
         setVisible(true);
@@ -175,7 +176,6 @@ public class GameClient extends JFrame{
         return bufferedImage;
     }
 
-    @Nullable
     static Point getCoordinatesFromClick(Point point){
         //188, 211
         //208, 231
@@ -278,7 +278,7 @@ public class GameClient extends JFrame{
                 }
 
                 if (object instanceof ReadyForShips){
-                    System.out.println("TO SHIP SCREEN");
+                    //System.out.println("TO SHIP SCREEN");
                     toPlaceShipsScreen();
                 }
                 if (object instanceof OthersSpecs){
@@ -298,7 +298,7 @@ public class GameClient extends JFrame{
                 }
 
                 if (object instanceof YourBoardToPaint){
-                    System.out.println("MY BOARD TO PAINT");
+                    //System.out.println("MY BOARD TO PAINT");
                     container.remove(me);
                     me = new MyGraphBoard(((YourBoardToPaint)object).board);
                     container.add(me);
@@ -306,7 +306,7 @@ public class GameClient extends JFrame{
                     validate();
                 }
                 if (object instanceof EnemiesBoardsToPaint){
-                    System.out.println("ENEMIES BOARDS TO PAINT");
+                    //System.out.println("ENEMIES BOARDS TO PAINT");
                     ene1.b = new GraphicalBoard(((EnemiesBoardsToPaint) object).board1);
                     ene2.b = new GraphicalBoard(((EnemiesBoardsToPaint) object).board2);
                     setLabels();
@@ -343,6 +343,19 @@ public class GameClient extends JFrame{
                     JOptionPane.showMessageDialog(container, "You WON!");
                 }
 
+                if (object instanceof ChatMessage){
+                    int said = ((ChatMessage) object).saidIt;
+                    String name = (ene1.serverID == said)?ene1.name : ene2.name;
+                    System.out.println("RECEIVED MESSAGE: " + ((ChatMessage) object).message + "\n FROM ID: " +
+                            said + "LOCALLY THAT IS: " + name);
+
+                    EnemyLocal ene = ene1;
+                    if(said == ene2.serverID){
+                        ene = ene2;
+                    }
+                    ene.conversation.add(((ChatMessage) object).message);
+
+                }
             }
         });
 
@@ -598,6 +611,12 @@ public class GameClient extends JFrame{
         chatButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                int a = Integer.parseInt(JOptionPane.showInputDialog(container, "Who to send"));
+                String message = JOptionPane.showInputDialog(container, "What to send");
+                ChatMessageFromClient c = new ChatMessageFromClient();
+                c.text = message;
+                c.to = a;
+                client.sendTCP(c);
             }
         });
         chatButton.setLocation(DIMENSION.width - BORDER_RIGHT_SIDE_WIDTH, DIMENSION.height/2 + 100);
@@ -806,5 +825,9 @@ public class GameClient extends JFrame{
         private boolean alive = true;
         private String name;
         private Button attack;
+        private ArrayList<String> conversation;
+        private EnemyLocal(){
+            conversation = new ArrayList<>();
+        }
     }
 }

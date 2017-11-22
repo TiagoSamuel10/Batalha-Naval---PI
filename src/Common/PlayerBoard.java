@@ -1,11 +1,8 @@
 package Common;
 
-import org.jetbrains.annotations.Contract;
-
 import java.awt.*;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class PlayerBoard implements Serializable {
 
@@ -356,7 +353,6 @@ public class PlayerBoard implements Serializable {
         return null;
     }
 
-    @Contract(pure = true)
     private boolean inBounds(int x, int y) {
         return (x < LINES && x >= 0) && (y < COLUMNS && y >= 0);
     }

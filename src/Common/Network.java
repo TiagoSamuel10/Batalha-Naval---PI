@@ -13,6 +13,7 @@ public class Network {
 		Kryo kryo = endPoint.getKryo();
 		kryo.register(Register.class);
 		kryo.register(ChatMessage.class);
+		kryo.register(ChatMessageFromClient.class);
 		//
         kryo.register(int[][].class);
         kryo.register(int[].class);
@@ -104,8 +105,14 @@ public class Network {
 	}
 
 	public static class ChatMessage {
-		public String text;
+		public String message;
+		public int saidIt;
 	}
+
+	public static class ChatMessageFromClient {
+        public String text;
+        public int to;
+    }
 
 	public static class ConnectedPlayers{
 	    public String[] names;

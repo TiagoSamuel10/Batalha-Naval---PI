@@ -1,5 +1,6 @@
 package Server;
 
+import Common.Conversations;
 import Common.Network;
 import Common.Network.*;
 import Common.PlayerBoard;
@@ -22,6 +23,7 @@ public class GameServer {
     private long currentWaitedTime;
 
     private GameState state;
+    private Conversations conversations;
     private Game game;
     private Server server;
     private int currentPlayer;
@@ -144,6 +146,22 @@ public class GameServer {
                 if (object instanceof  AnAttackAttempt){
                     processAttack(connection, (AnAttackAttempt) object);
                 }
+
+                if (object instanceof ChatMessageFromClient){
+                    ChatMessageFromClient m = (ChatMessageFromClient) object;
+                    newChatMessage(connection.myID, m.to, m.text);
+                }
+            }
+
+            private void newChatMessage(int from, int to, String message){
+                int c = conversations.getConversationIDWithIDs(from, to);
+                conversations.appendToConversation(from, c, message);
+                Conversations.Line line = conversations.getLastLineFromConversation(c);
+                ChatMessage chats = new ChatMessage();
+                chats.saidIt = from;
+                chats.message = line.decode(players[from].name);
+                System.out.println("SENDING FROM: " + chats.saidIt + " TO: " + to + " CONTENT: " + chats.message);
+                players[to].sendTCP(chats);
             }
 
             private void processAttack(BConnection connection, AnAttackAttempt a){
@@ -331,8 +349,14 @@ public class GameServer {
 
     private void sendReadyForShips() {
         game = new Game();
+        conversations = new Conversations();
+        Conversations conversations = new Conversations();
         server.sendToAllTCP(new ReadyForShips());
         state = GameState.waitingForShips;
+    }
+
+    private void sendConversation(int requester){
+        //TODO
     }
 
     static class BConnection extends Connection {
