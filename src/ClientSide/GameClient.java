@@ -34,7 +34,7 @@ public class GameClient extends JFrame{
     final static Point GAME_BOARD_LOCATION = new Point(75,75);
     final static Dimension DIMENSION = new Dimension(1280, 720);
     private final static String TITLE = "GAME";
-    private final static int BORDER_RIGHT_SIDE_WIDTH = 300;
+    private final static int BORDER_RIGHT_SIDE_WIDTH = 200;
 
     //FOR ONLINE
     private final boolean online = true;
