@@ -92,6 +92,10 @@ class GraphShip extends JPanel{
         ship.setPoint(point);
     }
 
+    void changeShipPosition(int l, int c){
+        ship.setPoint(new Point(l, c));
+    }
+
     void rotate(){
         if(current == horizontal){
             setSize(vertical);

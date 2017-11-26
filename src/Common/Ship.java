@@ -117,6 +117,10 @@ public class Ship implements Serializable{
         }
     }
 
+    public Ship clone(){
+        return new Ship(startX, startY, dir, _shipType);
+    }
+
     public int getSize(){
         return _shipType.value;
     }

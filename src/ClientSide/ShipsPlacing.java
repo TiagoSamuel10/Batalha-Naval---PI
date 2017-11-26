@@ -1,6 +1,7 @@
 package ClientSide;
 
 import Common.PlayerBoard;
+import Common.Ship;
 
 import javax.swing.*;
 import java.awt.*;
@@ -37,7 +38,7 @@ class ShipsPlacing extends JLayeredPane{
 
         selfGraphBoard = new MyGraphBoard(playerBoard.getToSendToPaint());
 
-        add(selfGraphBoard, 0, 7);
+        add(selfGraphBoard);
 
     }
 
@@ -77,20 +78,72 @@ class ShipsPlacing extends JLayeredPane{
         @Override
         public void mousePressed(MouseEvent e) {
             super.mousePressed(e);
-            try{
-                currentFocused = (GraphShip) me.findComponentAt(e.getPoint());
-                currentFocused.setBackground(Color.BLACK);
-                //System.out.println(currentFocused);
-                if(currentFocused.alreadyPlaced){
-                    playerBoard.removeShip(currentFocused.getShip());
-                    remove(selfGraphBoard);
-                    selfGraphBoard = new MyGraphBoard(playerBoard.getToSendToPaint());
-                    add(selfGraphBoard, 0,7);
-                    me.repaint();
+
+            //WHICH MEANS I GOT A SHIP
+            if(currentFocused != null){
+                if(selfGraphBoard.getComponentAt(e.getPoint()) instanceof GraphTile){
+                    GraphTile c = (GraphTile)selfGraphBoard.getComponentAt(e.getPoint());
+                    System.out.println("C: " + c.getC() + "L: " + c.getL());
+                    Ship copy = currentFocused.getShip().clone();
+                    copy.setPoint(new Point(c.getL(), c.getC()));
+
+                    if (playerBoard.canShipBeHere(copy)) {
+                        currentFocused.changeShipPosition(c.getL(), c.getC());
+                        playerBoard.placeShip(currentFocused.getShip());
+                        currentFocused.alreadyPlaced = true;
+                        currentFocused.setBackground(new Color(1f, 0f, 0f, 0.0f));
+                        me.remove(selfGraphBoard);
+                        selfGraphBoard = new MyGraphBoard(playerBoard.getToSendToPaint());
+                        me.add(selfGraphBoard);
+                        if (playerBoard.fullOfShips()) {
+                            gameClient.shipsSet = true;
+                        }
+                        me.remove(currentFocused);
+                    }
                 }
-            }catch (ClassCastException exc){
-                currentFocused = null;
+                else{
+                    try {
+                        currentFocused.setBackground(Color.BLACK);
+                        currentFocused = (GraphShip) me.findComponentAt(e.getPoint());
+                        currentFocused.setBackground(Color.GRAY);
+                        //System.out.println(currentFocused);
+                    /*
+                    if (currentFocused.alreadyPlaced) {
+                        playerBoard.removeShip(currentFocused.getShip());
+                        remove(selfGraphBoard);
+                        selfGraphBoard = new MyGraphBoard(playerBoard.getToSendToPaint());
+                        add(selfGraphBoard, 0, 7);
+                        me.repaint();
+                    }
+                    */
+                    } catch (ClassCastException exc) {
+                        currentFocused = null;
+                    }
+                }
             }
+
+            else {
+
+                try {
+                    currentFocused = (GraphShip) me.findComponentAt(e.getPoint());
+                    currentFocused.setBackground(Color.GRAY);
+                    //System.out.println(currentFocused);
+                    /*
+                    if (currentFocused.alreadyPlaced) {
+                        playerBoard.removeShip(currentFocused.getShip());
+                        remove(selfGraphBoard);
+                        selfGraphBoard = new MyGraphBoard(playerBoard.getToSendToPaint());
+                        add(selfGraphBoard, 0, 7);
+                        me.repaint();
+                    }
+                    */
+                } catch (ClassCastException exc) {
+                    currentFocused = null;
+                }
+            }
+
+            repaint();
+            validate();
         }
 
         @Override
@@ -101,11 +154,15 @@ class ShipsPlacing extends JLayeredPane{
 
         @Override
         public void mouseReleased(MouseEvent e) {
+
+            /*
+
             if (currentFocused != null) {
                 currentFocused.setLocation(e.getPoint());
-                Point coordinatesFromClick = GameClient.getCoordinatesFromClick(e.getPoint());
-                if (coordinatesFromClick != null) {
-                    currentFocused.changeShipPosition(coordinatesFromClick);
+                //Point coordinatesFromClick = GameClient.getCoordinatesFromClick(e.getPoint());
+                Component c = gameClient.getComponentAt(e.getPoint());
+                if (c instanceof GraphTile) {
+                    currentFocused.changeShipPosition(((GraphTile) c).getL(), ((GraphTile) c).getC());
                     if (playerBoard.canShipBeHere(currentFocused.getShip())) {
                         playerBoard.placeShip(currentFocused.getShip());
                         currentFocused.alreadyPlaced = true;
@@ -123,6 +180,8 @@ class ShipsPlacing extends JLayeredPane{
                 }
             }
             //System.out.println(e);
+
+            */
         }
 
     }

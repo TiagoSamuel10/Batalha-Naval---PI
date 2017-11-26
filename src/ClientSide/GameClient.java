@@ -789,6 +789,11 @@ public class GameClient extends JFrame{
 
         @Override
         public void mouseClicked(MouseEvent e) {
+
+        }
+
+        @Override
+        public void mousePressed(MouseEvent e) {
             if (iCanAttack) {
                 Component found = findComponentAt(e);
                 if (found instanceof GraphTile) {
@@ -814,11 +819,6 @@ public class GameClient extends JFrame{
                     client.sendTCP(anAttackAttempt);
                 }
             }
-        }
-
-        @Override
-        public void mousePressed(MouseEvent e) {
-
         }
 
         @Override
