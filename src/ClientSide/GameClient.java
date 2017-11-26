@@ -108,7 +108,7 @@ public class GameClient extends JFrame{
             ene2 = new EnemyLocal();
         }
         else{
-            toPlaceShipsScreen();
+            toMainGameWindow();
         }
 
         setChooseAttackWindow();
@@ -126,13 +126,13 @@ public class GameClient extends JFrame{
         try {
             InetAddress closestOneFound = null;
             // GET AND ITERATE ALL NETWORK CARDS
-            Enumeration networkInterfaces = NetworkInterface.getNetworkInterfaces();
+            Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
             while (networkInterfaces.hasMoreElements()) {
-                NetworkInterface networkInterface = (NetworkInterface) networkInterfaces.nextElement();
+                NetworkInterface networkInterface = networkInterfaces.nextElement();
                 // GO THROUGH ALL IP ADDRESSES OF THIS CARD...
-                Enumeration inetAddresses = networkInterface.getInetAddresses();
+                Enumeration<InetAddress> inetAddresses = networkInterface.getInetAddresses();
                 while(inetAddresses.hasMoreElements()) {
-                    InetAddress inetAddress = (InetAddress) inetAddresses.nextElement();
+                    InetAddress inetAddress = inetAddresses.nextElement();
                     if (!inetAddress.isLoopbackAddress()) {
                         if (inetAddress.isSiteLocalAddress()) {
                             //YEAH BOY, FOUND IT
@@ -440,7 +440,6 @@ public class GameClient extends JFrame{
         });
     }
 
-
     private void toMainMenu(){
 
         window = WindowE.MainMenu;
@@ -611,12 +610,33 @@ public class GameClient extends JFrame{
         chatButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                int a = Integer.parseInt(JOptionPane.showInputDialog(container, "Who to send"));
-                String message = JOptionPane.showInputDialog(container, "What to send");
-                ChatMessageFromClient c = new ChatMessageFromClient();
-                c.text = message;
-                c.to = a;
-                client.sendTCP(c);
+                JList<String> list = new JList<>(new String[] {"Show", "Send"});
+                JOptionPane.showMessageDialog(
+                        null, list, "Choose one action", JOptionPane.PLAIN_MESSAGE);
+
+
+                JList<String> listId = new JList<>(new String[] {ene1.name, ene2.name});
+                JOptionPane.showMessageDialog(
+                        null, listId, "To whom?", JOptionPane.PLAIN_MESSAGE);
+
+                EnemyLocal selected = ene2;
+                if(listId.getSelectedValue().equalsIgnoreCase(ene1.name)){
+                    selected = ene1;
+                }
+
+                if (list.getSelectedValue().equalsIgnoreCase("Show")){
+
+                    System.out.println(selected.conversation);
+                }
+                else{
+                    String message = JOptionPane.showInputDialog(container, "What to send");
+
+                    ChatMessageFromClient c = new ChatMessageFromClient();
+                    selected.conversation.add(message);
+                    c.text = message;
+                    c.to = selected.serverID;
+                    client.sendTCP(c);
+                }
             }
         });
         chatButton.setLocation(DIMENSION.width - BORDER_RIGHT_SIDE_WIDTH, DIMENSION.height/2 + 100);
