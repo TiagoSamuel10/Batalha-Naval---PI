@@ -1,0 +1,11 @@
+- Parte gráfica no geral
+- Mostrar quem já mandou o seu esquema do board(quem já escolheu os sitios para os barcos)
+- Pôr os navios
+- Feedback para se acertou ou não
+- Chat parte gráfica
+- Numeros e letras dos sitios (A2, B5, F5)
+- A lógica do server
+    * Quando um jogador sái, para ele se reconectar
+    * Quando saiem todos, o jogo deve acabar
+    * Quando saí um deve ter um tempo para voltar, caso contrário é removido do jogo?
+    * Quando o server vai abaixo, toda a gente deve ir abaixo?
