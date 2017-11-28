@@ -34,7 +34,7 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
 
     private int num_springs = 200;
 
-    private int y_offset = Window.HEIGHT / 2;
+    private int y_offset = Window.HEIGHT / 4;
 
     private Spring[] springs = new Spring[num_springs];
 
@@ -51,7 +51,7 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
     private List<Rock> rocks = new ArrayList<Rock>();
 
     public GamePanel() {
-        looper = new Timer(1000 / 60, new ActionListener() {
+        looper = new Timer(1000 / 200, new ActionListener() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -160,12 +160,16 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
             int[] yPoints = new int[] {(int)springs[i].posy, (int)springs[i + 1].posy,
                     Window.HEIGHT, Window.HEIGHT};
 
-            GradientPaint gp = new GradientPaint(0, Window.HEIGHT, new Color(0, 0, 90),
+            /*GradientPaint gp = new GradientPaint(0, Window.HEIGHT, new Color(50, 90, 190),
                     0, 0, water);
+                    */
 
+            g2.setPaint(water);
 
-
-            g2.setPaint(gp);
+            if(i == 1 || i == 2 || i == 3 || i == 4){
+                System.out.println("E");
+                g2.setColor(new Color(2, 25, 65));
+            }
 
             g2.fillPolygon(xPoints, yPoints, 4);
 
