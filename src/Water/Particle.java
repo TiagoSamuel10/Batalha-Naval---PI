@@ -31,6 +31,8 @@ public class Particle {
 
     }
 
+
+
     public void render(Graphics g) {
 
         g.setColor(Color.BLUE);

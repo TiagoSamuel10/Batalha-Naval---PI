@@ -21,6 +21,8 @@ public class Spring{
         speed = 0;
 
 
+
+
     }
 
     public void update() {

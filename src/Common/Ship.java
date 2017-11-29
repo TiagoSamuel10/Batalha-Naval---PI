@@ -23,6 +23,8 @@ public class Ship implements Serializable{
         alreadyCalculated = false;
     }
 
+
+
     private static Ship getOneRandomShip(PlayerBoard pb, ShipType size, Direction[] directions){
         Ship tempShip = new Ship(0,0,Direction.DOWN, ShipType.One);
         boolean didIt = false;

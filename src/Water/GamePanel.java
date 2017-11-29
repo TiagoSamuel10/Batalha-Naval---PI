@@ -84,6 +84,9 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
         looper.start();
     }
 
+
+
+
     public void update() {
 
         for(int i = 0; i < springs.length; i++) springs[i].update();
@@ -187,6 +190,8 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
     public void mouseMoved(MouseEvent e) {
 
     }
+
+
 
     public void splash(float x, float speed) {
 

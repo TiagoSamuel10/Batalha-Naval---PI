@@ -21,6 +21,8 @@ public enum Direction {
         //UP.rotated = RIGHT;
     }
 
+
+
     Direction getRotated(){
         return rotated;
     }

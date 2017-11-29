@@ -41,6 +41,8 @@ public abstract class BoardTile implements Serializable {
         return new Point(x, y);
     }
 
+
+
     @Override
     public boolean equals(Object obj) {
         if (obj == null)

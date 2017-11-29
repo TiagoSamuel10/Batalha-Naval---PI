@@ -19,6 +19,8 @@ public class GameServer {
         playing2left
     }
 
+
+
     private final static long TIME_TO_WAIT = 1000 * 60 ;
     private long currentWaitedTime;
 
@@ -27,6 +29,8 @@ public class GameServer {
     private Game game;
     private Server server;
     private int currentPlayer;
+
+
 
     //WILL SAVE WHAT CONNECTIONS THE GAME STARTED WITH
     //SO IT'S POSSIBLE TO KNOW IF SOMEBODY WHO DROPPED IS RECONNECTING
@@ -112,6 +116,8 @@ public class GameServer {
                 printConnections();
 
             }
+
+
 
             public void received (Connection c, Object object) {
 
