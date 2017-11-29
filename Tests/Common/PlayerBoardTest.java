@@ -1,6 +1,5 @@
 package Common;
 
-import Server.Game;
 import org.junit.jupiter.api.Test;
 
 import static Common.PlayerBoard.COLUMNS;
@@ -61,7 +60,7 @@ class PlayerBoardTest {
 
         for(int w = 0; w < 10000; w++) {
 
-            pb = Game.getRandomPlayerBoard();
+            pb = PlayerBoard.getRandomPlayerBoard();
 
             int i = 0;
             for (int l = 0; l < LINES; l++) {

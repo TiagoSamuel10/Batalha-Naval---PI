@@ -1,7 +1,5 @@
 package Common;
 
-import org.jetbrains.annotations.Contract;
-
 import java.awt.*;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -31,12 +29,62 @@ public class PlayerBoard implements Serializable {
         transformBack(sent);
     }
 
-    public int[][] getToSend(){
-        return toSend;
+    void seeAllShips(){
+        Ship old = null;
+        for (ShipPiece piece: pieces) {
+            if (!piece.ship.equals(old)) {
+                System.out.println(piece.ship);
+                old = piece.ship;
+            }
+        }
     }
 
-    private boolean isPiece(int[][] check, int x, int y){
-        return check[x][y] > 0;
+
+    //TODO: BUILD IT AS WE GO
+
+    public String[][] getToSendToPaint(){
+        //System.out.println("--------------");
+        String[][] board = new String[LINES][COLUMNS];
+        BoardTile bt;
+        for (int l = 0; l < LINES; l++) {
+            for (int c = 0; c < COLUMNS; c++) {
+                bt = getTileAt(l, c);
+                if(bt.isPiece()){
+                    ShipPiece sp = (ShipPiece) bt;
+                    //System.out.println(sp.details());
+                    //System.out.println(sp.ship.isDestroyed());
+                    if(sp.isAttacked() && sp.ship.isDestroyed()){
+                        board[l][c] = ShipPiece.ATTACKED_SHIP_DESTROYED_STRING;
+                        //System.out.println("DESTROYED HERE");
+                    }
+                    if(sp.isAttacked() && !sp.ship.isDestroyed()){
+                        board[l][c] = ShipPiece.ATTACKED_STRING;
+                        //System.out.println("NOT DESTROYED");
+                    }
+                    if(!sp.isAttacked()){
+                        board[l][c] = ShipPiece.NOT_ATTACKED_STRING;
+                        //System.out.println("NOT VIS");
+                    }
+                }
+                else{
+                    if(bt.isAttacked()){
+                        board[l][c] = WaterTile.ATTACKED_OR_VISIBLE_STRING;
+                    }
+                    else{
+                        board[l][c] = WaterTile.NOT_VISIBLE_STRING;
+                    }
+                }
+                //System.out.println(board[l][c]);
+            }
+        }
+        //System.out.println(Arrays.deepToString(board));
+        //seeAllShips();
+        return board;
+
+    }
+
+    public int[][] getToSend(){
+        return toSend;
     }
 
     private void transformBack(int[][] sent){
@@ -60,7 +108,7 @@ public class PlayerBoard implements Serializable {
                     continue;
                 }
                 //IT'S A PIECE
-                if(isPiece(sent, l, c)){
+                if(aPieceInTheArray(sent, l, c)){
                     //look in directions
                     int x = l;
                     int y = c + 1;
@@ -70,7 +118,7 @@ public class PlayerBoard implements Serializable {
                     //HORIZONTAL
 
                     while(inBounds(x, y)){
-                        if(isPiece(sent, x, y)){
+                        if(aPieceInTheArray(sent, x, y)){
                             size++;
                             foundHorizontal = true;
                             toSkip.add(new Point(x, y));
@@ -88,7 +136,7 @@ public class PlayerBoard implements Serializable {
 
                     if(!foundHorizontal){
                         while(inBounds(x, y)){
-                            if(isPiece(sent, x, y)){
+                            if(aPieceInTheArray(sent, x, y)){
                                 size++;
                                 toSkip.add(new Point(x, y));
                                 x++;
@@ -114,6 +162,17 @@ public class PlayerBoard implements Serializable {
         }
     }
 
+    public static PlayerBoard getRandomPlayerBoard(){
+        PlayerBoard pb = new PlayerBoard();
+        pb.placeShips(Ship.getRandomShips());
+        //pb.allPieces();
+        return pb;
+    }
+
+    private boolean aPieceInTheArray(int[][] check, int x, int y){
+        return check[x][y] > 0;
+    }
+
     private void fillWithWater() {
         for (int l = 0; l < LINES; l++) {
             for (int c = 0; c < COLUMNS; c++) {
@@ -125,54 +184,30 @@ public class PlayerBoard implements Serializable {
 
     //region attacked
 
-    public void getAttacked(int x, int y) {
+    public boolean getAttacked(int x, int y) {
         //NOT ATTACKED YET
         BoardTile boardTile = getTileAt(x, y);
-        if (!boardTile.isVisible) {
+        if (boardTile.canAttack()) {
             boardTile.setAttacked();
             // NOT A SHIP PIECE
             if (!boardTile.isPiece()) {
-                return;
+                return false;
             }
             pieces.remove((ShipPiece) boardTile);
             Ship ship = ((ShipPiece) boardTile).ship;
             if (ship.isDestroyed()) {
-                System.out.println("SHIP DESTROYED");
+                //System.out.println("SHIP DESTROYED");
                 shipDestroyed(ship);
             }
+            return true;
         }
-        checkGameOver();
-    }
-
-    public void getAttacked(Point point){
-        getAttacked(point.x, point.y);
-    }
-
-    void getAttacked(BoardTile boardTile){
-        getAttacked(boardTile.x, boardTile.y);
-    }
-
-    public void lightsOut(){
-        for (int l = 0; l < LINES; l++) {
-            for (int c = 0; c < COLUMNS; c++) {
-                if(!getTileAt(l,c).attacked){
-                    getTileAt(l,c).isVisible = false;
-                }
-            }
-        }
+        return true;
     }
 
     //endregion
 
     public boolean isGameOver(){
-        return gameOver;
-    }
-
-    private void checkGameOver() {
-        gameOver = pieces.isEmpty();
-        if(gameOver){
-            lightItUp();
-        }
+        return pieces.isEmpty();
     }
 
     private void shipDestroyed(Ship s) {
@@ -194,15 +229,15 @@ public class PlayerBoard implements Serializable {
         }
     }
 
-    public void lightItUp() {
+    void lightItUp() {
         for (int l = 0; l < LINES; l++) {
             for (int c = 0; c < COLUMNS; c++) {
-                boardTiles[l][c].isVisible = true;
+                boardTiles[l][c].visible = true;
             }
         }
     }
 
-    public String details(){
+    String details(){
         String s = "    ";
         for (int i = 0; i < COLUMNS; i++) {
             s += i + "    ";
@@ -235,7 +270,7 @@ public class PlayerBoard implements Serializable {
         return s;
     }
 
-    public void placeShips(Ship[] toAdd){
+    void placeShips(Ship[] toAdd){
         //int i = 0;
         for (Ship ship : toAdd) {
             //ships[i] = ship;
@@ -311,18 +346,16 @@ public class PlayerBoard implements Serializable {
 
     //endregion
 
-    public BoardTile getTileAt(int x, int y) {
+    BoardTile getTileAt(int x, int y) {
         if(inBounds(x, y)){
             return boardTiles[x][y];
         }
         return null;
     }
 
-    @Contract(pure = true)
     private boolean inBounds(int x, int y) {
         return (x < LINES && x >= 0) && (y < COLUMNS && y >= 0);
     }
-
 
     public void removeShip(Ship ship) {
 

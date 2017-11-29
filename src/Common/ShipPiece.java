@@ -2,11 +2,16 @@ package Common;
 
 import java.awt.*;
 
-class ShipPiece extends BoardTile {
+public class ShipPiece extends BoardTile {
 
-    private final static Color ATTACKED_COLOR = new Color(20,20,20);
-    private final static Color ATTACKED_COLOR_SHIP_DESTROYED = new Color(150,10,11);
-    private final static Color VISIBLE_COLOR = new Color(100,100,100);
+    public final static Color COLOR_ATTACKED = new Color(150,10,11);
+    public final static Color COLOR_ATTACKED_SHIP_DESTROYED = new Color(20,20,20);
+
+    public final static Color COLOR_TO_SHOW = new Color(139,69,19);
+
+    public static final String NOT_ATTACKED_STRING = "P";
+    public static final String ATTACKED_STRING = "PA";
+    public static final String ATTACKED_SHIP_DESTROYED_STRING = "PD";
 
     Ship ship;
 
@@ -16,18 +21,9 @@ class ShipPiece extends BoardTile {
         ship = _ship;
     }
 
-    /*
-
     @Override
     public String toString() {
-        return "Ship at " + x + "; " +y;
-    }
-
-    */
-
-    @Override
-    public String toString() {
-        if(isVisible){
+        if(visible){
             if(attacked){
                 return "HS";
             }
@@ -41,20 +37,7 @@ class ShipPiece extends BoardTile {
         return true;
     }
 
-    @Override
-    public Color getAttackedColor() {
-        if(ship.isDestroyed()){
-            return ATTACKED_COLOR_SHIP_DESTROYED;
-        }
-        return ATTACKED_COLOR;
-    }
-
-    @Override
-    public Color getVisibleColor() {
-        return VISIBLE_COLOR;
-    }
-
     String details(){
-        return "S";
+        return "ShipPiece at " + this.x + "+" + this.y + " and is visible: " + isVisible() + " and is attacked " + isAttacked();
     }
 }

@@ -1,78 +1,47 @@
 package Server;
 
 import Common.PlayerBoard;
-import Common.Ship;
 
 public class Game {
 
-    private static final int MAX_PLAYERS = 3;
-
-    private Turns turns;
-    private int currentPlayer;
     private PlayerBoard[] playerBoards;
-    boolean isOver;
 
     Game(){
-        turns = new Turns();
-        playerBoards = new PlayerBoard[MAX_PLAYERS];
-        isOver = false;
+        playerBoards = new PlayerBoard[3];
     }
 
-    public static PlayerBoard getRandomPlayerBoard(){
-        PlayerBoard pb = new PlayerBoard();
-        pb.placeShips(Ship.getRandomShips());
-        //pb.allPieces();
-        return pb;
-    }
-
-    //TODO: ATTACK
-
-    void attack(int id, int x, int y){
-        playerBoards[id].getAttacked(x, y);
-        checkIfHitAnything(id);
-        checkGameOverFor(id);
-        checkGameOver();
-    }
-
-    //TODO: GAME OVER
-
-    private void checkGameOver() {
-    }
-
-    //TODO: SOMETHING ABOUT HITS
-
-    private void checkIfHitAnything(int id) {
-        //playerBoards[id].getLastHit();
-    }
-
-    //TODO: SOMETHING ABOUT GAME OVER
-
-    private void checkGameOverFor(int id) {
-        if(playerBoards[id].isGameOver()){
-            // TODO: SEND TO CLIENT THAT HE HAS LOST
-            // TODO: REMOVE THE OPTION TO ATTACK HIM ON OTHERS
-            turns.removePlayer(id);
+    boolean canStart(){
+        for (PlayerBoard pb: playerBoards ) {
+            if(pb == null){
+                return false;
+            }
         }
+        return true;
     }
 
-    private void start() {
-        for(int i = 0; i < MAX_PLAYERS; i++){
-            playerBoards[i] = new PlayerBoard();
-            addRandomBoatsTo(playerBoards[i]);
-            turns.addPlayer(i);
-            //playerBoards[i].lightItUp();
+    boolean attack(int id, int x, int y){
+        return playerBoards[id].getAttacked(x, y);
+    }
+
+    void removePlayer(int id){
+
+    }
+
+    boolean gameIsOver() {
+        int i = 0;
+        for (PlayerBoard pb: playerBoards ){
+            if(pb.isGameOver()){
+                i++;
+            }
+            if(i == 2){
+                return true;
+            }
         }
-        //currentPlayer = new Random().nextInt(allowed.size());
-        currentPlayer = 0;
-
+        return false;
     }
 
-    private void changeTurn(){
-        currentPlayer = turns.nextPlayerIndex();
-    }
-
-    private void addRandomBoatsTo(PlayerBoard pb){
-        pb.placeShips(Ship.getRandomShips());
+    boolean isGameOverFor(int id) {
+        return (playerBoards[id].isGameOver());
     }
 
     @Override
@@ -87,5 +56,9 @@ public class Game {
 
     void setPlayerBoard(PlayerBoard playerBoard, int i) {
         playerBoards[i] = playerBoard;
+    }
+
+    PlayerBoard getPlayerBoard(int i){
+        return playerBoards[i];
     }
 }
