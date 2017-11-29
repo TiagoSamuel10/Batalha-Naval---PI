@@ -5,6 +5,8 @@ import java.awt.*;
 
 public class GraphTile extends JPanel {
 
+
+
     private int l;
     private int c;
     private Color toPaint;

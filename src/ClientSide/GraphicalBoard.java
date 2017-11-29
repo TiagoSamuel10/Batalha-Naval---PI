@@ -21,6 +21,8 @@ class GraphicalBoard extends JPanel {
     GraphicalBoard() {
     }
 
+
+
     GraphicalBoard (String[][] board){
 
         setLayout(null);

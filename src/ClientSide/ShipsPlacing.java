@@ -41,6 +41,8 @@ class ShipsPlacing extends JLayeredPane{
 
     }
 
+
+
     void removeShips(){
         for(int i = 0; i < ships.length; i++){
             if(ships[i] != null){
@@ -61,6 +63,8 @@ class ShipsPlacing extends JLayeredPane{
         add(selfGraphBoard, 0, 7);
         repaint();
     }
+
+
 
     private class SpecialMouseListener extends MouseAdapter {
 

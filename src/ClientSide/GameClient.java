@@ -783,6 +783,9 @@ public class GameClient extends JFrame{
         validate();
     }
 
+
+
+
     private class MyMouse implements MouseListener{
 
         EnemyLocal ene;
@@ -815,6 +818,9 @@ public class GameClient extends JFrame{
                 }
             }
         }
+
+
+
 
         @Override
         public void mousePressed(MouseEvent e) {
