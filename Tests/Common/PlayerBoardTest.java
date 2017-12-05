@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import static Common.PlayerBoard.COLUMNS;
 import static Common.PlayerBoard.LINES;
 
-class PlayerBoardTest {
+class  PlayerBoardTest {
 
     PlayerBoard pb = new PlayerBoard();
 
