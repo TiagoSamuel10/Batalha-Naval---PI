@@ -30,6 +30,9 @@ public class GameClient extends JFrame{
         Attacking
     }
 
+    //FOR OFFLINE
+    private MyAI ai;
+
     private WindowE window;
 
     final static Point GAME_BOARD_LOCATION = new Point(75,75);
@@ -109,6 +112,8 @@ public class GameClient extends JFrame{
             ene2 = new EnemyLocal();
         }
         else{
+            me = new MyGraphBoard(PlayerBoard.getRandomPlayerBoard().getToSendToPaint());
+            ai = new MyAI();
             toMainGameWindow();
         }
 
@@ -784,8 +789,63 @@ public class GameClient extends JFrame{
         validate();
     }
 
+    private void AIAttackWindow(){
 
+        window = WindowE.Attacking;
 
+        container.removeAll();
+
+        addMouseListener(new MouseListener() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (iCanAttack) {
+                    Component found = findComponentAt(e);
+                    if (found instanceof GraphTile) {
+                        GraphTile gFound = (GraphTile) found;
+                        int c = gFound.getC();
+                        int l = gFound.getL();
+                        iCanAttack = ai.board.getAttacked(c, l);
+                    }
+                }
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+
+            }
+        });
+
+        Button backToMenu = new Button("Back to Game");
+        backToMenu.setSize(100,50);
+        backToMenu.setLocation(700,100);
+        backToMenu.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                toMainGameWindow();
+                removeMouseListener(mouseListener);
+            }
+        });
+
+        add(backToMenu);
+
+        repaint();
+        validate();
+    }
 
     private class MyMouse implements MouseListener{
 
@@ -820,27 +880,20 @@ public class GameClient extends JFrame{
             }
         }
 
-
-
-
         @Override
         public void mousePressed(MouseEvent e) {
-
         }
 
         @Override
         public void mouseReleased(MouseEvent e) {
-
         }
 
         @Override
         public void mouseEntered(MouseEvent e) {
-
         }
 
         @Override
         public void mouseExited(MouseEvent e) {
-
         }
     }
 
@@ -870,7 +923,7 @@ public class GameClient extends JFrame{
         private Direction directionLooking;
         private ArrayList<Point> positionsAvailable;
 
-        public MyAI(){
+        MyAI(){
             searching = false;
             betweenTwo = false;
             justBefore = new Point(0,0);
@@ -951,5 +1004,6 @@ public class GameClient extends JFrame{
                 }
             }
         }
+
     }
 }
