@@ -206,6 +206,9 @@ public class PlayerBoard implements Serializable {
                 return true;
             }
         }
+        else{
+            return false;
+        }
         return true;
     }
 

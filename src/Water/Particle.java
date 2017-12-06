@@ -28,7 +28,6 @@ public class Particle {
 
         texture = t.getScaledInstance(width / 2, height / 2,
                 BufferedImage.TYPE_INT_ARGB);
-
     }
 
 

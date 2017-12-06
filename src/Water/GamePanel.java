@@ -23,31 +23,18 @@ import javax.swing.Timer;
 public class GamePanel extends JPanel implements MouseMotionListener, MouseListener{
 
     private static final long serialVersionUID = 1L;
-
     public static int mouseX, mouseY;
-
     private Timer looper;
-
     private final Color sky = new Color(105, 130, 220);
-
     private final Color water = new Color(100, 255, 235);
-
     private int num_springs = 200;
-
     private int y_offset = Window.HEIGHT / 4;
-
     private Spring[] springs = new Spring[num_springs];
-
     private final float spread = 0.25f;
-
     private final float gravity = 0.3f;
-
     private BufferedImage droplet;
-
     private Image rock;
-
     private List<Particle> particles = new ArrayList<Particle>();
-
     private List<Rock> rocks = new ArrayList<Rock>();
 
     public GamePanel() {

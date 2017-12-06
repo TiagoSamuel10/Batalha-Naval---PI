@@ -17,12 +17,8 @@ public class Spring{
     public Spring(float x, int y) {
         posx = x;
         posy = y;
-        fix_y = (int)y;
+        fix_y = (int) y;
         speed = 0;
-
-
-
-
     }
 
     public void update() {
