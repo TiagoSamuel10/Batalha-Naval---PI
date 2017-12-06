@@ -15,6 +15,7 @@ public class PlayerBoard implements Serializable {
     private BoardTile[][] boardTiles;
     private int[][] toSend;
     private int shipN = 0;
+    private boolean lastShipDestroyed;
 
     public PlayerBoard() {
         toSend = new int[LINES][COLUMNS];
@@ -195,13 +196,26 @@ public class PlayerBoard implements Serializable {
             }
             pieces.remove((ShipPiece) boardTile);
             Ship ship = ((ShipPiece) boardTile).ship;
+            lastShipDestroyed = false;
             if (ship.isDestroyed()) {
+                lastShipDestroyed = true;
                 //System.out.println("SHIP DESTROYED");
                 shipDestroyed(ship);
             }
             return true;
         }
         return true;
+    }
+
+    public ArrayList<Point> getAvailable(){
+        ArrayList<Point> points = new ArrayList<>();
+        for (int l = 0; l < LINES; l++) {
+            for (int c = 0; c < COLUMNS; c++) {
+                if (boardTiles[l][c].visible)
+                    points.add(new Point(l, c));
+            }
+        }
+        return points;
     }
 
     //endregion
@@ -353,7 +367,7 @@ public class PlayerBoard implements Serializable {
         return null;
     }
 
-    private boolean inBounds(int x, int y) {
+    public static boolean inBounds(int x, int y) {
         return (x < LINES && x >= 0) && (y < COLUMNS && y >= 0);
     }
 
@@ -366,6 +380,10 @@ public class PlayerBoard implements Serializable {
             toSend[piece.x][piece.y] = 0;
         }
 
+    }
+
+    public boolean lastShipDestroyed(){
+        return lastShipDestroyed;
     }
 
     public boolean fullOfShips(){

@@ -16,18 +16,22 @@ import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import java.awt.*;
 import java.io.File;
 import java.net.URL;
 
 public class App extends Application {
 
     Scene mainMenu;
+    Scene mainGame;
+    private final static Rectangle2D SCREEN_RECTANGLE = Screen.getPrimary().getVisualBounds();
 
     public static void main(String[] args){
         launch(args);
@@ -36,6 +40,28 @@ public class App extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
 
+        setAllScenes(primaryStage);
+
+        primaryStage.initStyle(StageStyle.UNDECORATED);
+        primaryStage.setTitle("BS");
+        primaryStage.setResizable(false);
+        primaryStage.setMaximized(true);
+        primaryStage.setScene(mainMenu);
+        primaryStage.show();
+
+    }
+
+    private void setAllScenes(Stage stage){
+        setMainMenu(stage);
+        setMainGame(stage);
+    }
+
+    private void setMainGame(Stage stage) {
+        StackPane root = new StackPane();
+        mainGame = new Scene(root, SCREEN_RECTANGLE.getWidth(), SCREEN_RECTANGLE.getHeight());
+    }
+
+    private void setMainMenu(Stage stage){
         GridPane interior = new GridPane();
         interior.setAlignment(Pos.BOTTOM_CENTER);
 
@@ -67,9 +93,9 @@ public class App extends Application {
 
         Button alone = new Button();
         alone.setGraphic(new ImageView(aloneImage));
-        alone.setOnAction(event ->
-                System.out.println("COOL DUDE")
-        );
+        alone.setOnAction(event -> {
+            stage.setScene(mainGame);
+        });
         alone.setStyle("-fx-background-color: transparent;");
 
         GridPane.setConstraints(alone, 2, 0);
@@ -87,16 +113,8 @@ public class App extends Application {
 
         interior.getChildren().addAll(play, alone, exit);
 
-        mainMenu = new Scene(root, Screen.getPrimary().getVisualBounds().getWidth(),
-                Screen.getPrimary().getVisualBounds().getHeight()
+        mainMenu = new Scene(root, SCREEN_RECTANGLE.getWidth(),
+                SCREEN_RECTANGLE.getHeight()
         );
-
-        primaryStage.initStyle(StageStyle.UNDECORATED);
-        primaryStage.setTitle("BS");
-        primaryStage.setResizable(false);
-        primaryStage.setMaximized(true);
-        primaryStage.setScene(mainMenu);
-        primaryStage.show();
-
     }
 }

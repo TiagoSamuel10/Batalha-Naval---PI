@@ -1,6 +1,7 @@
 package ClientSide;
 
 import Common.BoardTile;
+import Common.Direction;
 import Common.Network;
 import Common.Network.*;
 import Common.PlayerBoard;
@@ -15,8 +16,8 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.Random;
 
 public class GameClient extends JFrame{
 
@@ -854,6 +855,101 @@ public class GameClient extends JFrame{
         private ArrayList<String> conversation;
         private EnemyLocal(){
             conversation = new ArrayList<>();
+        }
+    }
+
+    private static class MyAI {
+        PlayerBoard board;
+
+        private boolean searching;
+        private boolean betweenTwo;
+
+        private Point firstHit;
+        private Point justBefore;
+        private ArrayList<Direction> directionsToGo;
+        private Direction directionLooking;
+        private ArrayList<Point> positionsAvailable;
+
+        public MyAI(){
+            searching = false;
+            betweenTwo = false;
+            justBefore = new Point(0,0);
+            firstHit = new Point(0,0);
+            positionsAvailable = new ArrayList<>();
+            directionsToGo = new ArrayList<>();
+        }
+
+        private void getBoard(){
+            board = PlayerBoard.getRandomPlayerBoard();
+        }
+
+        private String[][] getToPaint(){
+            return board.getToSendToPaint();
+        }
+
+        private boolean inBounds(int x, int y){
+            return PlayerBoard.inBounds(x, y);
+        }
+
+        private void getAvailable(PlayerBoard pb){
+            positionsAvailable = pb.getAvailable();
+        }
+
+        private void attack(PlayerBoard pb){
+            Point p;
+            if(!searching){
+                //GET A POINT NOT TRIED YET
+                p = positionsAvailable.get(new Random().nextInt(positionsAvailable.size() + 1));
+                // SEE IF HIT
+                searching = pb.getAttacked(p.x, p.y);
+                //IF HIT, PREPARE THE NEXT ATTACKS ALREADY
+                if(searching && !pb.lastShipDestroyed()){
+                    firstHit = p;
+                    justBefore = p;
+                    int [] d = Direction.DOWN.getDirectionVector();
+                    if(inBounds(p.x + d[0], p.y + d[1]))
+                        directionsToGo.add(Direction.DOWN);
+                    d = Direction.UP.getDirectionVector();
+                    if(inBounds(p.x + d[0], p.y + d[1]))
+                        directionsToGo.add(Direction.UP);
+                    d = Direction.LEFT.getDirectionVector();
+                    if(inBounds(p.x + d[0], p.y + d[1]))
+                        directionsToGo.add(Direction.LEFT);
+                    d = Direction.RIGHT.getDirectionVector();
+                    if(inBounds(p.x + d[0], p.y + d[1]))
+                        directionsToGo.add(Direction.RIGHT);
+                    directionLooking = directionsToGo.get(directionsToGo.size());
+                }
+            }
+            else{
+
+                // SEARCHING ALREADY
+
+                Point newAttack = new Point(justBefore.x + directionLooking.getDirectionVector()[0],
+                        justBefore.y + directionLooking.getDirectionVector()[1]);
+
+                //BETWEEN TWO BUT FAILED
+                if(betweenTwo && !pb.getAttacked(newAttack.x, newAttack.y)){
+                    directionLooking = directionLooking.getOpposite();
+                    justBefore = firstHit;
+                }
+
+                // IF HIT THAT MEANS IT'S EITHER THIS WAY OR THE OPPOSITE
+                if(pb.getAttacked(newAttack.x, newAttack.y)){
+                    if(pb.lastShipDestroyed()){
+                        searching = false;
+                        return;
+                    }
+                    justBefore = newAttack;
+                    betweenTwo = true;
+                }
+                //FAILED
+                else{
+                    justBefore = firstHit;
+                    directionsToGo.remove(directionsToGo.size());
+                    directionLooking = directionsToGo.get(directionsToGo.size());
+                }
+            }
         }
     }
 }
