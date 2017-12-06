@@ -32,6 +32,7 @@ public class GameClient extends JFrame{
 
     //FOR OFFLINE
     private MyAI ai;
+    private PlayerBoard myPB;
 
     private WindowE window;
 
@@ -112,7 +113,8 @@ public class GameClient extends JFrame{
             ene2 = new EnemyLocal();
         }
         else{
-            me = new MyGraphBoard(PlayerBoard.getRandomPlayerBoard().getToSendToPaint());
+            myPB = PlayerBoard.getRandomPlayerBoard();
+            me = new MyGraphBoard(myPB.getToSendToPaint());
             ai = new MyAI();
             toMainGameWindow();
         }
@@ -805,6 +807,14 @@ public class GameClient extends JFrame{
                         int c = gFound.getC();
                         int l = gFound.getL();
                         iCanAttack = ai.board.getAttacked(c, l);
+                        do {
+                            try {
+                                ai.attack(myPB);
+                                wait(300);
+                            } catch (InterruptedException e1) {
+                                e1.printStackTrace();
+                            }
+                        }while (ai.canPlay);
                     }
                 }
             }
@@ -916,6 +926,7 @@ public class GameClient extends JFrame{
 
         private boolean searching;
         private boolean betweenTwo;
+        private boolean canPlay;
 
         private Point firstHit;
         private Point justBefore;
@@ -924,6 +935,7 @@ public class GameClient extends JFrame{
         private ArrayList<Point> positionsAvailable;
 
         MyAI(){
+            canPlay = false;
             searching = false;
             betweenTwo = false;
             justBefore = new Point(0,0);
@@ -949,12 +961,14 @@ public class GameClient extends JFrame{
         }
 
         private void attack(PlayerBoard pb){
+            canPlay = false;
             Point p;
             if(!searching){
                 //GET A POINT NOT TRIED YET
                 p = positionsAvailable.get(new Random().nextInt(positionsAvailable.size() + 1));
                 // SEE IF HIT
                 searching = pb.getAttacked(p.x, p.y);
+                canPlay = searching;
                 //IF HIT, PREPARE THE NEXT ATTACKS ALREADY
                 if(searching && !pb.lastShipDestroyed()){
                     firstHit = p;
@@ -989,6 +1003,7 @@ public class GameClient extends JFrame{
 
                 // IF HIT THAT MEANS IT'S EITHER THIS WAY OR THE OPPOSITE
                 if(pb.getAttacked(newAttack.x, newAttack.y)){
+                    canPlay = true;
                     if(pb.lastShipDestroyed()){
                         searching = false;
                         return;
