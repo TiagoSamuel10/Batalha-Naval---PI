@@ -11,6 +11,8 @@ public class PlayerBoard implements Serializable {
     final static int NUMBER_OF_BOATS = 10;
     private boolean gameOver;
 
+    private String[][] toPaint;
+
     private ArrayList<ShipPiece> pieces;
     private BoardTile[][] boardTiles;
     private int[][] toSend;
@@ -21,8 +23,9 @@ public class PlayerBoard implements Serializable {
         toSend = new int[LINES][COLUMNS];
         gameOver = false;
         boardTiles = new BoardTile[LINES][COLUMNS];
-        fillWithWater();
         pieces = new ArrayList<>();
+        toPaint = new String[LINES][COLUMNS];
+        fillWithWater();
     }
 
     public PlayerBoard(int[][] sent){
@@ -40,8 +43,9 @@ public class PlayerBoard implements Serializable {
         }
     }
 
-
-    //TODO: BUILD IT AS WE GO
+    public String[][] getToPaint() {
+        return toPaint;
+    }
 
     public String[][] getToSendToPaint(){
         //System.out.println("--------------");
@@ -179,6 +183,7 @@ public class PlayerBoard implements Serializable {
             for (int c = 0; c < COLUMNS; c++) {
                 boardTiles[l][c] = new WaterTile(l, c);
                 toSend[l][c] = 0;
+                toPaint[l][c] = WaterTile.NOT_VISIBLE_STRING;
             }
         }
     }
@@ -193,8 +198,10 @@ public class PlayerBoard implements Serializable {
                 boardTile.setAttacked();
                 // NOT A SHIP PIECE
                 if (!boardTile.isPiece()) {
+                    toPaint[x][y] = WaterTile.ATTACKED_OR_VISIBLE_STRING;
                     return false;
                 }
+                toPaint[x][y] = ShipPiece.ATTACKED_STRING;
                 pieces.remove((ShipPiece) boardTile);
                 Ship ship = ((ShipPiece) boardTile).ship;
                 lastShipDestroyed = false;
@@ -235,6 +242,7 @@ public class PlayerBoard implements Serializable {
             for (Point point : points) {
                 if (inBounds(point.x, point.y)) {
                     getTileAt(point.x, point.y).setAttacked();
+                    toPaint[point.x][point.y] = WaterTile.ATTACKED_OR_VISIBLE_STRING;
                 }
             }
         }
@@ -306,6 +314,7 @@ public class PlayerBoard implements Serializable {
                 boardTiles[piece.x][piece.y] = piece;
                 pieces.add(piece);
                 toSend[piece.x][piece.y] = shipN;
+                toPaint[piece.x][piece.y] = ShipPiece.NOT_ATTACKED_STRING;
             }
             return true;
         }

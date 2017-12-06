@@ -119,7 +119,7 @@ public class GameClient extends JFrame{
         }
         else{
             myPB = PlayerBoard.getRandomPlayerBoard();
-            me = new MyGraphBoard(myPB.getToSendToPaint());
+            me = new MyGraphBoard(myPB.getToPaint());
             ai = new MyAI();
             iCanAttack = true;
             AIAttackWindow();
