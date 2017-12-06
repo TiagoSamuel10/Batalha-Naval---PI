@@ -9,6 +9,8 @@ import Common.PlayerBoard;
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
+import javafx.scene.input.KeyCode;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -42,7 +44,7 @@ public class GameClient extends JFrame{
     private final static int BORDER_RIGHT_SIDE_WIDTH = 200;
 
     //FOR ONLINE
-    private final boolean online = true;
+    private final boolean online = false;
     boolean shipsSet;
     private Client client;
     private String myName;
@@ -106,21 +108,22 @@ public class GameClient extends JFrame{
         serverConfigurations();
 
         setMainMenu();
+        setMainGameWindow();
+
 
         if(online) {
             toMainMenu();
             ene1 = new EnemyLocal();
             ene2 = new EnemyLocal();
+            setChooseAttackWindow();
         }
         else{
             myPB = PlayerBoard.getRandomPlayerBoard();
             me = new MyGraphBoard(myPB.getToSendToPaint());
             ai = new MyAI();
-            toMainGameWindow();
+            iCanAttack = true;
+            AIAttackWindow();
         }
-
-        setChooseAttackWindow();
-        setMainGameWindow();
 
         names = new JList<>();
         names.setModel(new DefaultListModel<>());
@@ -797,6 +800,25 @@ public class GameClient extends JFrame{
 
         container.removeAll();
 
+        addKeyListener(new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if(e.getKeyCode() == KeyCode.R.getCode()){
+                    iCanAttack = true;
+                }
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+
+            }
+        });
+
         addMouseListener(new MouseListener() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -806,15 +828,21 @@ public class GameClient extends JFrame{
                         GraphTile gFound = (GraphTile) found;
                         int c = gFound.getC();
                         int l = gFound.getL();
-                        iCanAttack = ai.board.getAttacked(c, l);
-                        do {
-                            try {
+                        iCanAttack = ai.board.getAttacked(l, c);
+                        remove(ai.gb);
+                        ai.gb = new GraphicalBoard(ai.board.getToSendToPaint());
+                        add(ai.gb);
+                        repaint();
+                        if(!iCanAttack) {
+                            do {
+                                ai.getAvailable(myPB);
                                 ai.attack(myPB);
-                                wait(300);
-                            } catch (InterruptedException e1) {
-                                e1.printStackTrace();
-                            }
-                        }while (ai.canPlay);
+                            } while (ai.canPlay);
+                            me = new MyGraphBoard(myPB.getToSendToPaint());
+                            me.setLocation(me.getLocation().x + 600, me.getLocation().y);
+                            add(me);
+                        }
+
                     }
                 }
             }
@@ -852,6 +880,8 @@ public class GameClient extends JFrame{
         });
 
         add(backToMenu);
+
+        add(ai.gb);
 
         repaint();
         validate();
@@ -922,6 +952,7 @@ public class GameClient extends JFrame{
     }
 
     private static class MyAI {
+        GraphicalBoard gb;
         PlayerBoard board;
 
         private boolean searching;
@@ -942,10 +973,8 @@ public class GameClient extends JFrame{
             firstHit = new Point(0,0);
             positionsAvailable = new ArrayList<>();
             directionsToGo = new ArrayList<>();
-        }
-
-        private void getBoard(){
             board = PlayerBoard.getRandomPlayerBoard();
+            gb = new MyGraphBoard(getToPaint());
         }
 
         private String[][] getToPaint(){
@@ -965,14 +994,14 @@ public class GameClient extends JFrame{
             Point p;
             if(!searching){
                 //GET A POINT NOT TRIED YET
-                p = positionsAvailable.get(new Random().nextInt(positionsAvailable.size() + 1));
+                int r = new Random().nextInt(positionsAvailable.size());
+                p = positionsAvailable.get(r);
                 // SEE IF HIT
                 searching = pb.getAttacked(p.x, p.y);
                 canPlay = searching;
                 //IF HIT, PREPARE THE NEXT ATTACKS ALREADY
                 if(searching && !pb.lastShipDestroyed()){
                     firstHit = p;
-                    justBefore = p;
                     int [] d = Direction.DOWN.getDirectionVector();
                     if(inBounds(p.x + d[0], p.y + d[1]))
                         directionsToGo.add(Direction.DOWN);
@@ -985,12 +1014,17 @@ public class GameClient extends JFrame{
                     d = Direction.RIGHT.getDirectionVector();
                     if(inBounds(p.x + d[0], p.y + d[1]))
                         directionsToGo.add(Direction.RIGHT);
-                    directionLooking = directionsToGo.get(directionsToGo.size());
+                    directionLooking = directionsToGo.get(directionsToGo.size() - 1);
                 }
+                justBefore = p;
             }
             else{
 
                 // SEARCHING ALREADY
+
+                System.out.println(directionLooking);
+                System.out.println(justBefore);
+
 
                 Point newAttack = new Point(justBefore.x + directionLooking.getDirectionVector()[0],
                         justBefore.y + directionLooking.getDirectionVector()[1]);
@@ -1014,8 +1048,8 @@ public class GameClient extends JFrame{
                 //FAILED
                 else{
                     justBefore = firstHit;
-                    directionsToGo.remove(directionsToGo.size());
-                    directionLooking = directionsToGo.get(directionsToGo.size());
+                    directionsToGo.remove(directionsToGo.size() - 1);
+                    directionLooking = directionsToGo.get(directionsToGo.size() - 1);
                 }
             }
         }

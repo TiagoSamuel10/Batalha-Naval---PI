@@ -187,22 +187,24 @@ public class PlayerBoard implements Serializable {
 
     public boolean getAttacked(int x, int y) {
         //NOT ATTACKED YET
-        BoardTile boardTile = getTileAt(x, y);
-        if (boardTile.canAttack()) {
-            boardTile.setAttacked();
-            // NOT A SHIP PIECE
-            if (!boardTile.isPiece()) {
-                return false;
+        if(inBounds(x, y)) {
+            BoardTile boardTile = getTileAt(x, y);
+            if (boardTile.canAttack()) {
+                boardTile.setAttacked();
+                // NOT A SHIP PIECE
+                if (!boardTile.isPiece()) {
+                    return false;
+                }
+                pieces.remove((ShipPiece) boardTile);
+                Ship ship = ((ShipPiece) boardTile).ship;
+                lastShipDestroyed = false;
+                if (ship.isDestroyed()) {
+                    lastShipDestroyed = true;
+                    //System.out.println("SHIP DESTROYED");
+                    shipDestroyed(ship);
+                }
+                return true;
             }
-            pieces.remove((ShipPiece) boardTile);
-            Ship ship = ((ShipPiece) boardTile).ship;
-            lastShipDestroyed = false;
-            if (ship.isDestroyed()) {
-                lastShipDestroyed = true;
-                //System.out.println("SHIP DESTROYED");
-                shipDestroyed(ship);
-            }
-            return true;
         }
         return true;
     }
@@ -211,7 +213,7 @@ public class PlayerBoard implements Serializable {
         ArrayList<Point> points = new ArrayList<>();
         for (int l = 0; l < LINES; l++) {
             for (int c = 0; c < COLUMNS; c++) {
-                if (boardTiles[l][c].visible)
+                if (!boardTiles[l][c].visible)
                     points.add(new Point(l, c));
             }
         }
