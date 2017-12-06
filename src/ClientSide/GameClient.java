@@ -834,15 +834,8 @@ public class GameClient extends JFrame{
                         add(ai.gb);
                         repaint();
                         if(!iCanAttack) {
-                            do {
-                                ai.getAvailable(myPB);
-                                ai.attack(myPB);
-                            } while (ai.canPlay);
-                            me = new MyGraphBoard(myPB.getToSendToPaint());
-                            me.setLocation(me.getLocation().x + 600, me.getLocation().y);
-                            add(me);
+                            handleAIAttack(ai);
                         }
-
                     }
                 }
             }
@@ -868,23 +861,50 @@ public class GameClient extends JFrame{
             }
         });
 
-        Button backToMenu = new Button("Back to Game");
-        backToMenu.setSize(100,50);
-        backToMenu.setLocation(700,100);
-        backToMenu.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                toMainGameWindow();
-                removeMouseListener(mouseListener);
-            }
-        });
-
-        add(backToMenu);
-
         add(ai.gb);
 
         repaint();
         validate();
+    }
+
+    private void handleAIAttack(MyAI ai){
+
+        boolean aiTurn = true;
+        int i = 0;
+        int h = 0;
+
+        do {
+            i++;
+            Point p = ai.chooseAttack(myPB.getAvailable());
+            System.out.println("ATTACKED " + p);
+            boolean hit = false;
+            boolean destroyed = false;
+            if (myPB.getAttacked(p.x, p.y)) {
+                //HIT
+                h++;
+                hit = true;
+                if (myPB.lastShipDestroyed()) {
+                    destroyed = true;
+                }
+            } else {
+                aiTurn = false;
+            }
+            me = new MyGraphBoard(myPB.getToSendToPaint());
+            me.setLocation(me.getLocation().x + 600, me.getLocation().y);
+            add(me);
+            repaint();
+            ai.thinkAboutNext(myPB.getAvailable(), hit, destroyed);
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }while (aiTurn);
+
+        System.out.println("ATTEMPTS: " + i);
+        System.out.println("HITS " + h);
+
+        iCanAttack = true;
     }
 
     private class MyMouse implements MouseListener{
@@ -957,21 +977,17 @@ public class GameClient extends JFrame{
 
         private boolean searching;
         private boolean betweenTwo;
-        private boolean canPlay;
 
         private Point firstHit;
         private Point justBefore;
         private ArrayList<Direction> directionsToGo;
         private Direction directionLooking;
-        private ArrayList<Point> positionsAvailable;
 
         MyAI(){
-            canPlay = false;
             searching = false;
             betweenTwo = false;
             justBefore = new Point(0,0);
             firstHit = new Point(0,0);
-            positionsAvailable = new ArrayList<>();
             directionsToGo = new ArrayList<>();
             board = PlayerBoard.getRandomPlayerBoard();
             gb = new MyGraphBoard(getToPaint());
@@ -981,77 +997,85 @@ public class GameClient extends JFrame{
             return board.getToSendToPaint();
         }
 
-        private boolean inBounds(int x, int y){
-            return PlayerBoard.inBounds(x, y);
+        private boolean inBounds(Point p){
+            return PlayerBoard.inBounds(p.x, p.y);
         }
 
-        private void getAvailable(PlayerBoard pb){
-            positionsAvailable = pb.getAvailable();
-        }
+        private void thinkAboutNext(ArrayList<Point> pos, boolean hit, boolean destroyedIt) {
 
-        private void attack(PlayerBoard pb){
-            canPlay = false;
-            Point p;
-            if(!searching){
-                //GET A POINT NOT TRIED YET
-                int r = new Random().nextInt(positionsAvailable.size());
-                p = positionsAvailable.get(r);
-                // SEE IF HIT
-                searching = pb.getAttacked(p.x, p.y);
-                canPlay = searching;
-                //IF HIT, PREPARE THE NEXT ATTACKS ALREADY
-                if(searching && !pb.lastShipDestroyed()){
-                    firstHit = p;
-                    int [] d = Direction.DOWN.getDirectionVector();
-                    if(inBounds(p.x + d[0], p.y + d[1]))
+            //WASN'T SEARCHING BEFORE
+            //SEE IF HIT
+            //IF HIT, PREPARE THE NEXT ATTACKS ALREADY
+            if (!searching && hit) {
+                searching = !destroyedIt;
+                betweenTwo = false;
+                System.out.println("NEW TARGET");
+                if(!destroyedIt) {
+                    int[] d = Direction.DOWN.getDirectionVector();
+                    Point n = new Point(justBefore.x + d[0], justBefore.y + d[1]);
+                    if (inBounds(n) && pos.contains(n))
                         directionsToGo.add(Direction.DOWN);
+
                     d = Direction.UP.getDirectionVector();
-                    if(inBounds(p.x + d[0], p.y + d[1]))
+                    n = new Point(justBefore.x + d[0], justBefore.y + d[1]);
+                    if (inBounds(n) && pos.contains(n))
                         directionsToGo.add(Direction.UP);
+
                     d = Direction.LEFT.getDirectionVector();
-                    if(inBounds(p.x + d[0], p.y + d[1]))
+                    n = new Point(justBefore.x + d[0], justBefore.y + d[1]);
+                    if (inBounds(n) && pos.contains(n))
                         directionsToGo.add(Direction.LEFT);
+
                     d = Direction.RIGHT.getDirectionVector();
-                    if(inBounds(p.x + d[0], p.y + d[1]))
+                    n = new Point(justBefore.x + d[0], justBefore.y + d[1]);
+                    if (inBounds(n) && pos.contains(n))
                         directionsToGo.add(Direction.RIGHT);
+
                     directionLooking = directionsToGo.get(directionsToGo.size() - 1);
                 }
-                justBefore = p;
             }
-            else{
-
-                // SEARCHING ALREADY
-
-                System.out.println(directionLooking);
-                System.out.println(justBefore);
-
-
-                Point newAttack = new Point(justBefore.x + directionLooking.getDirectionVector()[0],
-                        justBefore.y + directionLooking.getDirectionVector()[1]);
-
+            else if (searching) {
+                System.out.println("OLD TARGET");
+                //FAILED
+                if(!hit && !betweenTwo){
+                    System.out.println("MISSED; CHANGING DIRECTION");
+                    directionsToGo.remove(directionsToGo.size() - 1);
+                    directionLooking = directionsToGo.get(directionsToGo.size() - 1);
+                    System.out.println(directionLooking);
+                }
+                //SEARCHING ALREADY
                 //BETWEEN TWO BUT FAILED
-                if(betweenTwo && !pb.getAttacked(newAttack.x, newAttack.y)){
+                else if (betweenTwo && !hit) {
+                    System.out.println("I KNOW THE RIGHT ONE");
                     directionLooking = directionLooking.getOpposite();
                     justBefore = firstHit;
                 }
-
-                // IF HIT THAT MEANS IT'S EITHER THIS WAY OR THE OPPOSITE
-                if(pb.getAttacked(newAttack.x, newAttack.y)){
-                    canPlay = true;
-                    if(pb.lastShipDestroyed()){
-                        searching = false;
-                        return;
-                    }
-                    justBefore = newAttack;
+                //IF HIT THAT MEANS IT'S EITHER THIS WAY OR THE OPPOSITE
+                else{
+                    System.out.println("BETWEEN TWO");
                     betweenTwo = true;
                 }
-                //FAILED
-                else{
-                    justBefore = firstHit;
-                    directionsToGo.remove(directionsToGo.size() - 1);
-                    directionLooking = directionsToGo.get(directionsToGo.size() - 1);
-                }
             }
+        }
+
+        private Point chooseAttack(ArrayList<Point> pos){
+            Point p;
+            if(!searching){
+                //GET A POINT NOT TRIED YET
+                int r = new Random().nextInt(pos.size());
+                p = pos.get(r);
+                firstHit = p;
+            }
+            else{
+
+                System.out.println(directionLooking);
+
+                p = new Point(justBefore.x + directionLooking.getDirectionVector()[0],
+                        justBefore.y + directionLooking.getDirectionVector()[1]);
+
+            }
+            justBefore = p;
+            return p;
         }
 
     }
