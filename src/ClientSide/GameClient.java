@@ -32,6 +32,8 @@ public class GameClient extends JFrame{
         Attacking
     }
 
+    private final GameClient clientSelf;
+
     //FOR OFFLINE
     private MyAI ai;
     private PlayerBoard myPB;
@@ -92,7 +94,7 @@ public class GameClient extends JFrame{
 
     GameClient() {
  
-
+        clientSelf = this;
         container = getContentPane();
         setVisible(true);
         setSize(DIMENSION);
@@ -809,7 +811,7 @@ public class GameClient extends JFrame{
             @Override
             public void keyPressed(KeyEvent e) {
                 if(e.getKeyCode() == KeyCode.R.getCode()){
-                    iCanAttack = true;
+                    handleAIAttack(ai);
                 }
             }
 
@@ -869,40 +871,49 @@ public class GameClient extends JFrame{
 
     private void handleAIAttack(MyAI ai){
 
-        boolean aiTurn = true;
-        int i = 0;
-        int h = 0;
+        repaint();
+        validate();
 
-        do {
-            i++;
-            Point p = ai.chooseAttack(myPB.getAvailable());
-            System.out.println("ATTACKED " + p);
-            boolean hit = false;
-            boolean destroyed = false;
-            if (myPB.getAttacked(p.x, p.y)) {
-                //HIT
-                h++;
-                hit = true;
-                if (myPB.lastShipDestroyed()) {
-                    destroyed = true;
+        new Runnable(){
+
+            boolean aiTurn = true;
+
+            @Override
+            public void run() {
+                synchronized (clientSelf){
+                    do {
+                        container.removeAll();
+                        validate();
+                        Point p = ai.chooseAttack(myPB.getAvailable());
+                        System.out.println("ATTACKED " + p);
+                        boolean hit = false;
+                        boolean destroyed = false;
+                        if (myPB.getAttacked(p.x, p.y)) {
+                            //HIT
+                            hit = true;
+                            if (myPB.lastShipDestroyed()) {
+                                destroyed = true;
+                            }
+                        } else {
+                            aiTurn = false;
+                        }
+                        me = new MyGraphBoard(myPB.getToSendToPaint());
+                        me.setLocation(me.getLocation().x + 600, me.getLocation().y);
+                        container.add(me);
+                        container.repaint();
+                        ai.thinkAboutNext(myPB.getAvailable(), hit, destroyed);
+                        try {
+                            Thread.sleep(2000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+
+                        repaint();
+                        validate();
+                    }while (aiTurn);
                 }
-            } else {
-                aiTurn = false;
             }
-            me = new MyGraphBoard(myPB.getToSendToPaint());
-            me.setLocation(me.getLocation().x + 600, me.getLocation().y);
-            add(me);
-            repaint();
-            ai.thinkAboutNext(myPB.getAvailable(), hit, destroyed);
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }while (aiTurn);
-
-        System.out.println("ATTEMPTS: " + i);
-        System.out.println("HITS " + h);
+        }.run();
 
         iCanAttack = true;
     }
@@ -1007,9 +1018,8 @@ public class GameClient extends JFrame{
             //SEE IF HIT
             //IF HIT, PREPARE THE NEXT ATTACKS ALREADY
             if (!searching && hit) {
-                searching = !destroyedIt;
                 betweenTwo = false;
-                System.out.println("NEW TARGET");
+                System.out.println("WAS A NEW TARGET");
                 if(!destroyedIt) {
                     int[] d = Direction.DOWN.getDirectionVector();
                     Point n = new Point(justBefore.x + d[0], justBefore.y + d[1]);
@@ -1035,10 +1045,11 @@ public class GameClient extends JFrame{
                 }
             }
             else if (searching) {
-                System.out.println("OLD TARGET");
+                System.out.println("WAS AN OLD TARGET");
                 //FAILED
                 if(!hit && !betweenTwo){
                     System.out.println("MISSED; CHANGING DIRECTION");
+                    justBefore = firstHit;
                     directionsToGo.remove(directionsToGo.size() - 1);
                     directionLooking = directionsToGo.get(directionsToGo.size() - 1);
                     System.out.println(directionLooking);
@@ -1055,6 +1066,9 @@ public class GameClient extends JFrame{
                     System.out.println("BETWEEN TWO");
                     betweenTwo = true;
                 }
+            }
+            if(hit) {
+                searching = !destroyedIt;
             }
         }
 
