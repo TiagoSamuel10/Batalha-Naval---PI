@@ -2,18 +2,19 @@ package Common;
 
 import java.awt.*;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Random;
 
 public class Ship implements Serializable{
 
     private static final Random r = new Random();
-    private final ShipType _shipType;
-    private int startX;
-    private int startY;
-    private Direction dir;
+    ShipType _shipType;
+    int startL;
+    int startC;
+    Direction dir;
 
-    private boolean alreadyCalculated;
-    private ShipPiece[] pieces;
+    boolean alreadyCalculated;
+    ShipPiece[] pieces;
 
     Ship(int x, int y, Direction _dir, ShipType st){
         _shipType = st;
@@ -23,7 +24,10 @@ public class Ship implements Serializable{
         alreadyCalculated = false;
     }
 
-
+    //region SPECIAL
+    Ship() {
+    }
+    //endregion
 
     private static Ship getOneRandomShip(PlayerBoard pb, ShipType size, Direction[] directions){
         Ship tempShip = new Ship(0,0,Direction.DOWN, ShipType.One);
@@ -45,7 +49,7 @@ public class Ship implements Serializable{
 
     public static Ship[] getFreshShips(){
         return new Ship[]{
-                new Ship(0,0,Direction.DOWN, ShipType.Four),
+                new Ship(0,0,Direction.DOWN,ShipType.Four),
                 new Ship(0,0,Direction.DOWN,ShipType.Three),
                 new Ship(0,0,Direction.DOWN,ShipType.Three),
                 new Ship(0,0,Direction.DOWN,ShipType.Two),
@@ -88,8 +92,8 @@ public class Ship implements Serializable{
     }
 
     public void setPoint(Point point){
-        startX = point.x;
-        startY = point.y;
+        startL = point.x;
+        startC = point.y;
     }
 
     public void changeDirection(){
@@ -113,8 +117,8 @@ public class Ship implements Serializable{
         for (int i = 0; i < getSize(); i++){
             pieces[i] = new ShipPiece(
                     this,
-                    startX + vector[0] * i,
-                    startY + vector[1] * i)
+                    startL + vector[0] * i,
+                    startC + vector[1] * i)
             ;
         }
     }
@@ -135,7 +139,7 @@ public class Ship implements Serializable{
     @Override
     public String toString() {
         String s = "[";
-        s += "Ship at " + startX + "+" + startY + " dir: " + dir +
+        s += "Ship at " + startL + "+" + startC + " dir: " + dir +
                 ", shipType: " + _shipType + "\n";
         for (ShipPiece sp : pieces) {
             s += "+ " + sp.details() + "\n";
@@ -168,5 +172,45 @@ public class Ship implements Serializable{
             return null;
         }
 
+    }
+
+
+
+}
+
+//SPECIAL CASE
+class ConstructorShip extends Ship {
+
+    private ArrayList<ShipPiece> temp;
+
+    ConstructorShip(int _l, int _c){
+        super();
+        startL = _l;
+        startC = _c;
+        temp = new ArrayList<>();
+    }
+
+    void addPiece(ShipPiece sp){
+        temp.add(sp);
+    }
+
+    Ship getShip(){
+        _shipType = Ship.ShipType.getShipType(temp.size());
+        //System.out.println(temp.size());
+        pieces = new ShipPiece[temp.size()];
+        Ship s = new Ship(startL, startC, dir, _shipType);
+        int i = 0;
+        for (ShipPiece shipPiece:temp) {
+            shipPiece.ship = s;
+            pieces[i] = shipPiece;
+            i++;
+        }
+        s.alreadyCalculated = true;
+        s.pieces = this.pieces;
+        return s;
+    }
+
+    void setDirection(Direction _dir){
+        dir = _dir;
     }
 }

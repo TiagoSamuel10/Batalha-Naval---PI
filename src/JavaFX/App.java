@@ -1,5 +1,7 @@
 package JavaFX;
 
+import Common.PlayerBoard;
+import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
@@ -13,6 +15,8 @@ import javafx.geometry.Rectangle2D;
 import javafx.scene.Group;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.control.Cell;
 import javafx.scene.control.Label;
@@ -26,11 +30,7 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
-import javax.imageio.ImageIO;
-import javax.swing.*;
-import java.awt.*;
-import java.io.File;
-import java.net.URL;
+import java.util.Random;
 
 import static Common.PlayerBoard.COLUMNS;
 import static Common.PlayerBoard.LINES;
@@ -65,11 +65,22 @@ public class App extends Application {
     }
 
     private void setMainGame(Stage stage) {
+
         BorderPane root = new BorderPane();
         root.setStyle("-fx-background-color:white");
 
-        GridPane gridPane = new GridPane();
-        gridPane.setStyle("-fx-background-color:cyan");
+        //GridPane gridPane = new GridPane();
+        //gridPane.setStyle("-fx-background-color:cyan");
+
+        Group group = new Group();
+        group.setStyle("-fx-background-color:cyan");
+
+        GraphBoardFX board = new GraphBoardFX(512, 512);
+        PlayerBoard pb = PlayerBoard.getRandomPlayerBoard();
+
+        group.getChildren().add(board);
+
+        GraphicsContext gc = board.getGraphicsContext2D();
 
         StackPane top = new StackPane();
         top.setStyle("-fx-background-color:red");
@@ -97,19 +108,11 @@ public class App extends Application {
 
         root.setRight(right);
         root.setTop(top);
-        root.setCenter(gridPane);
+        root.setCenter(group);
 
         mainGame = new Scene(root, SCREEN_RECTANGLE.getWidth(), SCREEN_RECTANGLE.getHeight());
 
-        Platform.runLater(() -> {
-            for (int l = 0; l < LINES; l++) {
-                for (int c = 0; c < COLUMNS; c++) {
-                    Image i = new Image("images/boat_temp3.png");
-                    ImageView iv = new ImageView(i);
-                    gridPane.add(iv, l, c);
-                }
-            }
-        });
+
     }
 
     private void setMainMenu(Stage stage){

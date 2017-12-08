@@ -19,23 +19,18 @@ public class WaterTile extends BoardTile {
 
     @Override
     public String toString() {
-        if(visible){
-            if(attacked){
-                return "HW";
-            }
-            return "W";
-        }
-        return "?";
+        return "Water at " + this.x + "+" + this.y + " and is attacked " + attacked;
     }
-
-
 
     @Override
     boolean isPiece() {
         return false;
     }
 
-    String details(){
-        return "W";
+    @Override
+    String toSendString() {
+        if(canAttack())
+            return NOT_VISIBLE_STRING;
+        return ATTACKED_OR_VISIBLE_STRING;
     }
 }

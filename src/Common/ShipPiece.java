@@ -23,13 +23,7 @@ public class ShipPiece extends BoardTile {
 
     @Override
     public String toString() {
-        if(visible){
-            if(attacked){
-                return "HS";
-            }
-            return "S";
-        }
-        return "?";
+        return details();
     }
 
     @Override
@@ -38,6 +32,14 @@ public class ShipPiece extends BoardTile {
     }
 
     String details(){
-        return "ShipPiece at " + this.x + "+" + this.y + " and is visible: " + isVisible() + " and is attacked " + isAttacked();
+        return "ShipPiece at " + this.x + "+" + this.y + " and is attacked: " + attacked;
+    }
+
+    String toSendString(){
+        if(ship.isDestroyed())
+            return ATTACKED_SHIP_DESTROYED_STRING;
+        if(!canAttack())
+            return ATTACKED_STRING;
+        return NOT_ATTACKED_STRING;
     }
 }
