@@ -22,6 +22,8 @@ import javafx.scene.control.Cell;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -30,12 +32,13 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
+import java.awt.event.ActionListener;
 import java.util.Random;
 
 import static Common.PlayerBoard.COLUMNS;
 import static Common.PlayerBoard.LINES;
 
-public class App extends Application {
+public class App extends Application{
 
     Scene mainMenu;
     Scene mainGame;
@@ -80,6 +83,7 @@ public class App extends Application {
         board.startTiles(pb.getToSendToPaint());
         board.updateTiles(pb.getToSendToPaint());
         board.startAnimating();
+        board.setPlayerBoard(pb);
 
         group.getChildren().add(board);
 
@@ -112,8 +116,11 @@ public class App extends Application {
         root.setCenter(group);
 
         mainGame = new Scene(root, SCREEN_RECTANGLE.getWidth(), SCREEN_RECTANGLE.getHeight());
-
-
+        mainGame.setOnKeyPressed(event -> {
+            if(event.getCode() == KeyCode.A){
+                pb.getAttacked(new Random().nextInt(10), new Random().nextInt(10));
+            }
+        });
     }
 
     private void setMainMenu(Stage stage){
@@ -176,6 +183,7 @@ public class App extends Application {
             exit.setTranslateY(play.getHeight() + 25);
         });
     }
+
 
     class ImagePane extends Pane {
         // size an image by placing it in a pane.

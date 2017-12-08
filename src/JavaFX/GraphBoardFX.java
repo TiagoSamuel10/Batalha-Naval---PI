@@ -18,6 +18,7 @@ public class GraphBoardFX extends Canvas {
     TileFX[][] tiles;
     GraphicsContext gc;
     PlayerBoard pb;
+    private PlayerBoard playerBoard;
 
     GraphBoardFX(int _w, int _h){
         super(_w, _h);
@@ -41,9 +42,8 @@ public class GraphBoardFX extends Canvas {
                 if(pb.getTileAt(l, c).isPiece()) {
                     ShipPiece sp = (ShipPiece) pb.getTileAt(l, c);
                     tiles[l][c] = new ShipTileFX(sp.getShip().getSize(), sp.getIdInsideShip(), l, c);
-                    if(sp.getShip().getDirection() == Direction.DOWN || sp.getShip().getDirection() == Direction.UP){
+                    if(sp.getShip().getDirection() == Direction.DOWN || sp.getShip().getDirection() == Direction.UP)
                         tiles[l][c].toRotate = true;
-                    }
                 }
                 else
                     tiles[l][c] = new WaterTileFX(l, c);
@@ -54,7 +54,6 @@ public class GraphBoardFX extends Canvas {
     void updateTiles(String[][] sent){
         for (int l = 0; l < LINES; l++) {
             for (int c = 0; c < COLUMNS; c++) {
-                //System.out.println("HAVE " + board[l][c]);
                 switch (sent[l][c]){
                     case ShipPiece.ATTACKED_SHIP_DESTROYED_STRING:
                         ShipTileFX st = (ShipTileFX) tiles[l][c];
@@ -87,6 +86,7 @@ public class GraphBoardFX extends Canvas {
         {
             public void handle(long currentNanoTime)
             {
+                updateTiles(pb.getToSendToPaint());
                 gc.drawImage(BACKGROUND_WATER, 0,0);
                 for (int l = 0; l < LINES; l++) {
                     for (int c = 0; c < COLUMNS; c++)
@@ -97,5 +97,7 @@ public class GraphBoardFX extends Canvas {
     }
 
 
-
+    public void setPlayerBoard(PlayerBoard playerBoard) {
+        pb = playerBoard;
+    }
 }

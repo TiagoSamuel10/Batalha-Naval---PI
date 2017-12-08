@@ -58,6 +58,7 @@ public class ShipTileFX extends TileFX {
                         //imageAttacked = TWO_TWO_DESTROYED;
                         break;
                 }
+                break;
             case 3:
                 switch (id) {
                     case 0:
@@ -73,6 +74,7 @@ public class ShipTileFX extends TileFX {
                         //imageAttacked = THREE_THREE_DESTROYED;
                         break;
                 }
+                break;
             case 4:
                 switch (id) {
                     case 0:
@@ -113,16 +115,21 @@ public class ShipTileFX extends TileFX {
     void drawForOther(GraphicsContext gc) {
         //FOR NOW
         imageOthersHidden = imageToSelf;
-        if(!toRotate) {
-            if (attacked)
+        imageAttacked = new Image("images/DEAD.png");
+
+        if(toRotate) {
+            if (attacked) {
                 gc.drawImage(imageAttacked, l * TILE_SIZE, c * TILE_SIZE);
+                System.out.println("HERE");
+            }
             else
                 gc.drawImage(imageOthersHidden, l * TILE_SIZE, c * TILE_SIZE);
         }else {
             gc.save(); // saves the current state on stack, including the current transform
 
-            gc.rotate(90);
-            gc.drawImage(imageOthersHidden, l * TILE_SIZE, c * TILE_SIZE);
+            Rotate r = new Rotate(90, l * TILE_SIZE + imageOthersHidden.getWidth()/2 ,  c * TILE_SIZE + imageOthersHidden.getHeight()/2);
+            gc.setTransform(r.getMxx(), r.getMyx(), r.getMxy(), r.getMyy(), r.getTx(), r.getTy());
+            gc.drawImage(imageOthersHidden, l * TILE_SIZE, c* TILE_SIZE);
 
             gc.restore(); // back to original state (before rotation)
         }
