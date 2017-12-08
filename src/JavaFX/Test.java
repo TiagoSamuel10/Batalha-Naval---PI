@@ -61,7 +61,7 @@ public class Test extends Application{
                 }
 
                 // RENDER
-                circle.setCenterX(ballX);
+               circle.setCenterX(ballX);
             }
         };
 

@@ -13,11 +13,13 @@ public abstract class TileFX {
     int l;
     int c;
     boolean attacked;
+    boolean toRotate;
 
     TileFX(int _l, int _c){
         l = _l;
         c = _c;
         attacked = false;
+        toRotate = false;
     }
 
     abstract void drawForSelf(GraphicsContext gc);

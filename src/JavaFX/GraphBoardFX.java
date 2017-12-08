@@ -1,5 +1,6 @@
 package JavaFX;
 
+import Common.Direction;
 import Common.PlayerBoard;
 import Common.ShipPiece;
 import Common.WaterTile;
@@ -40,6 +41,9 @@ public class GraphBoardFX extends Canvas {
                 if(pb.getTileAt(l, c).isPiece()) {
                     ShipPiece sp = (ShipPiece) pb.getTileAt(l, c);
                     tiles[l][c] = new ShipTileFX(sp.getShip().getSize(), sp.getIdInsideShip(), l, c);
+                    if(sp.getShip().getDirection() == Direction.DOWN || sp.getShip().getDirection() == Direction.UP){
+                        tiles[l][c].toRotate = true;
+                    }
                 }
                 else
                     tiles[l][c] = new WaterTileFX(l, c);
