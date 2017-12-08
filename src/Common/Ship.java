@@ -117,6 +117,7 @@ public class Ship implements Serializable{
         for (int i = 0; i < getSize(); i++){
             pieces[i] = new ShipPiece(
                     this,
+                    i,
                     startL + vector[0] * i,
                     startC + vector[1] * i)
             ;
@@ -129,7 +130,7 @@ public class Ship implements Serializable{
 
     boolean isDestroyed() {
         for (ShipPiece piece : pieces) {
-            if (!piece.isAttacked()) {
+            if (piece.canAttack()) {
                 return false;
             }
         }

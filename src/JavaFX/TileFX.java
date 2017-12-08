@@ -6,21 +6,21 @@ import javafx.scene.image.Image;
 
 import java.awt.*;
 
-public class TileFX {
+public abstract class TileFX {
 
-    Image image;
+    final static int TILE_SIZE = 50;
+
     int l;
     int c;
+    boolean attacked;
 
-    public TileFX(Image _image, int _l, int _c){
-        image = _image;
+    TileFX(int _l, int _c){
         l = _l;
         c = _c;
+        attacked = false;
     }
 
-    void draw(GraphicsContext gc){
-        gc.drawImage(image, l * 30, c * 30);
-    }
-
+    abstract void drawForSelf(GraphicsContext gc);
+    abstract void drawForOther(GraphicsContext gc);
 
 }

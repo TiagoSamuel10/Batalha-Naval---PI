@@ -46,7 +46,7 @@ class GraphicalBoard extends JPanel {
                     case WaterTile.NOT_VISIBLE_STRING:
                         graphTile.setColor(BoardTile.COLOR_NOT_VISIBLE);
                         break;
-                    case WaterTile.ATTACKED_OR_VISIBLE_STRING:
+                    case WaterTile.VISIBLE_STRING:
                         graphTile.setColor(WaterTile.COLOR_ATTACKED_OR_VISIBLE);
                         break;
                 }

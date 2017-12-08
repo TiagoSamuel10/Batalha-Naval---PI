@@ -3,7 +3,6 @@ package Common;
 import java.awt.*;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class PlayerBoard implements Serializable {
 
@@ -77,7 +76,7 @@ public class PlayerBoard implements Serializable {
                 }
                 else{
                     if(bt.canAttack()){
-                        board[l][c] = WaterTile.ATTACKED_OR_VISIBLE_STRING;
+                        board[l][c] = WaterTile.VISIBLE_STRING;
                     }
                     else{
                         board[l][c] = WaterTile.NOT_VISIBLE_STRING;
@@ -96,6 +95,10 @@ public class PlayerBoard implements Serializable {
         return toSend;
     }
 
+    private boolean aPieceInTheArray(int[][] check, int x, int y){
+        return check[x][y] > 0;
+    }
+
     private boolean aPieceInTheArray(String[][] sent, int l, int c) {
         return sent[l][c].equalsIgnoreCase(ShipPiece.ATTACKED_STRING) ||
                 sent[l][c].equalsIgnoreCase(ShipPiece.NOT_ATTACKED_STRING) ||
@@ -112,20 +115,20 @@ public class PlayerBoard implements Serializable {
         ship.setDirection(Direction.DOWN);
         if(inBounds(l, c + 1) && aPieceInTheArray(sent, l, c + 1)) {
             ship.setDirection(Direction.RIGHT);
-            return buildIt(toSkip, sent, l, c, ship, Direction.RIGHT);
+            return buildIt(toSkip, sent, l, c, ship, Direction.RIGHT, 0);
         }
-        return buildIt(toSkip, sent, l, c, ship, Direction.DOWN);
+        return buildIt(toSkip, sent, l, c, ship, Direction.DOWN, 0);
     }
 
     private boolean inBounds(Point p){
         return inBounds(p.x, p.y);
     }
 
-    private ConstructorShip buildIt(ArrayList<Point> toSkip, String[][] sent, int l, int c, ConstructorShip ship, Direction _dir) {
+    private ConstructorShip buildIt(ArrayList<Point> toSkip, String[][] sent, int l, int c, ConstructorShip ship, Direction _dir, int i) {
 
-        ShipPiece sp  = new ShipPiece(null, l, c);
+        ShipPiece sp  = new ShipPiece(null, i, l, c);
         if (sent[l][c].equalsIgnoreCase(ShipPiece.NOT_ATTACKED_STRING)) {
-            sp = new ShipPiece(null, l, c);
+            sp = new ShipPiece(null, i, l, c);
         }
         else {
             sp.setAttacked(true);
@@ -137,7 +140,8 @@ public class PlayerBoard implements Serializable {
         Point newP = new Point(l + vec[0], c + vec[1]);
 
         if (inBounds(newP) && aPieceInTheArray(sent, newP.x, newP.y)) {
-            ship = buildIt(toSkip, sent, newP.x, newP.y, ship, _dir);
+            i++;
+            ship = buildIt(toSkip, sent, newP.x, newP.y, ship, _dir, i);
         }
         return ship;
     }
@@ -159,7 +163,7 @@ public class PlayerBoard implements Serializable {
                 else{
                     //WATER
                     boardTiles[l][c] = new WaterTile(l, c);
-                    if(sent[l][c].equalsIgnoreCase(WaterTile.ATTACKED_OR_VISIBLE_STRING)){
+                    if(sent[l][c].equalsIgnoreCase(WaterTile.VISIBLE_STRING)){
                         boardTiles[l][c].setAttacked(true);
                     }
                 }
@@ -249,9 +253,6 @@ public class PlayerBoard implements Serializable {
         return pb;
     }
 
-    private boolean aPieceInTheArray(int[][] check, int x, int y){
-        return check[x][y] > 0;
-    }
 
     private void fillWithWater() {
         for (int l = 0; l < LINES; l++) {
@@ -273,7 +274,7 @@ public class PlayerBoard implements Serializable {
                 boardTile.setAttacked(true);
                 // NOT A SHIP PIECE
                 if (!boardTile.isPiece()) {
-                    toPaint[x][y] = WaterTile.ATTACKED_OR_VISIBLE_STRING;
+                    toPaint[x][y] = WaterTile.VISIBLE_STRING;
                     return false;
                 }
                 toPaint[x][y] = ShipPiece.ATTACKED_STRING;
@@ -317,7 +318,7 @@ public class PlayerBoard implements Serializable {
             for (Point point : points) {
                 if (inBounds(point.x, point.y)) {
                     getTileAt(point.x, point.y).setAttacked(true);
-                    toPaint[point.x][point.y] = WaterTile.ATTACKED_OR_VISIBLE_STRING;
+                    toPaint[point.x][point.y] = WaterTile.VISIBLE_STRING;
                 }
             }
         }
@@ -428,7 +429,7 @@ public class PlayerBoard implements Serializable {
 
     //endregion
 
-    BoardTile getTileAt(int x, int y) {
+    public BoardTile getTileAt(int x, int y) {
         if(inBounds(x, y)){
             return boardTiles[x][y];
         }

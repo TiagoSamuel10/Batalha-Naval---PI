@@ -14,11 +14,22 @@ public class ShipPiece extends BoardTile {
     public static final String ATTACKED_SHIP_DESTROYED_STRING = "PD";
 
     Ship ship;
+    //WHAT PART OF THE SHIP
+    private final int sId;
 
-    ShipPiece(Ship _ship, int _x, int _y) {
+    ShipPiece(Ship _ship, int i, int _x, int _y) {
         this.x = _x;
         this.y = _y;
         ship = _ship;
+        sId = i;
+    }
+
+    public int getIdInsideShip() {
+        return sId;
+    }
+
+    public Ship getShip(){
+        return ship;
     }
 
     @Override
@@ -27,7 +38,7 @@ public class ShipPiece extends BoardTile {
     }
 
     @Override
-    boolean isPiece() {
+    public boolean isPiece() {
         return true;
     }
 

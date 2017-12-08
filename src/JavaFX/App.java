@@ -77,10 +77,11 @@ public class App extends Application {
 
         GraphBoardFX board = new GraphBoardFX(512, 512);
         PlayerBoard pb = PlayerBoard.getRandomPlayerBoard();
+        board.startTiles(pb.getToSendToPaint());
+        board.updateTiles(pb.getToSendToPaint());
+        board.startAnimating();
 
         group.getChildren().add(board);
-
-        GraphicsContext gc = board.getGraphicsContext2D();
 
         StackPane top = new StackPane();
         top.setStyle("-fx-background-color:red");

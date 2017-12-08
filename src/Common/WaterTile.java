@@ -10,7 +10,7 @@ public class WaterTile extends BoardTile {
     public final static Color COLOR_TO_SHOW = new Color(0,200,200);
 
     public static final String NOT_VISIBLE_STRING = "W";
-    public static final String ATTACKED_OR_VISIBLE_STRING = "WV";
+    public static final String VISIBLE_STRING = "WV";
 
     WaterTile(int _x, int _y){
         x = _x;
@@ -23,7 +23,7 @@ public class WaterTile extends BoardTile {
     }
 
     @Override
-    boolean isPiece() {
+    public boolean isPiece() {
         return false;
     }
 
@@ -31,6 +31,6 @@ public class WaterTile extends BoardTile {
     String toSendString() {
         if(canAttack())
             return NOT_VISIBLE_STRING;
-        return ATTACKED_OR_VISIBLE_STRING;
+        return VISIBLE_STRING;
     }
 }

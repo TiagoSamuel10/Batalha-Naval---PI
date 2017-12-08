@@ -34,7 +34,7 @@ class MyGraphBoard extends GraphicalBoard {
                     case WaterTile.NOT_VISIBLE_STRING:
                         graphTile.setColor(WaterTile.COLOR_TO_SHOW);
                         break;
-                    case WaterTile.ATTACKED_OR_VISIBLE_STRING:
+                    case WaterTile.VISIBLE_STRING:
                         graphTile.setColor(WaterTile.COLOR_ATTACKED_OR_VISIBLE);
                         break;
                 }
