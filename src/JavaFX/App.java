@@ -8,23 +8,18 @@ import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import javafx.geometry.Insets;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Group;
 import javafx.scene.Scene;
-import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
-import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.*;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
-import javafx.scene.text.TextFlow;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -53,6 +48,7 @@ public class App extends Application{
     private Client client;
     private String myName;
     private final String address = "localhost";
+    private PlayerBoard pb;
 
     private boolean iCanAttack;
     
@@ -86,12 +82,9 @@ public class App extends Application{
 
     private HBox sSRoot;
 
-    private EmptyGraphBoardFX sSboard;
+    private GraphShipsBoardFX sSboard;
 
     private VBox sSRightStuff;
-
-    private ShipFX[] sSShips;
-    private Canvas sSCanvasForShips;
 
     private HBox sSShipsStatus;
     private Text sSShipsStatusAllSet;
@@ -115,7 +108,6 @@ public class App extends Application{
     private Group MGCanvasHolder;
     private SelfGraphBoardFX MGSelfBoard;
 
-    private PlayerBoard MGSelfPB;
     private StackPane MGTop;
     private Text mGcurrentPlayerText;
 
@@ -362,12 +354,12 @@ public class App extends Application{
         MGCanvasHolder.setStyle("-fx-background-color:cyan");
 
         MGSelfBoard = new SelfGraphBoardFX(512, 512);
-        MGSelfPB = PlayerBoard.getRandomPlayerBoard();
+        pb = PlayerBoard.getRandomPlayerBoard();
 
-        MGSelfBoard.startTiles(MGSelfPB.getToSendToPaint());
-        MGSelfBoard.updateTiles(MGSelfPB.getToSendToPaint());
+        MGSelfBoard.startTiles(pb.getToSendToPaint());
+        MGSelfBoard.updateTiles(pb.getToSendToPaint());
         MGSelfBoard.startAnimating();
-        MGSelfBoard.setPlayerBoard(MGSelfPB);
+        MGSelfBoard.setPlayerBoard(pb);
 
         MGCanvasHolder.getChildren().add(MGSelfBoard);
 
@@ -395,7 +387,7 @@ public class App extends Application{
         mainGame = new Scene(MGRoot, SCREEN_RECTANGLE.getWidth(), SCREEN_RECTANGLE.getHeight());
         mainGame.setOnKeyPressed(event -> {
             if(event.getCode() == KeyCode.A){
-                MGSelfPB.getAttacked(new Random().nextInt(10), new Random().nextInt(10));
+                pb.getAttacked(new Random().nextInt(10), new Random().nextInt(10));
             }
         });
     }
@@ -452,14 +444,13 @@ public class App extends Application{
         sSRoot = new HBox();
         sSRoot.setStyle("-fx-background-color: white");
 
-        sSboard = new EmptyGraphBoardFX(500,500);
+        pb = new PlayerBoard();
+        sSboard = new GraphShipsBoardFX(700,700);
+        sSboard.setPlayerBoard(pb);
         sSboard.startAnimating();
 
         sSRightStuff = new VBox();
         sSRightStuff.setStyle("-fx-background-color: red");
-
-        sSCanvasForShips = new Canvas(500,500);
-        sSCanvasForShips.getGraphicsContext2D().fillRect(0,0,500,500);
 
         sSShipsStatus = new HBox();
         sSShipsStatus.setStyle("-fx-background-color: green;");
@@ -487,7 +478,7 @@ public class App extends Application{
         sSPlayersReady.getChildren().addAll(sSPlayer1Ready, sSPlayer2Ready);
         sSPlayersReady.setPadding(new Insets(5));
 
-        sSRightStuff.getChildren().addAll(sSCanvasForShips, sSShipsStatus, sSReadyBox, sSPlayersReady);
+        sSRightStuff.getChildren().addAll(sSShipsStatus, sSReadyBox, sSPlayersReady);
 
         sSRoot.getChildren().addAll(sSboard, sSRightStuff);
         sSRoot.setPadding(new Insets(50, 50, 200,200));

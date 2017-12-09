@@ -12,17 +12,24 @@ public class PlayerBoard implements Serializable {
 
     private String[][] toPaint;
 
+    private ArrayList<Ship> ships;
+
     private ArrayList<ShipPiece> pieces;
     private BoardTile[][] boardTiles;
     private int[][] toSend;
     private int shipN = 0;
     private boolean lastShipDestroyed;
 
+    public ArrayList<Ship> getShips(){
+        return ships;
+    }
+
     public PlayerBoard() {
         toSend = new int[LINES][COLUMNS];
         boardTiles = new BoardTile[LINES][COLUMNS];
         pieces = new ArrayList<>();
         toPaint = new String[LINES][COLUMNS];
+        ships = new ArrayList<>();
         fillWithWater();
     }
 
@@ -364,6 +371,7 @@ public class PlayerBoard implements Serializable {
     public boolean placeShip(Ship toAdd) {
         if(canShipBeHere(toAdd)) {
             shipN++;
+            ships.add(toAdd);
             for (ShipPiece piece : toAdd.getPieces()) {
                 //System.out.println("PLACING " + piece.getClass().getSimpleName() + " AT: " + piece.x + " " + piece.y);
                 boardTiles[piece.x][piece.y] = piece;
@@ -441,7 +449,7 @@ public class PlayerBoard implements Serializable {
     }
 
     public void removeShip(Ship ship) {
-
+        ships.remove(ship);
         for (ShipPiece piece : ship.getPieces()) {
             //System.out.println("REMOVING " + piece.getClass().getSimpleName() + " AT: " + piece.x + " " + piece.y);
             boardTiles[piece.x][piece.y] = new WaterTile(piece.x, piece.y);

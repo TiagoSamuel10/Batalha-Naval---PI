@@ -29,6 +29,9 @@ public class Ship implements Serializable{
     }
     //endregion
 
+    public Point getLandC(){
+        return new Point(startL, startC);
+    }
 
     public Direction getDirection() {
         return dir;
