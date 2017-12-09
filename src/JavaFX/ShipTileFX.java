@@ -32,9 +32,9 @@ public class ShipTileFX extends TileFX {
     private final static Image FOUR_FOUR = new Image("images/4_4.png");
     //private final static Image FOUR_FOUR_DESTROYED = new Image("images/4_4_d.png");
 
-    private Image imageToSelf;
-    private Image imageAttacked;
-    private Image imageOthersHidden;
+    Image imageToSelf;
+    Image imageAttacked;
+    Image imageOthersHidden;
 
     ShipTileFX(int sSize, int id, int _l, int _c) {
         super(_l, _c);
@@ -98,40 +98,11 @@ public class ShipTileFX extends TileFX {
     }
 
     @Override
-    void drawForSelf(GraphicsContext gc) {
-        if(!toRotate) {
-            if (attacked)
-                gc.drawImage(imageAttacked, l * TILE_SIZE, c * TILE_SIZE);
-            else
-                gc.drawImage(imageToSelf, l * TILE_SIZE, c * TILE_SIZE);
-        }
-        else{
-            Rotate r = new Rotate(-90, l, c);
-            gc.setTransform(r.getMxx(), r.getMyx(), r.getMxy(), r.getMyy(), r.getTx(), r.getTy());
-        }
-    }
+    void draw(GraphicsContext gc) {
+        if(toRotate)
+            super.draw(gc);
+        else
+            drawRotated(getImageToDraw(), 90, gc);
 
-    @Override
-    void drawForOther(GraphicsContext gc) {
-        //FOR NOW
-        imageOthersHidden = imageToSelf;
-        imageAttacked = new Image("images/DEAD.png");
-
-        if(toRotate) {
-            if (attacked) {
-                gc.drawImage(imageAttacked, l * TILE_SIZE, c * TILE_SIZE);
-                System.out.println("HERE");
-            }
-            else
-                gc.drawImage(imageOthersHidden, l * TILE_SIZE, c * TILE_SIZE);
-        }else {
-            gc.save(); // saves the current state on stack, including the current transform
-
-            Rotate r = new Rotate(90, l * TILE_SIZE + imageOthersHidden.getWidth()/2 ,  c * TILE_SIZE + imageOthersHidden.getHeight()/2);
-            gc.setTransform(r.getMxx(), r.getMyx(), r.getMxy(), r.getMyy(), r.getTx(), r.getTy());
-            gc.drawImage(imageOthersHidden, l * TILE_SIZE, c* TILE_SIZE);
-
-            gc.restore(); // back to original state (before rotation)
-        }
     }
 }

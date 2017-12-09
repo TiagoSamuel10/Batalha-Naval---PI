@@ -1,5 +1,7 @@
 package JavaFX;
 
+import Common.ShipPiece;
+import Common.WaterTile;
 import javafx.animation.AnimationTimer;
 
 import static Common.PlayerBoard.COLUMNS;
@@ -11,19 +13,19 @@ public class SelfGraphBoardFX extends GraphBoardFX {
         super(_w, _h);
     }
 
-    @Override
-    void startAnimating() {
-        new AnimationTimer()
-        {
-            public void handle(long currentNanoTime)
-            {
-                gc.drawImage(BACKGROUND_WATER, 0,0);
-                for (int l = 0; l < LINES; l++) {
-                    for (int c = 0; c < COLUMNS; c++)
-                        tiles[l][c].drawForSelf(gc);
-                }
-            }
-
-        }.start();
+    void setImageForTile(TileFX t, boolean isPiece){
+        if(isPiece){
+            ShipTileFX st = (ShipTileFX) t;
+            if(st.attacked)
+                st.setImageToDraw(st.imageAttacked);
+            else
+                st.setImageToDraw(st.imageToSelf);
+        }else {
+            WaterTileFX wt = (WaterTileFX) t;
+            if(wt.attacked)
+                wt.setImageToDraw(WaterTileFX.IMAGE_ATTACKED);
+            else
+                wt.setImageToDraw(WaterTileFX.IMAGE_TO_SELF);
+        }
     }
 }

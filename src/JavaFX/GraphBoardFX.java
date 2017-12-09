@@ -5,20 +5,17 @@ import Common.PlayerBoard;
 import Common.ShipPiece;
 import Common.WaterTile;
 import javafx.animation.AnimationTimer;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.image.Image;
+import javafx.scene.paint.Color;
+
+import java.util.Random;
 
 import static Common.PlayerBoard.COLUMNS;
 import static Common.PlayerBoard.LINES;
 
-public class GraphBoardFX extends Canvas {
+public class GraphBoardFX extends EmptyGraphBoardFX {
 
-    final static Image BACKGROUND_WATER = new Image("images/water_bg.jpg");
     TileFX[][] tiles;
-    GraphicsContext gc;
     PlayerBoard pb;
-    private PlayerBoard playerBoard;
 
     GraphBoardFX(int _w, int _h){
         super(_w, _h);
@@ -51,36 +48,58 @@ public class GraphBoardFX extends Canvas {
         }
     }
 
-    void updateTiles(String[][] sent){
+    void updateTiles(String[][] sent) {
         for (int l = 0; l < LINES; l++) {
             for (int c = 0; c < COLUMNS; c++) {
+                TileFX t = tiles[l][c];
+                boolean piece = true;
                 switch (sent[l][c]){
                     case ShipPiece.ATTACKED_SHIP_DESTROYED_STRING:
-                        ShipTileFX st = (ShipTileFX) tiles[l][c];
+                        ShipTileFX st = (ShipTileFX) t;
                         st.attacked = true;
                         st.shipDestroyed = true;
                         break;
                     case ShipPiece.ATTACKED_STRING:
-                        st = (ShipTileFX) tiles[l][c];
+                        st = (ShipTileFX) t;
                         st.attacked = true;
                         break;
                     case ShipPiece.NOT_ATTACKED_STRING:
-                        st = (ShipTileFX) tiles[l][c];
+                        st = (ShipTileFX) t;
                         st.attacked = false;
                         break;
                     case WaterTile.NOT_VISIBLE_STRING:
-                        WaterTileFX wt = (WaterTileFX) tiles[l][c];
+                        piece = false;
+                        WaterTileFX wt = (WaterTileFX) t;
                         wt.attacked = false;
                         break;
                     case WaterTile.VISIBLE_STRING:
-                        wt = (WaterTileFX) tiles[l][c];
+                        piece = false;
+                        wt = (WaterTileFX) t;
                         wt.attacked = true;
                         break;
                 }
+                setImageForTile(t, piece);
             }
         }
     }
 
+    void setImageForTile(TileFX t, boolean isPiece){
+        if(isPiece){
+            ShipTileFX st = (ShipTileFX) t;
+            if(st.attacked)
+                st.setImageToDraw(st.imageAttacked);
+            else
+                st.setImageToDraw(st.imageOthersHidden);
+        }else {
+            WaterTileFX wt = (WaterTileFX) t;
+            if(wt.attacked)
+                wt.setImageToDraw(WaterTileFX.IMAGE_ATTACKED);
+            else
+                wt.setImageToDraw(WaterTileFX.IMAGE_OTHERS_HIDDEN);
+        }
+    }
+
+    @Override
     void startAnimating(){
         new AnimationTimer()
         {
@@ -88,14 +107,24 @@ public class GraphBoardFX extends Canvas {
             {
                 updateTiles(pb.getToSendToPaint());
                 gc.drawImage(BACKGROUND_WATER, 0,0);
-                for (int l = 0; l < LINES; l++) {
-                    for (int c = 0; c < COLUMNS; c++)
-                        tiles[l][c].drawForOther(gc);
-                }
+
+                for (int l = 0; l < LINES; l++)
+                    for (int c = 0; c < COLUMNS; c++) {
+                        gc.strokeRect(c * TileFX.TILE_SIZE,
+                                l * TileFX.TILE_SIZE,
+                                TileFX.TILE_SIZE,
+                                TileFX.TILE_SIZE
+                        );
+                    }
+
+                for (int l = 0; l < LINES; l++)
+                    for (int c = 0; c < COLUMNS; c++) {
+                        tiles[l][c].draw(gc);
+                    }
+
             }
         }.start();
     }
-
 
     public void setPlayerBoard(PlayerBoard playerBoard) {
         pb = playerBoard;
