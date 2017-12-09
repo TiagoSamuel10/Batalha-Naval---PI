@@ -4,6 +4,7 @@ package JavaFX;
 import javafx.scene.Node;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
+import javafx.scene.shape.Circle;
 
 import java.awt.*;
 
@@ -22,8 +23,8 @@ class ShipFX extends Sprite{
     ShipFX(int _ShipSize, int _x, int _y){
         shipSize = _ShipSize;
         selectImage();
-        setPosition(new Point(_x, _y));
-        toRotate = false;
+        setPosition(_x, _y);
+        toRotate = true;
     }
 
     ShipFX(int _ShipSize){
@@ -48,15 +49,11 @@ class ShipFX extends Sprite{
     }
 
     @Override
-    void setPosition(Point p) {
-        setPosition(p.x * TILE_SIZE, p.y *TILE_SIZE);
-    }
-
-    @Override
     void draw(GraphicsContext gc) {
         if(toRotate)
             super.draw(gc);
         else
             drawRotated(getImageToDraw(), 90, gc);
     }
+
 }

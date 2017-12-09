@@ -445,7 +445,7 @@ public class App extends Application{
         sSRoot.setStyle("-fx-background-color: white");
 
         pb = new PlayerBoard();
-        sSboard = new GraphShipsBoardFX(700,700);
+        sSboard = new GraphShipsBoardFX(700,500);
         sSboard.setPlayerBoard(pb);
         sSboard.startAnimating();
 

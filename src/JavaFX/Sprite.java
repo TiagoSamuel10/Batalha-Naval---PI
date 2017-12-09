@@ -1,12 +1,13 @@
 package JavaFX;
 
+import javafx.scene.Node;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import javafx.scene.transform.Rotate;
 
 import java.awt.*;
 
-abstract class Sprite {
+abstract class Sprite extends Node {
 
     private Image imageToDraw;
 
