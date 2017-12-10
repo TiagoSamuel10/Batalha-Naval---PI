@@ -1,5 +1,6 @@
 package JavaFX;
 
+import Common.Direction;
 import Common.Ship;
 import Common.ShipPiece;
 import javafx.animation.AnimationTimer;
@@ -35,9 +36,63 @@ public class GraphShipsBoardFX extends GraphBoardFX {
         }
     }
 
+    void doShips(ArrayList<Ship> ships){
+        for(int i = 0; i < ships.size(); i++) {
+            Ship s = ships.get(i);
+            System.out.println(s);
+            switch(s.getDirection()){
+                case UP:
+                    doShipUP(i, s);
+                    break;
+                case DOWN:
+                    doShipDown(i, s);
+                    break;
+                case RIGHT:
+                    doShipRight(i, s);
+                    break;
+                case LEFT:
+                    doShipLeft(i, s);
+            }
+        }
+    }
+
+    private void doShipUP(int i, Ship s) {
+        ShipPiece last = s.getPieces()[0];
+        for (ShipPiece shipPiece : s.getPieces())
+            last = shipPiece;
+
+        shipsFX[i] = new ShipFX(s.getSize(), last.getPointCoordinates().x, last.getPointCoordinates().y,
+                Direction.DOWN, true, true);
+        shipsFX[i].setImageToDraw(SpriteTileFX.rotateImage(180, shipsFX[i].getImageToDraw()));
+    }
+
+    private void doShipLeft(int i, Ship s) {
+        ShipPiece last = s.getPieces()[0];
+        for (ShipPiece shipPiece : s.getPieces())
+            last = shipPiece;
+        shipsFX[i] = new ShipFX(s.getSize(), last.getPointCoordinates().x, last.getPointCoordinates().y,
+                Direction.DOWN, false, true);
+        shipsFX[i].setImageToDraw(SpriteTileFX.rotateImage(180, shipsFX[i].getImageToDraw()));
+
+    }
+
+    private void doShipRight(int i, Ship s) {
+        shipsFX[i] = new ShipFX(s.getSize(), s.getLandC().x, s.getLandC().y,
+                Direction.DOWN, false, true);
+    }
+
+    private void doShipDown(int i, Ship s) {
+        shipsFX[i] = new ShipFX(s.getSize(), s.getLandC().x, s.getLandC().y,
+                Direction.DOWN, true, true);
+    }
+
     void placeIt(ShipFX s, int i){
         int startX = TileFX.TILE_SIZE * COLUMNS + 5;
         s.setPosition(startX, i * TileFX.TILE_SIZE);
+    }
+
+    boolean fullOfShips(){
+        return pb.fullOfShips();
     }
 
     void seeIfShipFXCanBePlaced(double x, double y) {

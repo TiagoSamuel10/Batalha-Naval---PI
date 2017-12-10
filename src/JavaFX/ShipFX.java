@@ -21,15 +21,15 @@ class ShipFX extends SpriteTileFX {
     Direction dir;
     boolean placed;
 
-    ShipFX(int _ShipSize, int _x, int _y, Direction _dir, boolean toRotate){
-        super(_x, _y, false, toRotate);
+    ShipFX(int _ShipSize, int _x, int _y, Direction _dir, boolean toRotate, boolean boardCoord){
+        super(_x, _y, boardCoord, toRotate);
         shipSize = _ShipSize;
         dir = _dir;
         selectImage();
     }
 
     ShipFX(int _ShipSize){
-        this(_ShipSize, 0,0, Direction.RIGHT, false);
+        this(_ShipSize, 0,0, Direction.RIGHT, false, false);
     }
 
     void selectImage(){

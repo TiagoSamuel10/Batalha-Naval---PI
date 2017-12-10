@@ -361,7 +361,6 @@ public class App extends Application{
 
         MGSelfBoard = new SelfGraphBoardFX(512, 512);
         pb = PlayerBoard.getRandomPlayerBoard();
-        System.out.println(pb);
 
         MGSelfBoard.startTiles(pb.getToSendToPaint());
         MGSelfBoard.updateTiles(pb.getToSendToPaint());
@@ -471,6 +470,14 @@ public class App extends Application{
         sSReadyBox.setStyle("-fx-background-color: yellow;");
 
         sSRandomButton = new Button("Random");
+        sSRandomButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                pb = PlayerBoard.getRandomPlayerBoard();
+                sSboard.doShips(pb.getShips());
+            }
+        });
+
         sSReady = new CheckBox();
 
         sSReadyButton = new Button("Ready");

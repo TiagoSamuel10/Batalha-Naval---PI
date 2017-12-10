@@ -1,8 +1,13 @@
 package JavaFX;
 
+import javafx.scene.SnapshotParameters;
+import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.paint.Color;
 import javafx.scene.transform.Rotate;
+import javafx.scene.*;
 
 import java.awt.*;
 
@@ -78,6 +83,19 @@ abstract class SpriteTileFX {
         gc.drawImage(image, x, y);
 
         gc.restore(); // back to original state (before rotation)
+    }
+
+    static Image rotateImage(int angle, Image image){
+
+        ImageView iv = new ImageView(image);
+        iv.setRotate(angle);
+
+        SnapshotParameters params = new SnapshotParameters();
+        params.setFill(Color.rgb(0,0,0,0));
+
+        Canvas canvas = new Canvas(TileFX.TILE_SIZE, TileFX.TILE_SIZE);
+
+        return iv.snapshot(params, null);
     }
 
     boolean contains(double x, double y){
