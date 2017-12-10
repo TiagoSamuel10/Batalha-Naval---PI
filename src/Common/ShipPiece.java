@@ -43,7 +43,7 @@ public class ShipPiece extends BoardTile {
     }
 
     String details(){
-        return "ShipPiece at " + this.x + "+" + this.y + " and is attacked: " + attacked;
+        return "ShipPiece at " + this.x + "+" + this.y + " and is attacked: " + attacked + " dir: " + getShip().dir;
     }
 
     String toSendString(){

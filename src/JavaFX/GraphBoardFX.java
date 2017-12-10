@@ -5,9 +5,6 @@ import Common.PlayerBoard;
 import Common.ShipPiece;
 import Common.WaterTile;
 import javafx.animation.AnimationTimer;
-import javafx.scene.paint.Color;
-
-import java.util.Random;
 
 import static Common.PlayerBoard.COLUMNS;
 import static Common.PlayerBoard.LINES;
@@ -33,17 +30,17 @@ public class GraphBoardFX extends EmptyGraphBoardFX {
     void startTiles(String[][] sent){
 
         pb = new PlayerBoard(sent);
-
         for (int l = 0; l < LINES; l++) {
             for (int c = 0; c < COLUMNS; c++) {
                 if(pb.getTileAt(l, c).isPiece()) {
                     ShipPiece sp = (ShipPiece) pb.getTileAt(l, c);
-                    tiles[l][c] = new ShipTileFX(sp.getShip().getSize(), sp.getIdInsideShip(), l, c);
                     if(sp.getShip().getDirection() == Direction.DOWN || sp.getShip().getDirection() == Direction.UP)
-                        tiles[l][c].toRotate = true;
+                        tiles[l][c] = new ShipTileFX(sp.getShip().getSize(), sp.getIdInsideShip(), l, c, true);
+                    else
+                        tiles[l][c] = new ShipTileFX(sp.getShip().getSize(), sp.getIdInsideShip(), l, c, false);
                 }
                 else
-                    tiles[l][c] = new WaterTileFX(l, c);
+                    tiles[l][c] = new WaterTileFX(l, c, false);
             }
         }
     }

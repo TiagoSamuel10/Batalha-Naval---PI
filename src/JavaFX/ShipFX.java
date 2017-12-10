@@ -1,59 +1,56 @@
 package JavaFX;
 
 
-import javafx.scene.Node;
+import Common.Direction;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
-import javafx.scene.shape.Circle;
 
-import java.awt.*;
-
-import static JavaFX.TileFX.TILE_SIZE;
-
-class ShipFX extends Sprite{
+class ShipFX extends SpriteTileFX {
 
     private final static Image ONE = new Image("images/1.png");
     private final static Image TWO = new Image("images/2.png");
     private final static Image THREE = new Image("images/3.png");
     private final static Image FOUR = new Image("images/4.png");
 
-    private int shipSize;
-    boolean toRotate;
+    private final static Image ONE_V = new Image("images/1_v.png");
+    private final static Image TWO_V = new Image("images/2_v.png");
+    private final static Image THREE_V = new Image("images/3_v.png");
+    private final static Image FOUR_V = new Image("images/4_v.png");
 
-    ShipFX(int _ShipSize, int _x, int _y){
+    int shipSize;
+    Direction dir;
+    boolean placed;
+
+    ShipFX(int _ShipSize, int _x, int _y, Direction _dir, boolean toRotate){
+        super(_x, _y, false, toRotate);
         shipSize = _ShipSize;
+        dir = _dir;
         selectImage();
-        setPosition(_x, _y);
-        toRotate = true;
     }
 
     ShipFX(int _ShipSize){
-        this(_ShipSize, 0,0);
+        this(_ShipSize, 0,0, Direction.RIGHT, false);
     }
 
-    private void selectImage(){
+    void selectImage(){
         switch (shipSize) {
             case 1:
-                setImageToDraw(ONE);
+                if(!toRotate)setImageToDraw(ONE);
+                else setImageToDraw(ONE_V);
                 break;
             case 2:
-                setImageToDraw(TWO);
+                if(!toRotate)setImageToDraw(TWO);
+                else setImageToDraw(TWO_V);
                 break;
             case 3:
-                setImageToDraw(THREE);
+                if(!toRotate)setImageToDraw(THREE);
+                else setImageToDraw(THREE_V);
                 break;
             case 4:
-                setImageToDraw(FOUR);
+                if(!toRotate)setImageToDraw(FOUR);
+                else setImageToDraw(FOUR_V);
                 break;
         }
-    }
-
-    @Override
-    void draw(GraphicsContext gc) {
-        if(toRotate)
-            super.draw(gc);
-        else
-            drawRotated(getImageToDraw(), 90, gc);
     }
 
 }

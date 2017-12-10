@@ -3,11 +3,13 @@ package JavaFX;
 import Common.Direction;
 import Common.Network;
 import Common.PlayerBoard;
+import Common.Ship;
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Group;
@@ -17,6 +19,8 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
@@ -85,6 +89,8 @@ public class App extends Application{
     private GraphShipsBoardFX sSboard;
 
     private VBox sSRightStuff;
+
+    private boolean toRotate = false;
 
     private HBox sSShipsStatus;
     private Text sSShipsStatusAllSet;
@@ -355,6 +361,7 @@ public class App extends Application{
 
         MGSelfBoard = new SelfGraphBoardFX(512, 512);
         pb = PlayerBoard.getRandomPlayerBoard();
+        System.out.println(pb);
 
         MGSelfBoard.startTiles(pb.getToSendToPaint());
         MGSelfBoard.updateTiles(pb.getToSendToPaint());
@@ -441,6 +448,7 @@ public class App extends Application{
     }
 
     private void setShipsScene(){
+
         sSRoot = new HBox();
         sSRoot.setStyle("-fx-background-color: white");
 
@@ -483,6 +491,59 @@ public class App extends Application{
         sSRoot.getChildren().addAll(sSboard, sSRightStuff);
         sSRoot.setPadding(new Insets(50, 50, 200,200));
         sSRoot.setSpacing(200);
+
+        sSRoot.setOnKeyPressed(new EventHandler<KeyEvent>() {
+            @Override
+            public void handle(KeyEvent event) {
+                if(sSboard.selected != null && event.getCode() == KeyCode.R){
+                    sSboard.selected.dir = sSboard.selected.dir.getRotated();
+                    sSboard.selected.toRotate = !sSboard.selected.toRotate;
+                    toRotate = true;
+                }
+            }
+        });
+
+        sSboard.setOnMouseMoved(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                sSboard.seeIfShipFXCanBePlaced(event.getX(), event.getY());
+            }
+        });
+        sSboard.setOnMouseClicked(new EventHandler<MouseEvent>() {
+
+            ShipFX current = null;
+
+            @Override
+            public void handle(MouseEvent event) {
+
+                ShipFX result = sSboard.checkAShip(event.getX(), event.getY());
+                //ALREADY HAVE 1, BUT NOT PLACED
+
+                if (current != null && result == null && current.placed) {
+                    if(toRotate) {
+                        sSboard.selected.dir = sSboard.selected.dir.getRotated();
+                        sSboard.selected.toRotate = !sSboard.selected.toRotate;
+                        sSboard.removeShipFX(current);
+                        sSboard.selected.dir = sSboard.selected.dir.getRotated();
+                        sSboard.selected.toRotate = !sSboard.selected.toRotate;
+                    }
+                }
+
+                if (current != null && result == null) {
+                    if (sSboard.placeShipFX(event.getX(), event.getY())) {
+                        if (toRotate) {
+                            current.selectImage();
+                            toRotate = false;
+                        }current = null;
+                    }
+                }
+
+                else if (result != null) {
+                    sSboard.setSelected(result);
+                    current = result;
+                }
+            }
+        });
 
         setShips = new Scene(sSRoot, SCREEN_RECTANGLE.getWidth(),
                 SCREEN_RECTANGLE.getHeight());

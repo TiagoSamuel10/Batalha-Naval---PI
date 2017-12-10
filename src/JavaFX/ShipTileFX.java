@@ -2,7 +2,6 @@ package JavaFX;
 
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
-import javafx.scene.transform.Rotate;
 
 public class ShipTileFX extends TileFX {
 
@@ -32,29 +31,60 @@ public class ShipTileFX extends TileFX {
     private final static Image FOUR_FOUR = new Image("images/4_4.png");
     //private final static Image FOUR_FOUR_DESTROYED = new Image("images/4_4_d.png");
 
+    //VERTICAL
+
+    private final static Image ONE_ONE_V = new Image("images/1_1_v.png");
+
+    private final static Image ONE_TWO_V = new Image("images/1_2_v.png");
+    //private final static Image ONE_TWO_DESTROYED = new Image("images/1_2_d.png");
+    private final static Image TWO_TWO_V = new Image("images/2_2_v.png");
+    //private final static Image TWO_TWO_DESTROYED = new Image("images/2_2_d.png");
+
+    private final static Image ONE_THREE_V = new Image("images/1_3_v.png");
+    //private final static Image ONE_THREE_DESTROYED = new Image("images/1_3.png");
+    private final static Image TWO_THREE_V = new Image("images/2_3_v.png");
+    //private final static Image TWO_THREE_DESTROYED = new Image("images/2_3_d.png");
+    private final static Image THREE_THREE_V = new Image("images/3_3_v.png");
+    //private final static Image THREE_THREE_DESTROYED = new Image("images/3_3_d.png");
+
+    private final static Image ONE_FOUR_V = new Image("images/1_4_v.png");
+    //private final static Image ONE_FOUR_DESTROYED = new Image("images/1_4_d.png");
+    private final static Image TWO_FOUR_V = new Image("images/2_4_v.png");
+    //private final static Image TWO_FOUR_DESTROYED = new Image("images/2_4_d.png");
+    private final static Image THREE_FOUR_V = new Image("images/3_4_v.png");
+    //private final static Image THREE_FOUR_DESTROYED = new Image("images/3_4_d.png");
+    private final static Image FOUR_FOUR_V = new Image("images/4_4_v.png");
+    //private final static Image FOUR_FOUR_DESTROYED = new Image("images/4_4_d.png");
+
     Image imageToSelf;
     Image imageAttacked;
     Image imageOthersHidden;
 
-    ShipTileFX(int sSize, int id, int _l, int _c) {
-        super(_l, _c);
+    private int s;
+
+    ShipTileFX(int sSize, int id, int _l, int _c, boolean toRotate) {
+        super(_l, _c, toRotate);
         giveImages(sSize, id);
+        sSize = s;
     }
 
     private void giveImages(int sSize,int id){
         switch (sSize){
             case 1:
-                imageToSelf = ONE_ONE;
+                if(!toRotate) imageToSelf = ONE_ONE;
+                else imageToSelf = ONE_ONE_V;
                 //imageAttacked = ONE_ONE_DESTROYED;
                 break;
             case 2:
                 switch (id) {
                     case 0:
-                        imageToSelf = ONE_TWO;
+                        if(!toRotate) imageToSelf = ONE_TWO;
+                        else imageToSelf = ONE_TWO_V;
                         //imageAttacked = ONE_TWO_DESTROYED;
                         break;
                     case 1:
-                        imageToSelf = TWO_TWO;
+                        if(!toRotate) imageToSelf = TWO_TWO;
+                        else imageToSelf = TWO_TWO_V;
                         //imageAttacked = TWO_TWO_DESTROYED;
                         break;
                 }
@@ -62,15 +92,18 @@ public class ShipTileFX extends TileFX {
             case 3:
                 switch (id) {
                     case 0:
-                        imageToSelf = ONE_THREE;
+                        if(!toRotate) imageToSelf = ONE_THREE;
+                        else imageToSelf = ONE_THREE_V;
                         //imageAttacked = ONE_THREE_DESTROYED;
                         break;
                     case 1:
-                        imageToSelf = TWO_THREE;
+                        if(!toRotate) imageToSelf = TWO_THREE;
+                        else imageToSelf = TWO_THREE_V;
                         //imageAttacked = TWO_THREE_DESTROYED;
                         break;
                     case 2:
-                        imageToSelf = THREE_THREE;
+                        if(!toRotate) imageToSelf = THREE_THREE;
+                        else imageToSelf = THREE_THREE_V;
                         //imageAttacked = THREE_THREE_DESTROYED;
                         break;
                 }
@@ -78,19 +111,23 @@ public class ShipTileFX extends TileFX {
             case 4:
                 switch (id) {
                     case 0:
-                        imageToSelf = ONE_FOUR;
+                        if(!toRotate) imageToSelf = ONE_FOUR;
+                        else imageToSelf = ONE_FOUR_V;
                         //imageAttacked = ONE_FOUR_DESTROYED;
                         break;
                     case 1:
-                        imageToSelf = TWO_FOUR;
+                        if(!toRotate) imageToSelf = TWO_FOUR;
+                        else imageToSelf = TWO_FOUR_V;
                         //imageAttacked = TWO_FOUR_DESTROYED;
                         break;
                     case 2:
-                        imageToSelf = THREE_FOUR;
+                        if(!toRotate) imageToSelf = THREE_FOUR;
+                        else imageToSelf = THREE_FOUR_V;
                         //imageAttacked = THREE_FOUR_DESTROYED;
                         break;
                     case 3:
-                        imageToSelf = FOUR_FOUR;
+                        if(!toRotate) imageToSelf = FOUR_FOUR;
+                        else imageToSelf = FOUR_FOUR_V;
                         //imageAttacked = FOUR_FOUR_DESTROYED;
                         break;
                 }
@@ -99,10 +136,8 @@ public class ShipTileFX extends TileFX {
 
     @Override
     void draw(GraphicsContext gc) {
-        if(toRotate)
-            super.draw(gc);
-        else
-            drawRotated(getImageToDraw(), 90, gc);
-
+        super.draw(gc);
+        if(toRotate && s == 1)
+            System.out.println("++");
     }
 }

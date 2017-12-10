@@ -16,7 +16,7 @@ public class Ship implements Serializable{
     boolean alreadyCalculated;
     ShipPiece[] pieces;
 
-    Ship(int x, int y, Direction _dir, ShipType st){
+    public Ship(int x, int y, Direction _dir, ShipType st){
         _shipType = st;
         setPoint(new Point(x, y));
         pieces = new ShipPiece[st.value];
@@ -108,7 +108,7 @@ public class Ship implements Serializable{
         dir = dir.getRotated();
     }
 
-    ShipPiece[] getPieces(){
+    public ShipPiece[] getPieces(){
         if(alreadyCalculated) {
             return pieces;
         }
@@ -156,7 +156,7 @@ public class Ship implements Serializable{
         return s;
     }
 
-    enum ShipType {
+    public enum ShipType {
 
         One,
         Two,
@@ -172,7 +172,7 @@ public class Ship implements Serializable{
 
         private int value;
 
-        static ShipType getShipType(int value){
+        public static ShipType getShipType(int value){
             for(ShipType shipType : ShipType.values()){
                 if(shipType.value == value){
                     return shipType;

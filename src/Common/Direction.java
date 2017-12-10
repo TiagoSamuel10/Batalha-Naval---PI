@@ -33,7 +33,7 @@ public enum Direction {
         return opposite;
     }
 
-    Direction getRotated(){
+    public Direction getRotated(){
         return rotated;
     }
 
