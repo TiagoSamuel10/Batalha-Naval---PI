@@ -518,6 +518,7 @@ public class App extends Application{
 
             ShipFX current = null;
             boolean haveAShip = false;
+            boolean toRemove = false;
 
             @Override
             public void handle(MouseEvent event) {
@@ -525,6 +526,10 @@ public class App extends Application{
                 ShipFX result = sSboard.checkAShip(event.getX(), event.getY());
 
                 if(haveAShip && result == current){
+                    if(toRemove) {
+                        sSboard.placeShipFX(event.getX(), event.getY());
+                        toRemove = false;
+                    }
                     haveAShip = false;
                     current = null;
                     sSboard.setSelected(null);
@@ -552,6 +557,7 @@ public class App extends Application{
                 }
 
                 if (result != null &&!haveAShip && result.placed) {
+                    toRemove = true;
                     sSboard.removeShipFX(result);
                     sSboard.setSelected(result);
                     current = result;

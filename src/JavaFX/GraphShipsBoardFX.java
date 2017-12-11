@@ -129,27 +129,29 @@ public class GraphShipsBoardFX extends GraphBoardFX {
         return canPlace;
     }
 
-    boolean placeShipFX(double x, double y){
+    void placeShipFX(double x, double y){
 
         int l = (int) y / TileFX.TILE_SIZE;
         int c = (int) x / TileFX.TILE_SIZE;
 
         if(l > 9 || l < 0 || c > 9 || c < 0)
-            return false;
+            return;
 
         if(canPlace && selected != null) {
             Direction direction = selected.dir;
+
             if(toRotate)
                 direction = direction.getRotated();
 
             pb.placeShip(new Ship(l, c, direction, Ship.ShipType.getShipType(selected.shipSize)));
             selected.setPositionBoard(l, c);
             selected.placed = true;
-            if(toRotate)
-                selected.rotate90();
+            if(toRotate) {
+                selected.dir = direction;
+                selected.selectImage();
+            }
             selected = null;
         }
-        return canPlace;
     }
 
     @Override

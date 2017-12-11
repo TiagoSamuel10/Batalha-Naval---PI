@@ -24,7 +24,6 @@ class ShipFX extends SpriteTileFX {
         super(_x, _y, boardCoord, _dir);
         shipSize = _ShipSize;
         selectImage();
-        System.out.println(dir);
     }
 
     ShipFX(int _ShipSize){
