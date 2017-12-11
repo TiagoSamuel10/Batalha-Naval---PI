@@ -3,20 +3,21 @@ package JavaFX;
 import Common.Direction;
 import Common.Network;
 import Common.PlayerBoard;
-import Common.Ship;
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Group;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
@@ -24,6 +25,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.shape.Circle;
+import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
@@ -32,15 +34,15 @@ import javafx.stage.StageStyle;
 import Common.Network.*;
 
 import javax.swing.*;
-import java.awt.*;
+import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Random;
+import java.util.*;
+import java.util.Timer;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class App extends Application{
 
@@ -48,7 +50,7 @@ public class App extends Application{
     private MyAI ai;
 
     //FOR ONLINE
-    private final static boolean ONLINE = false;
+    private final static boolean ONLINE = true;
     boolean shipsSet;
     private Client client;
     private String myName;
@@ -76,18 +78,17 @@ public class App extends Application{
     private Image mMAloneButtonImage = new Image("images/alone_medium.png");
     private Button mMAloneButton;
 
-    private Image exitButtonImage = new Image("images/exit_medium.png");
-    private Button exit;
+    private Image mMexitButtonImage = new Image("images/exit_medium.png");
+    private Button mMexit;
 
-    private TextField nameInput;
+    private TextField mMnameInput;
+    private AtomicBoolean mMserverOn;
+    private Label mMServerText;
 
-    private StackPane MMMiddle;
+    private GridPane MMMiddle;
 
     //endregion
 
-    /**
-     * {@link App#setMainGame()}
-     */
     //region SET SHIPS STUFF
 
     private HBox sSRoot;
@@ -195,6 +196,8 @@ public class App extends Application{
         client = new Client();
         client.start();
 
+        mMserverOn = new AtomicBoolean(false);
+
         Network.register(client);
 
         client.addListener(new Listener() {
@@ -287,20 +290,31 @@ public class App extends Application{
             }
         });
 
-
         if (ONLINE) {
-            new Thread("Connect") {
+            Timer timed = new Timer();
+            timed.schedule(new TimerTask() {
+                @Override
                 public void run() {
-                    try {
-                        client.connect(5000, address, Network.port);
-                        // Server communication after connection can go here, or in Listener#connected().
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
-                        System.exit(1);
-                    }
+                    new Thread("Connect") {
+                        public void run() {
+                            if(!mMserverOn.get()) {
+                                try {
+                                    mMserverOn.set(true);
+                                    client.connect(5000, address, Network.port);
+                                    // Server communication after connection can go here, or in Listener#connected().
+                                } catch (IOException ex) {
+                                    //ex.printStackTrace();
+                                    mMserverOn.set(false);
+                                }finally {
+                                    updateServerOn();
+                                }
+                            }
+                        }
+                    }.start();
                 }
-            }.start();
+            }, 5000);
         }
+
     }
 
     private void updateEnemyBoard(int id, String[][] newAttackedBoard) {
@@ -410,9 +424,38 @@ public class App extends Application{
 
         mMPlayButton = new Button();
         mMPlayButton.setGraphic(new ImageView(mMPlayButtonImage));
-        mMPlayButton.setOnAction(event ->
-                transitionTo(setShips)
-        );
+        mMPlayButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                myName = mMnameInput.getText();
+                if(myName.equals("")){
+                    Alert alert = new Alert(Alert.AlertType.WARNING);
+                    alert.setTitle("Ups!");
+                    alert.setHeaderText("Name was null!");
+                    alert.setContentText("Name can't be null, we need to know who you are :(");
+                    alert.showAndWait();
+                    return;
+                }
+                if(!mMserverOn.get()){
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle("Noo!");
+                    alert.setHeaderText("Can't play when you can't connect to server :(");
+                    alert.setContentText("Maybe...Go play alone?");
+                    alert.showAndWait();
+                    return;
+                }
+                Register r = new Register();
+                r.name = myName;
+                try {
+                    r.address = getMeIPV4().toString();
+                } catch (UnknownHostException e1) {
+                    e1.printStackTrace();
+                    r.address = "100:00";
+                }
+                client.sendTCP(r);
+                transitionTo(setShips);
+            }
+        });
         mMPlayButton.setStyle("-fx-background-color: transparent;");
 
         mMAloneButton = new Button();
@@ -422,31 +465,59 @@ public class App extends Application{
         });
         mMAloneButton.setStyle("-fx-background-color: transparent;");
 
-        exit = new Button();
-        exit.setGraphic(new ImageView(exitButtonImage));
-        exit.setOnAction(event ->
+        mMexit = new Button();
+        mMexit.setGraphic(new ImageView(mMexitButtonImage));
+        mMexit.setOnAction(event ->
                 Platform.exit()
         );
-        exit.setStyle("-fx-background-color: transparent;");
-        
-        MMMiddle = new StackPane();
+        mMexit.setStyle("-fx-background-color: transparent;");
+
+        //TODO: BETTER TEXT
+        mMServerText = new Label();
+
+        mMnameInput = new TextField("Name to be called!");
+        mMnameInput.textProperty().addListener(new ChangeListener<String>() {
+
+            final int maxLength = 10;
+
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                if (mMnameInput.getText().length() > maxLength) {
+                    String s = mMnameInput.getText().substring(0, maxLength);
+                    mMnameInput.setText(s);
+                }
+            }
+        });
+
+        MMMiddle = new GridPane();
         MMMiddle.setStyle("-fx-background-color:cyan;");
-        MMMiddle.getChildren().addAll(mMPlayButton,mMAloneButton,exit);
+
+        MMMiddle.add(mMPlayButton, 0, 2);
+        MMMiddle.add(mMAloneButton, 1, 2);
+        MMMiddle.add(mMexit, 1, 3);
+        MMMiddle.add(mMnameInput, 0, 1);
+        MMMiddle.add(mMServerText, 0, 0);
+
+        //MMMiddle.getChildren().addAll(mMPlayButton,mMAloneButton, mMexit, mMServerText, mMnameInput);
+        MMMiddle.setAlignment(Pos.CENTER);
         mMRoot.setCenter(MMMiddle);
 
         mainMenu = new Scene(mMRoot, SCREEN_RECTANGLE.getWidth(),
                 SCREEN_RECTANGLE.getHeight()
         );
-
-        Platform.runLater(() -> {
-            mMAloneButton.setTranslateX(mMPlayButton.getWidth() + 25);
-            exit.setTranslateX(mMPlayButton.getWidth()/2);
-            exit.setTranslateY(mMPlayButton.getHeight() + 25);
-        });
     }
     
     private void setTurnLabel(String name) {
         mGcurrentPlayerText.setText(name + " IS ATTACKING!!");
+    }
+
+    private void updateServerOn(){
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                mMServerText.setText("SERVER IS: " + ((mMserverOn.get())?"ON":"OFF"));
+            }
+        }, 5001);
     }
 
     private void setShipsScene(){

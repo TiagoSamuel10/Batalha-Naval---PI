@@ -46,7 +46,7 @@ public class GameClient extends JFrame{
     private final static int BORDER_RIGHT_SIDE_WIDTH = 200;
 
     //FOR ONLINE
-    private final boolean online = false;
+    private final boolean online = true;
     boolean shipsSet;
     private Client client;
     private String myName;
@@ -410,7 +410,6 @@ public class GameClient extends JFrame{
             public void actionPerformed(ActionEvent e) {
                 myName = nameField.getText();
                 if(myName.equals("")){
-                    //TODO: WARN THE PLAYER
                     return;
                 }
                 System.out.println(myName);
