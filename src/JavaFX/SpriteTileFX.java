@@ -1,5 +1,6 @@
 package JavaFX;
 
+import Common.Direction;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -24,7 +25,7 @@ abstract class SpriteTileFX {
     double width;
     double height;
 
-    boolean toRotate;
+    Direction dir;
 
     /**
      * @param _i1
@@ -32,8 +33,8 @@ abstract class SpriteTileFX {
      * @param boardCoord if you've given the parameters as boardCoordenates or actual x and y values
      */
 
-    public SpriteTileFX(int _i1, int _i2, boolean boardCoord, boolean _toRotate){
-        toRotate = _toRotate;
+    public SpriteTileFX(int _i1, int _i2, boolean boardCoord, Direction _dir){
+        dir = _dir;
         if(boardCoord)
             setPositionBoard(_i1, _i2);
         else
@@ -74,6 +75,25 @@ abstract class SpriteTileFX {
         x = _c * TileFX.TILE_SIZE;
     }
 
+    Image giveImageBasedOnDirection(Image i){
+        return giveImageBasedOnDirection(i, dir);
+    }
+
+    static Image giveImageBasedOnDirection(Image i, Direction dir){
+        switch (dir){
+            case UP:
+                return rotateImage(90,i);
+            case DOWN:
+                return rotateImage(270,i);
+            case LEFT:
+                return rotateImage(180,i);
+        }
+        return rotateImage(0,i);
+    }
+
+    void rotate90(){
+        setImageToDraw(rotateImage(90, getImageToDraw()));
+    }
 
     void drawRotated(Image image, int angles, GraphicsContext gc){
         gc.save(); // saves the current state on stack, including the current transform

@@ -33,6 +33,10 @@ public class Ship implements Serializable{
         return new Point(startL, startC);
     }
 
+    public void oppositeDirection(){
+        dir = dir.getOpposite();
+    }
+
     public Direction getDirection() {
         return dir;
     }

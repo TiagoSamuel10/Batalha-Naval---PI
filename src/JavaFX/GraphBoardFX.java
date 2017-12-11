@@ -34,13 +34,10 @@ public class GraphBoardFX extends EmptyGraphBoardFX {
             for (int c = 0; c < COLUMNS; c++) {
                 if(pb.getTileAt(l, c).isPiece()) {
                     ShipPiece sp = (ShipPiece) pb.getTileAt(l, c);
-                    if(sp.getShip().getDirection() == Direction.DOWN || sp.getShip().getDirection() == Direction.UP)
-                        tiles[l][c] = new ShipTileFX(sp.getShip().getSize(), sp.getIdInsideShip(), l, c, true);
-                    else
-                        tiles[l][c] = new ShipTileFX(sp.getShip().getSize(), sp.getIdInsideShip(), l, c, false);
+                    tiles[l][c] = new ShipTileFX(sp.getShip().getSize(), sp.getIdInsideShip(), l, c, sp.getShip().getDirection());
                 }
                 else
-                    tiles[l][c] = new WaterTileFX(l, c, false);
+                    tiles[l][c] = new WaterTileFX(l, c, Direction.DOWN);
             }
         }
     }

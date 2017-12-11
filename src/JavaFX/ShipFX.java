@@ -18,39 +18,35 @@ class ShipFX extends SpriteTileFX {
     private final static Image FOUR_V = new Image("images/4_v.png");
 
     int shipSize;
-    Direction dir;
     boolean placed;
 
-    ShipFX(int _ShipSize, int _x, int _y, Direction _dir, boolean toRotate, boolean boardCoord){
-        super(_x, _y, boardCoord, toRotate);
+    ShipFX(int _ShipSize, int _x, int _y, Direction _dir, boolean boardCoord){
+        super(_x, _y, boardCoord, _dir);
         shipSize = _ShipSize;
-        dir = _dir;
         selectImage();
+        System.out.println(dir);
     }
 
     ShipFX(int _ShipSize){
-        this(_ShipSize, 0,0, Direction.RIGHT, false, false);
+        this(_ShipSize, 0,0, Direction.RIGHT, false);
     }
 
     void selectImage(){
         switch (shipSize) {
             case 1:
-                if(!toRotate)setImageToDraw(ONE);
-                else setImageToDraw(ONE_V);
+                setImageToDraw(ONE);
                 break;
             case 2:
-                if(!toRotate)setImageToDraw(TWO);
-                else setImageToDraw(TWO_V);
+                setImageToDraw(TWO);
                 break;
             case 3:
-                if(!toRotate)setImageToDraw(THREE);
-                else setImageToDraw(THREE_V);
+                setImageToDraw(THREE);
                 break;
             case 4:
-                if(!toRotate)setImageToDraw(FOUR);
-                else setImageToDraw(FOUR_V);
+                setImageToDraw(FOUR);
                 break;
         }
+        setImageToDraw(giveImageBasedOnDirection(getImageToDraw()));
     }
 
 }

@@ -401,7 +401,7 @@ public class PlayerBoard implements Serializable {
 
     public boolean canShipBeHere(Ship toAdd) {
         for (ShipPiece piece : toAdd.getPieces()) {
-            //System.out.println(piece.toString());
+            System.out.println(piece.getPointCoordinates());
             boolean isInBounds = inBounds(piece.x, piece.y);
             if (!isInBounds) {
                 //System.out.println("NO BOUNDS");
@@ -409,7 +409,7 @@ public class PlayerBoard implements Serializable {
             }
             boolean isNotAdjacent = checkSurroundings(piece.x, piece.y);
             if (!isNotAdjacent || !freeAt(piece.x, piece.y)) {
-                //System.out.println("ADJACENT");
+                System.out.println("ADJACENT");
                 return false;
             }
         }
@@ -421,6 +421,7 @@ public class PlayerBoard implements Serializable {
         for (Point point : points) {
             if (inBounds(point.x, point.y)) {
                 if (!freeAt(point.x, point.y)) {
+                    System.out.println(point);
                     return false;
                 }
             }

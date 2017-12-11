@@ -90,8 +90,6 @@ public class App extends Application{
 
     private VBox sSRightStuff;
 
-    private boolean toRotate = false;
-
     private HBox sSShipsStatus;
     private Text sSShipsStatusAllSet;
     private Text sSShipsStatusShipsSet;
@@ -361,6 +359,7 @@ public class App extends Application{
 
         MGSelfBoard = new SelfGraphBoardFX(512, 512);
         pb = PlayerBoard.getRandomPlayerBoard();
+        System.out.println(pb.getShips());
 
         MGSelfBoard.startTiles(pb.getToSendToPaint());
         MGSelfBoard.updateTiles(pb.getToSendToPaint());
@@ -474,7 +473,8 @@ public class App extends Application{
             @Override
             public void handle(MouseEvent event) {
                 pb = PlayerBoard.getRandomPlayerBoard();
-                sSboard.doShips(pb.getShips());
+                sSboard.doShips(pb);
+                System.out.println(pb);
             }
         });
 
@@ -503,9 +503,7 @@ public class App extends Application{
             @Override
             public void handle(KeyEvent event) {
                 if(sSboard.selected != null && event.getCode() == KeyCode.R){
-                    sSboard.selected.dir = sSboard.selected.dir.getRotated();
-                    sSboard.selected.toRotate = !sSboard.selected.toRotate;
-                    toRotate = true;
+                    sSboard.toRotate = !sSboard.toRotate;
                 }
             }
         });
@@ -519,35 +517,52 @@ public class App extends Application{
         sSboard.setOnMouseClicked(new EventHandler<MouseEvent>() {
 
             ShipFX current = null;
+            boolean haveAShip = false;
 
             @Override
             public void handle(MouseEvent event) {
 
                 ShipFX result = sSboard.checkAShip(event.getX(), event.getY());
-                //ALREADY HAVE 1, BUT NOT PLACED
 
-                if (current != null && result == null && current.placed) {
-                    if(toRotate) {
-                        sSboard.selected.dir = sSboard.selected.dir.getRotated();
-                        sSboard.selected.toRotate = !sSboard.selected.toRotate;
-                        sSboard.removeShipFX(current);
-                        sSboard.selected.dir = sSboard.selected.dir.getRotated();
-                        sSboard.selected.toRotate = !sSboard.selected.toRotate;
-                    }
+                if(haveAShip && result == current){
+                    haveAShip = false;
+                    current = null;
+                    sSboard.setSelected(null);
+                    return;
                 }
 
-                if (current != null && result == null) {
-                    if (sSboard.placeShipFX(event.getX(), event.getY())) {
-                        if (toRotate) {
-                            current.selectImage();
-                            toRotate = false;
-                        }current = null;
+                //ALREADY HAVE 1, HIT WATER AND ALREADY PLACED
+                if(haveAShip && result == null && current.placed){
+                    if(sSboard.canPlace()) {
+                        sSboard.placeShipFX(event.getX(), event.getY());
+                        haveAShip = false;
+                        current = null;
                     }
+                    return;
                 }
 
-                else if (result != null) {
+                //ALREADY HAVE 1, HIT WATER AND NOT PLACED
+                if (haveAShip && result == null) {
+                    if(sSboard.canPlace()) {
+                        sSboard.placeShipFX(event.getX(), event.getY());
+                        haveAShip = false;
+                        current = null;
+                    }
+                    return;
+                }
+
+                if (result != null &&!haveAShip && result.placed) {
+                    sSboard.removeShipFX(result);
                     sSboard.setSelected(result);
                     current = result;
+                    haveAShip = true;
+                    return;
+                }
+
+                if (result != null &&!haveAShip) {
+                    sSboard.setSelected(result);
+                    current = result;
+                    haveAShip = true;
                 }
             }
         });

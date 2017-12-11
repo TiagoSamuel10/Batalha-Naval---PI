@@ -1,6 +1,7 @@
 package JavaFX;
 
 import Common.Direction;
+import Common.PlayerBoard;
 import Common.Ship;
 import Common.ShipPiece;
 import javafx.animation.AnimationTimer;
@@ -19,12 +20,14 @@ public class GraphShipsBoardFX extends GraphBoardFX {
     ShipFX selected;
     ArrayList<Point> tilesToDraw;
     boolean canPlace;
+    public boolean toRotate;
 
     GraphShipsBoardFX(int _w, int _h) {
         super(_w, _h);
         shipsFX = new ShipFX[10];
         tilesToDraw = new ArrayList<>();
         canPlace = false;
+        toRotate = false;
         doShips();
     }
 
@@ -36,7 +39,9 @@ public class GraphShipsBoardFX extends GraphBoardFX {
         }
     }
 
-    void doShips(ArrayList<Ship> ships){
+    void doShips(PlayerBoard _pb){
+        pb = _pb;
+        ArrayList<Ship> ships = pb.getShips();
         for(int i = 0; i < ships.size(); i++) {
             Ship s = ships.get(i);
             System.out.println(s);
@@ -60,30 +65,32 @@ public class GraphShipsBoardFX extends GraphBoardFX {
         ShipPiece last = s.getPieces()[0];
         for (ShipPiece shipPiece : s.getPieces())
             last = shipPiece;
-
+        s.oppositeDirection();
         shipsFX[i] = new ShipFX(s.getSize(), last.getPointCoordinates().x, last.getPointCoordinates().y,
-                Direction.DOWN, true, true);
-        shipsFX[i].setImageToDraw(SpriteTileFX.rotateImage(180, shipsFX[i].getImageToDraw()));
+                s.getDirection(), true);
+        shipsFX[i].placed = true;
     }
 
     private void doShipLeft(int i, Ship s) {
         ShipPiece last = s.getPieces()[0];
         for (ShipPiece shipPiece : s.getPieces())
             last = shipPiece;
+        s.oppositeDirection();
         shipsFX[i] = new ShipFX(s.getSize(), last.getPointCoordinates().x, last.getPointCoordinates().y,
-                Direction.DOWN, false, true);
-        shipsFX[i].setImageToDraw(SpriteTileFX.rotateImage(180, shipsFX[i].getImageToDraw()));
-
+                s.getDirection(), true);
+        shipsFX[i].placed = true;
     }
 
     private void doShipRight(int i, Ship s) {
         shipsFX[i] = new ShipFX(s.getSize(), s.getLandC().x, s.getLandC().y,
-                Direction.DOWN, false, true);
+                Direction.RIGHT, true);
+        shipsFX[i].placed = true;
     }
 
     private void doShipDown(int i, Ship s) {
         shipsFX[i] = new ShipFX(s.getSize(), s.getLandC().x, s.getLandC().y,
-                Direction.DOWN, true, true);
+                Direction.DOWN, true);
+        shipsFX[i].placed = true;
     }
 
     void placeIt(ShipFX s, int i){
@@ -103,7 +110,11 @@ public class GraphShipsBoardFX extends GraphBoardFX {
                 int l = (int) y / TileFX.TILE_SIZE;
                 int c = (int) x / TileFX.TILE_SIZE;
 
-                Ship temp = new Ship(l, c, selected.dir, Ship.ShipType.getShipType(selected.shipSize));
+                Direction direction = selected.dir;
+                if(toRotate)
+                    direction = selected.dir.getRotated();
+
+                Ship temp = new Ship(l, c, direction, Ship.ShipType.getShipType(selected.shipSize));
                 canPlace = pb.canShipBeHere(temp);
                 for (ShipPiece sp : temp.getPieces())
                     tilesToDraw.add(switchCoords(sp.getPointCoordinates()));
@@ -112,6 +123,10 @@ public class GraphShipsBoardFX extends GraphBoardFX {
 
     Point switchCoords(Point p){
         return new Point(p.y, p.x);
+    }
+
+    boolean canPlace(){
+        return canPlace;
     }
 
     boolean placeShipFX(double x, double y){
@@ -123,9 +138,15 @@ public class GraphShipsBoardFX extends GraphBoardFX {
             return false;
 
         if(canPlace && selected != null) {
-            pb.placeShip(new Ship(l, c, selected.dir, Ship.ShipType.getShipType(selected.shipSize)));
+            Direction direction = selected.dir;
+            if(toRotate)
+                direction = direction.getRotated();
+
+            pb.placeShip(new Ship(l, c, direction, Ship.ShipType.getShipType(selected.shipSize)));
             selected.setPositionBoard(l, c);
             selected.placed = true;
+            if(toRotate)
+                selected.rotate90();
             selected = null;
         }
         return canPlace;

@@ -1,5 +1,6 @@
 package JavaFX;
 
+import Common.Direction;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 
@@ -60,31 +61,25 @@ public class ShipTileFX extends TileFX {
     Image imageAttacked;
     Image imageOthersHidden;
 
-    private int s;
-
-    ShipTileFX(int sSize, int id, int _l, int _c, boolean toRotate) {
-        super(_l, _c, toRotate);
+    ShipTileFX(int sSize, int id, int _l, int _c, Direction _dir) {
+        super(_l, _c, _dir);
         giveImages(sSize, id);
-        sSize = s;
     }
 
     private void giveImages(int sSize,int id){
         switch (sSize){
             case 1:
-                if(!toRotate) imageToSelf = ONE_ONE;
-                else imageToSelf = ONE_ONE_V;
+                imageToSelf = giveImageBasedOnDirection(ONE_ONE);
                 //imageAttacked = ONE_ONE_DESTROYED;
                 break;
             case 2:
                 switch (id) {
                     case 0:
-                        if(!toRotate) imageToSelf = ONE_TWO;
-                        else imageToSelf = ONE_TWO_V;
+                        imageToSelf = giveImageBasedOnDirection(ONE_TWO);
                         //imageAttacked = ONE_TWO_DESTROYED;
                         break;
                     case 1:
-                        if(!toRotate) imageToSelf = TWO_TWO;
-                        else imageToSelf = TWO_TWO_V;
+                        imageToSelf = giveImageBasedOnDirection(TWO_TWO);
                         //imageAttacked = TWO_TWO_DESTROYED;
                         break;
                 }
@@ -92,18 +87,15 @@ public class ShipTileFX extends TileFX {
             case 3:
                 switch (id) {
                     case 0:
-                        if(!toRotate) imageToSelf = ONE_THREE;
-                        else imageToSelf = ONE_THREE_V;
+                        imageToSelf = giveImageBasedOnDirection(ONE_THREE);
                         //imageAttacked = ONE_THREE_DESTROYED;
                         break;
                     case 1:
-                        if(!toRotate) imageToSelf = TWO_THREE;
-                        else imageToSelf = TWO_THREE_V;
+                        imageToSelf = giveImageBasedOnDirection(TWO_THREE);
                         //imageAttacked = TWO_THREE_DESTROYED;
                         break;
                     case 2:
-                        if(!toRotate) imageToSelf = THREE_THREE;
-                        else imageToSelf = THREE_THREE_V;
+                        imageToSelf = giveImageBasedOnDirection(THREE_THREE);
                         //imageAttacked = THREE_THREE_DESTROYED;
                         break;
                 }
@@ -111,23 +103,19 @@ public class ShipTileFX extends TileFX {
             case 4:
                 switch (id) {
                     case 0:
-                        if(!toRotate) imageToSelf = ONE_FOUR;
-                        else imageToSelf = ONE_FOUR_V;
+                        imageToSelf = giveImageBasedOnDirection(ONE_FOUR);
                         //imageAttacked = ONE_FOUR_DESTROYED;
                         break;
                     case 1:
-                        if(!toRotate) imageToSelf = TWO_FOUR;
-                        else imageToSelf = TWO_FOUR_V;
+                        imageToSelf = giveImageBasedOnDirection(TWO_FOUR);
                         //imageAttacked = TWO_FOUR_DESTROYED;
                         break;
                     case 2:
-                        if(!toRotate) imageToSelf = THREE_FOUR;
-                        else imageToSelf = THREE_FOUR_V;
+                        imageToSelf = giveImageBasedOnDirection(THREE_FOUR);
                         //imageAttacked = THREE_FOUR_DESTROYED;
                         break;
                     case 3:
-                        if(!toRotate) imageToSelf = FOUR_FOUR;
-                        else imageToSelf = FOUR_FOUR_V;
+                        imageToSelf = giveImageBasedOnDirection(FOUR_FOUR);
                         //imageAttacked = FOUR_FOUR_DESTROYED;
                         break;
                 }
@@ -137,7 +125,5 @@ public class ShipTileFX extends TileFX {
     @Override
     void draw(GraphicsContext gc) {
         super.draw(gc);
-        if(toRotate && s == 1)
-            System.out.println("++");
     }
 }
