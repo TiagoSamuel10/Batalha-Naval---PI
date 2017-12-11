@@ -15,8 +15,4 @@ class WaterTileFX extends TileFX {
         super(_l, _c, _dir);
     }
 
-    @Override
-    void draw(GraphicsContext gc) {
-        //
-    }
 }

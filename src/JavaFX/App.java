@@ -24,6 +24,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
@@ -64,7 +65,7 @@ public class App extends Application{
     private BorderPane mMRoot;
     private final static String MM_IMAGE_BACKGROUND_PATH = "images/BattleShipBigger.png";
     private final static Image MM_IMAGE_BACKGROUND = new Image(MM_IMAGE_BACKGROUND_PATH);
-    private final static BackgroundImage MG_BACKGROUND = new BackgroundImage(MM_IMAGE_BACKGROUND, 
+    private final static BackgroundImage MM_BACKGROUND = new BackgroundImage(MM_IMAGE_BACKGROUND,
             BackgroundRepeat.REPEAT, 
             BackgroundRepeat.REPEAT,
             null,
@@ -119,7 +120,7 @@ public class App extends Application{
     private SelfGraphBoardFX MGSelfBoard;
 
     private StackPane MGTop;
-    private Text mGcurrentPlayerText;
+    private Label mGcurrentPlayerText;
 
     private VBox MGRight;
     private Circle MGShips;
@@ -223,10 +224,11 @@ public class App extends Application{
                     //TODO: DO WAITING WINDOW
                 }
 
-                if (object instanceof ReadyForShips) {}
-                    //TODO: DO SHIPS WINDOW
+                if (object instanceof ReadyForShips)
+                    transitionTo(setShips);
 
                 if (object instanceof OthersSpecs) {
+                    //TODO: LABELS WITH THE CORRECT NAMES
                     OthersSpecs othersSpecs = (OthersSpecs) object;
 
                     ene1.serverID = othersSpecs.ene1;
@@ -245,10 +247,6 @@ public class App extends Application{
 
                 if (object instanceof EnemiesBoardsToPaint) {
                     //System.out.println("ENEMIES BOARDS TO PAINT");
-                    //TODO: SIZE?
-                    ene1.b = new GraphBoardFX(500,500);
-                    ene2.b = new GraphBoardFX(500,500);
-
                     ene1.b.startTiles(((EnemiesBoardsToPaint) object).board1);
                     ene2.b.startTiles(((EnemiesBoardsToPaint) object).board2);
                     //TODO: LABELS WITH THE CORRECT NAMES
@@ -306,7 +304,7 @@ public class App extends Application{
                                     //ex.printStackTrace();
                                     mMserverOn.set(false);
                                 }finally {
-                                    updateServerOn();
+                                    //updateServerOn();
                                 }
                             }
                         }
@@ -376,9 +374,6 @@ public class App extends Application{
         MGCanvasHolder.setStyle("-fx-background-color:cyan");
 
         MGSelfBoard = new SelfGraphBoardFX(512, 512);
-        pb = PlayerBoard.getRandomPlayerBoard();
-
-        //System.out.println(pb.getShips());
 
         MGSelfBoard.startTiles(pb.getToPaint());
         MGSelfBoard.updateTiles(pb.getToPaint());
@@ -390,7 +385,7 @@ public class App extends Application{
         MGTop = new StackPane();
         MGTop.setStyle("-fx-background-color:red");
 
-        mGcurrentPlayerText = new Text("IS PLAYING");
+        mGcurrentPlayerText = new Label("IS PLAYING");
         MGTop.getChildren().add(mGcurrentPlayerText);
 
         MGRight = new VBox();
@@ -419,8 +414,7 @@ public class App extends Application{
 
         mMRoot = new BorderPane();
         mMRoot.setPrefSize(SCREEN_RECTANGLE.getWidth(), SCREEN_RECTANGLE.getHeight());
-        mMRoot.setStyle("-fx-background-color: white");
-        //mMRoot.setBackground(new Background(bg));
+        mMRoot.setBackground(new Background(MM_BACKGROUND));
 
         mMPlayButton = new Button();
         mMPlayButton.setGraphic(new ImageView(mMPlayButtonImage));
@@ -490,8 +484,6 @@ public class App extends Application{
         });
 
         MMMiddle = new GridPane();
-        MMMiddle.setStyle("-fx-background-color:cyan;");
-
         MMMiddle.add(mMPlayButton, 0, 2);
         MMMiddle.add(mMAloneButton, 1, 2);
         MMMiddle.add(mMexit, 1, 3);
@@ -499,8 +491,9 @@ public class App extends Application{
         MMMiddle.add(mMServerText, 0, 0);
 
         //MMMiddle.getChildren().addAll(mMPlayButton,mMAloneButton, mMexit, mMServerText, mMnameInput);
-        MMMiddle.setAlignment(Pos.CENTER);
+        MMMiddle.setAlignment(Pos.BOTTOM_CENTER);
         mMRoot.setCenter(MMMiddle);
+        //MMMiddle.setStyle("-fx-background-color:cyan;");
 
         mainMenu = new Scene(mMRoot, SCREEN_RECTANGLE.getWidth(),
                 SCREEN_RECTANGLE.getHeight()
@@ -658,6 +651,100 @@ public class App extends Application{
         setShips = new Scene(sSRoot, SCREEN_RECTANGLE.getWidth(),
                 SCREEN_RECTANGLE.getHeight());
     }
+
+    private void setAttackScreen(){
+
+        sSRoot = new HBox();
+        sSRoot.setStyle("-fx-background-color: white");
+
+        ene1.b = new GraphBoardFX();
+        ene1.b = new GraphBoardFX();
+
+        sSRoot.getChildren().addAll(ene1.b, ene2.b);
+
+        sSShipsStatus.getChildren().addAll(sSTips);
+
+        sSReadyBox = new HBox();
+        sSReadyBox.setStyle("-fx-background-color: yellow;");
+
+
+        sSRoot.setOnKeyPressed(new EventHandler<KeyEvent>() {
+            @Override
+            public void handle(KeyEvent event) {
+                if(sSboard.selected != null && event.getCode() == KeyCode.R){
+                    sSboard.toRotate = !sSboard.toRotate;
+                }
+            }
+        });
+        sSboard.setOnMouseMoved(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                sSboard.seeIfShipFXCanBePlaced(event.getX(), event.getY());
+            }
+        });
+        sSboard.setOnMouseClicked(new EventHandler<MouseEvent>() {
+
+            ShipFX current = null;
+            boolean haveAShip = false;
+            boolean toRemove = false;
+
+            @Override
+            public void handle(MouseEvent event) {
+
+                ShipFX result = sSboard.checkAShip(event.getX(), event.getY());
+
+                if(haveAShip && result == current){
+                    if(toRemove) {
+                        sSboard.placeShipFX(event.getX(), event.getY());
+                        toRemove = false;
+                    }
+                    haveAShip = false;
+                    current = null;
+                    sSboard.setSelected(null);
+                    return;
+                }
+
+                //ALREADY HAVE 1, HIT WATER AND ALREADY PLACED
+                if(haveAShip && result == null && current.placed){
+                    if(sSboard.canPlace(event.getX(), event.getY())) {
+                        sSboard.placeShipFX(event.getX(), event.getY());
+                        haveAShip = false;
+                        current = null;
+                    }
+                    return;
+                }
+
+                //ALREADY HAVE 1, HIT WATER AND NOT PLACED
+                if (haveAShip && result == null) {
+                    if(sSboard.canPlace(event.getX(), event.getY())) {
+                        sSboard.placeShipFX(event.getX(), event.getY());
+                        haveAShip = false;
+                        current = null;
+                    }
+                    return;
+                }
+
+                if (result != null &&!haveAShip && result.placed) {
+                    toRemove = true;
+                    sSboard.removeShipFX(result);
+                    sSboard.setSelected(result);
+                    current = result;
+                    haveAShip = true;
+                    return;
+                }
+
+                if (result != null &&!haveAShip) {
+                    sSboard.setSelected(result);
+                    current = result;
+                    haveAShip = true;
+                }
+            }
+        });
+
+        setShips = new Scene(sSRoot, SCREEN_RECTANGLE.getWidth(),
+                SCREEN_RECTANGLE.getHeight());
+    }
+
 
     private static class EnemyLocal {
         private int serverID;

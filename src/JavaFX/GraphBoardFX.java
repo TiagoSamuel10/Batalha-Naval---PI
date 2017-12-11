@@ -16,10 +16,14 @@ public class GraphBoardFX extends EmptyGraphBoardFX {
     TileFX[][] tiles;
     PlayerBoard pb;
 
-    GraphBoardFX(int _w, int _h){
-        super(_w, _h);
+    GraphBoardFX(){
+        super(TileFX.TILE_SIZE * COLUMNS, TileFX.TILE_SIZE * LINES);
         gc = getGraphicsContext2D();
         tiles = new TileFX[LINES][COLUMNS];
+    }
+
+    public GraphBoardFX(int _w, int _h) {
+        super(_w, _h);
     }
 
     //TODO: PUT IT SOMEWHERE COMMON
@@ -104,7 +108,14 @@ public class GraphBoardFX extends EmptyGraphBoardFX {
             public void handle(long currentNanoTime)
             {
                 updateTiles(pb.getToPaint());
-                gc.drawImage(BACKGROUND_WATER, 0,0);
+                //gc.drawImage(BACKGROUND_WATER, 0,0);
+
+                for (int l = 0; l < LINES; l++)
+                    for (int c = 0; c < COLUMNS; c++) {
+                        gc.drawImage(WaterTileFX.IMAGE_TO_SELF, c * TileFX.TILE_SIZE,
+                                l * TileFX.TILE_SIZE);
+                        tiles[l][c].draw(gc);
+                    }
 
                 for (int l = 0; l < LINES; l++)
                     for (int c = 0; c < COLUMNS; c++) {
@@ -113,11 +124,6 @@ public class GraphBoardFX extends EmptyGraphBoardFX {
                                 TileFX.TILE_SIZE,
                                 TileFX.TILE_SIZE
                         );
-                    }
-
-                for (int l = 0; l < LINES; l++)
-                    for (int c = 0; c < COLUMNS; c++) {
-                        tiles[l][c].draw(gc);
                     }
 
             }

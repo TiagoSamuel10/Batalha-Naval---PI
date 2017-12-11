@@ -6,6 +6,7 @@ import Common.Ship;
 import Common.ShipPiece;
 import javafx.animation.AnimationTimer;
 import javafx.scene.image.Image;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 
 import java.awt.*;
@@ -13,6 +14,7 @@ import java.util.ArrayList;
 
 import static Common.PlayerBoard.COLUMNS;
 import static Common.PlayerBoard.LINES;
+import static Common.PlayerBoard.inBounds;
 
 public class GraphShipsBoardFX extends GraphBoardFX {
 
@@ -135,7 +137,7 @@ public class GraphShipsBoardFX extends GraphBoardFX {
     void startAnimating() {
         new AnimationTimer() {
             public void handle(long currentNanoTime) {
-                gc.clearRect(0, 0,700 ,700 );
+                gc.clearRect(0, 0,getWidth() ,getHeight() );
                 gc.drawImage(new Image("images/water_bg.jpg"), 0 , 0);
                 for (int l = 0; l < LINES; l++)
                     for (int c = 0; c < COLUMNS; c++)
