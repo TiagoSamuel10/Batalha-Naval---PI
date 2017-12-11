@@ -19,8 +19,6 @@ public class GameServer {
         playing2left
     }
 
-
-
     private final static long TIME_TO_WAIT = 1000 * 60 ;
     private long currentWaitedTime;
 
@@ -29,8 +27,6 @@ public class GameServer {
     private Game game;
     private Server server;
     private int currentPlayer;
-
-
 
     //WILL SAVE WHAT CONNECTIONS THE GAME STARTED WITH
     //SO IT'S POSSIBLE TO KNOW IF SOMEBODY WHO DROPPED IS RECONNECTING
@@ -126,8 +122,8 @@ public class GameServer {
                 if(object instanceof Register){
                     handleRegister(connection, (Register) object);
                 }
-                if(object instanceof int[][]){
-                    PlayerBoard pb = new PlayerBoard((int[][]) object);
+                if(object instanceof String[][]){
+                    PlayerBoard pb = new PlayerBoard((String[][]) object);
                     //ADD TO GAME
                     //System.out.println("ADDING TO: " + connection.myID +
                     //        " WHICH IS " + connection.name);
@@ -181,7 +177,7 @@ public class GameServer {
                         a.c
                 );
 
-                String[][] attackedOne = game.getPlayerBoard(a.toAttackID).getToSendToPaint();
+                String[][] attackedOne = game.getPlayerBoard(a.toAttackID).getToPaint();
 
                 AnAttackResponse response = new AnAttackResponse();
                 response.again = canGoAgain;
@@ -301,8 +297,8 @@ public class GameServer {
                 for(int i = 0; i < players.length; i++){
                     EnemiesBoardsToPaint enemiesBoardsToPaint = new EnemiesBoardsToPaint();
                     //int own = players[i].myID;
-                    enemiesBoardsToPaint.board1 = game.getPlayerBoard((i + 1) % 3).getToSendToPaint();
-                    enemiesBoardsToPaint.board2 = game.getPlayerBoard((i + 2) % 3).getToSendToPaint();
+                    enemiesBoardsToPaint.board1 = game.getPlayerBoard((i + 1) % 3).getToPaint();
+                    enemiesBoardsToPaint.board2 = game.getPlayerBoard((i + 2) % 3).getToPaint();
                     players[i].sendTCP(enemiesBoardsToPaint);
                 }
             }

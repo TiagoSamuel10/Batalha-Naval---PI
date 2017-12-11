@@ -515,8 +515,8 @@ public class GameClient extends JFrame{
             @Override
             public void actionPerformed(ActionEvent e) {
                 if(shipsSet){
-                    me = new MyGraphBoard(shipsPlacing.getPlayerBoard().getToSendToPaint());
-                    client.sendTCP(shipsPlacing.getPlayerBoard().getToSend());
+                    me = new MyGraphBoard(shipsPlacing.getPlayerBoard().getToPaint());
+                    client.sendTCP(shipsPlacing.getPlayerBoard().getToPaint());
                     //System.out.println(Arrays.deepToString(shipsPlacing.getPlayerBoard().getToSend()));
                     //toMainGameWindow();
                 }
@@ -832,7 +832,7 @@ public class GameClient extends JFrame{
                         int l = gFound.getL();
                         iCanAttack = ai.board.getAttacked(l, c);
                         remove(ai.gb);
-                        ai.gb = new GraphicalBoard(ai.board.getToSendToPaint());
+                        ai.gb = new GraphicalBoard(ai.board.getToPaint());
                         add(ai.gb);
                         repaint();
                         if(!iCanAttack) {
@@ -897,7 +897,7 @@ public class GameClient extends JFrame{
                         } else {
                             aiTurn = false;
                         }
-                        me = new MyGraphBoard(myPB.getToSendToPaint());
+                        me = new MyGraphBoard(myPB.getToPaint());
                         me.setLocation(me.getLocation().x + 600, me.getLocation().y);
                         container.add(me);
                         container.repaint();
@@ -1005,7 +1005,7 @@ public class GameClient extends JFrame{
         }
 
         private String[][] getToPaint(){
-            return board.getToSendToPaint();
+            return board.getToPaint();
         }
 
         private boolean inBounds(Point p){

@@ -4,14 +4,24 @@ public enum Direction {
 
     LEFT,
     RIGHT,
+    UP,
     DOWN,
-    UP;
+    HORIZONTAL,
+    VERTICAL;
 
     private Direction rotated;
     private int[] directionVector;
     private Direction opposite;
 
     static {
+
+        HORIZONTAL.rotated = VERTICAL;
+        HORIZONTAL.directionVector = new int[]{0,1};
+
+        VERTICAL.rotated = HORIZONTAL;
+        VERTICAL.directionVector = new int[]{1,0};
+
+
         LEFT.directionVector = new int[]{0,-1};
         LEFT.rotated = DOWN;
         LEFT.opposite = RIGHT;
@@ -27,6 +37,7 @@ public enum Direction {
         UP.directionVector = new  int[]{-1,0};
         UP.rotated = RIGHT;
         UP.opposite = DOWN;
+
     }
 
     public Direction getOpposite(){

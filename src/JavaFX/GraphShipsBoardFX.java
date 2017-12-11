@@ -46,50 +46,25 @@ public class GraphShipsBoardFX extends GraphBoardFX {
             Ship s = ships.get(i);
             System.out.println(s);
             switch(s.getDirection()){
-                case UP:
-                    doShipUP(i, s);
+                case VERTICAL:
+                    doShipVertical(i, s);
                     break;
-                case DOWN:
-                    doShipDown(i, s);
+                case HORIZONTAL:
+                    doShipHorizontal(i, s);
                     break;
-                case RIGHT:
-                    doShipRight(i, s);
-                    break;
-                case LEFT:
-                    doShipLeft(i, s);
             }
         }
     }
 
-    private void doShipUP(int i, Ship s) {
-        ShipPiece last = s.getPieces()[0];
-        for (ShipPiece shipPiece : s.getPieces())
-            last = shipPiece;
-        s.oppositeDirection();
-        shipsFX[i] = new ShipFX(s.getSize(), last.getPointCoordinates().x, last.getPointCoordinates().y,
-                s.getDirection(), true);
-        shipsFX[i].placed = true;
-    }
-
-    private void doShipLeft(int i, Ship s) {
-        ShipPiece last = s.getPieces()[0];
-        for (ShipPiece shipPiece : s.getPieces())
-            last = shipPiece;
-        s.oppositeDirection();
-        shipsFX[i] = new ShipFX(s.getSize(), last.getPointCoordinates().x, last.getPointCoordinates().y,
-                s.getDirection(), true);
-        shipsFX[i].placed = true;
-    }
-
-    private void doShipRight(int i, Ship s) {
+    private void doShipVertical(int i, Ship s) {
         shipsFX[i] = new ShipFX(s.getSize(), s.getLandC().x, s.getLandC().y,
-                Direction.RIGHT, true);
+                Direction.VERTICAL, true);
         shipsFX[i].placed = true;
     }
 
-    private void doShipDown(int i, Ship s) {
+    private void doShipHorizontal(int i, Ship s) {
         shipsFX[i] = new ShipFX(s.getSize(), s.getLandC().x, s.getLandC().y,
-                Direction.DOWN, true);
+                Direction.HORIZONTAL, true);
         shipsFX[i].placed = true;
     }
 
@@ -104,6 +79,7 @@ public class GraphShipsBoardFX extends GraphBoardFX {
 
     void seeIfShipFXCanBePlaced(double x, double y) {
         tilesToDraw.clear();
+
         if (!(x < 0 || x > LINES * TileFX.TILE_SIZE || y < 0 || y > COLUMNS * TileFX.TILE_SIZE))
             if (selected != null) {
 
@@ -125,7 +101,8 @@ public class GraphShipsBoardFX extends GraphBoardFX {
         return new Point(p.y, p.x);
     }
 
-    boolean canPlace(){
+    boolean canPlace(double x, double y){
+        seeIfShipFXCanBePlaced(x, y);
         return canPlace;
     }
 

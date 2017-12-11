@@ -117,10 +117,9 @@ class  PlayerBoardTest {
         pb.getAttacked(5,3);
         pb.getAttacked(5,2);
 
-
         System.out.println(pb);
 
-        pb = new PlayerBoard(pb.getToSendToPaint());
+        pb = new PlayerBoard(pb.getToPaint());
 
         System.out.println("---------------------------------");
         System.out.println("---------------------------------");

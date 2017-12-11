@@ -16,6 +16,7 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
@@ -77,11 +78,16 @@ public class App extends Application{
 
     private Image exitButtonImage = new Image("images/exit_medium.png");
     private Button exit;
-    
-    private StackPane MMMiddle ;
-    
+
+    private TextField nameInput;
+
+    private StackPane MMMiddle;
+
     //endregion
 
+    /**
+     * {@link App#setMainGame()}
+     */
     //region SET SHIPS STUFF
 
     private HBox sSRoot;
@@ -91,8 +97,7 @@ public class App extends Application{
     private VBox sSRightStuff;
 
     private HBox sSShipsStatus;
-    private Text sSShipsStatusAllSet;
-    private Text sSShipsStatusShipsSet;
+    private VBox sSTips;
 
     private HBox sSReadyBox;
     private Button sSRandomButton;
@@ -104,7 +109,7 @@ public class App extends Application{
     private Text sSPlayer2Ready;
 
     //endregion
-    
+
     //region MAIN GAME STUFF
 
     private BorderPane MGRoot;
@@ -121,17 +126,16 @@ public class App extends Application{
     private Button MGChatButton;
 
     //endregion
-    
-    //GRAPHICS
 
-    private SelfGraphBoardFX me;
+    //ATTACKS
 
     private EnemyLocal lastAttacked;
-
     private EnemyLocal ene1;
     private EnemyLocal ene2;
 
     private final static Rectangle2D SCREEN_RECTANGLE = Screen.getPrimary().getVisualBounds();
+
+    //SCENES
 
     private Scene mainMenu;
     private Scene mainGame;
@@ -359,10 +363,11 @@ public class App extends Application{
 
         MGSelfBoard = new SelfGraphBoardFX(512, 512);
         pb = PlayerBoard.getRandomPlayerBoard();
-        System.out.println(pb.getShips());
 
-        MGSelfBoard.startTiles(pb.getToSendToPaint());
-        MGSelfBoard.updateTiles(pb.getToSendToPaint());
+        //System.out.println(pb.getShips());
+
+        MGSelfBoard.startTiles(pb.getToPaint());
+        MGSelfBoard.updateTiles(pb.getToPaint());
         MGSelfBoard.startAnimating();
         MGSelfBoard.setPlayerBoard(pb);
 
@@ -391,9 +396,8 @@ public class App extends Application{
 
         mainGame = new Scene(MGRoot, SCREEN_RECTANGLE.getWidth(), SCREEN_RECTANGLE.getHeight());
         mainGame.setOnKeyPressed(event -> {
-            if(event.getCode() == KeyCode.A){
+            if(event.getCode() == KeyCode.A)
                 pb.getAttacked(new Random().nextInt(10), new Random().nextInt(10));
-            }
         });
     }
 
@@ -460,10 +464,18 @@ public class App extends Application{
 
         sSShipsStatus = new HBox();
         sSShipsStatus.setStyle("-fx-background-color: green;");
-        sSShipsStatusAllSet = new Text("");
-        sSShipsStatusShipsSet = new Text("");
+        sSTips = new VBox();
 
-        sSShipsStatus.getChildren().addAll(sSShipsStatusAllSet, sSShipsStatusShipsSet);
+        //TIPS
+        sSTips.setSpacing(5);
+        sSTips.getChildren().add(new Text("Hey!"));
+        sSTips.getChildren().add(new Text(
+                " +Left-Mouse to select a ship; Left-Mouse again to deselect it"));
+        sSTips.getChildren().add(new Text(" +R while a ship is selected to rotate it"));
+        sSTips.getChildren().add(new Text(" +Green means it can be placed there; Left-Mouse to do that"));
+        sSTips.getChildren().add(new Text(" +Red means it can't be placed there"));
+
+        sSShipsStatus.getChildren().addAll(sSTips);
 
         sSReadyBox = new HBox();
         sSReadyBox.setStyle("-fx-background-color: yellow;");
@@ -474,7 +486,7 @@ public class App extends Application{
             public void handle(MouseEvent event) {
                 pb = PlayerBoard.getRandomPlayerBoard();
                 sSboard.doShips(pb);
-                System.out.println(pb);
+                //System.out.println(pb);
             }
         });
 
@@ -507,7 +519,6 @@ public class App extends Application{
                 }
             }
         });
-
         sSboard.setOnMouseMoved(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
@@ -538,7 +549,7 @@ public class App extends Application{
 
                 //ALREADY HAVE 1, HIT WATER AND ALREADY PLACED
                 if(haveAShip && result == null && current.placed){
-                    if(sSboard.canPlace()) {
+                    if(sSboard.canPlace(event.getX(), event.getY())) {
                         sSboard.placeShipFX(event.getX(), event.getY());
                         haveAShip = false;
                         current = null;
@@ -548,7 +559,7 @@ public class App extends Application{
 
                 //ALREADY HAVE 1, HIT WATER AND NOT PLACED
                 if (haveAShip && result == null) {
-                    if(sSboard.canPlace()) {
+                    if(sSboard.canPlace(event.getX(), event.getY())) {
                         sSboard.placeShipFX(event.getX(), event.getY());
                         haveAShip = false;
                         current = null;
@@ -584,7 +595,7 @@ public class App extends Application{
         private JLabel image;
         private boolean alive = true;
         private String name;
-        private java.awt.Button attack;
+        private Button attack;
         private ArrayList<String> conversation;
         private EnemyLocal(){
             conversation = new ArrayList<>();
@@ -615,7 +626,7 @@ public class App extends Application{
         }
 
         private String[][] getToPaint(){
-            return board.getToSendToPaint();
+            return board.getToPaint();
         }
 
         private boolean inBounds(Point p){

@@ -35,7 +35,7 @@ class ShipsPlacing extends JLayeredPane{
             add(graphShip, 1, 5);
         }
 
-        selfGraphBoard = new MyGraphBoard(playerBoard.getToSendToPaint());
+        selfGraphBoard = new MyGraphBoard(playerBoard.getToPaint());
 
         add(selfGraphBoard, 0, 7);
 
@@ -59,7 +59,7 @@ class ShipsPlacing extends JLayeredPane{
     void setPlayerBoard(PlayerBoard pb){
         playerBoard = pb;
         remove(selfGraphBoard);
-        selfGraphBoard = new MyGraphBoard(pb.getToSendToPaint());
+        selfGraphBoard = new MyGraphBoard(pb.getToPaint());
         add(selfGraphBoard, 0, 7);
         repaint();
     }
@@ -88,7 +88,7 @@ class ShipsPlacing extends JLayeredPane{
                 if(currentFocused.alreadyPlaced){
                     playerBoard.removeShip(currentFocused.getShip());
                     remove(selfGraphBoard);
-                    selfGraphBoard = new MyGraphBoard(playerBoard.getToSendToPaint());
+                    selfGraphBoard = new MyGraphBoard(playerBoard.getToPaint());
                     add(selfGraphBoard, 0,7);
                     me.repaint();
                 }
@@ -115,7 +115,7 @@ class ShipsPlacing extends JLayeredPane{
                         currentFocused.alreadyPlaced = true;
                         currentFocused.setBackground(new Color(1f, 0f, 0f, 0.0f));
                         remove(selfGraphBoard);
-                        selfGraphBoard = new MyGraphBoard(playerBoard.getToSendToPaint());
+                        selfGraphBoard = new MyGraphBoard(playerBoard.getToPaint());
                         add(selfGraphBoard, 0, 7);
                         me.repaint();
                         if (playerBoard.fullOfShips()) {

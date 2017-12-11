@@ -81,14 +81,10 @@ abstract class SpriteTileFX {
 
     static Image giveImageBasedOnDirection(Image i, Direction dir){
         switch (dir){
-            case UP:
-                return rotateImage(90,i);
-            case DOWN:
-                return rotateImage(270,i);
-            case LEFT:
-                return rotateImage(180,i);
+            case HORIZONTAL:
+                return rotateImage(0,i);
         }
-        return rotateImage(0,i);
+        return rotateImage(90,i);
     }
 
     void rotate90(){

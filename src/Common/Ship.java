@@ -42,12 +42,17 @@ public class Ship implements Serializable{
     }
 
     private static Ship getOneRandomShip(PlayerBoard pb, ShipType size, Direction[] directions){
-        Ship tempShip = new Ship(0,0,Direction.DOWN, ShipType.One);
+        Ship tempShip = new Ship(0,0,Direction.VERTICAL, ShipType.One);
         boolean didIt = false;
         while(!didIt) {
             int x = r.nextInt(PlayerBoard.LINES);
             int y = r.nextInt(PlayerBoard.COLUMNS);
-            tempShip = new Ship(x, y, directions[r.nextInt(directions.length)], size);
+
+            Direction direction = Direction.VERTICAL;
+            if(r.nextInt(10) > 5)
+                direction = Direction.HORIZONTAL;
+
+            tempShip = new Ship(x, y, direction, size);
             if (pb.canShipBeHere(tempShip)) {
                 didIt = true;
                 pb.placeShip(tempShip);
@@ -61,16 +66,16 @@ public class Ship implements Serializable{
 
     public static Ship[] getFreshShips(){
         return new Ship[]{
-                new Ship(0,0,Direction.DOWN,ShipType.Four),
-                new Ship(0,0,Direction.DOWN,ShipType.Three),
-                new Ship(0,0,Direction.DOWN,ShipType.Three),
-                new Ship(0,0,Direction.DOWN,ShipType.Two),
-                new Ship(0,0,Direction.DOWN,ShipType.Two),
-                new Ship(0,0,Direction.DOWN,ShipType.Two),
-                new Ship(0,0,Direction.DOWN,ShipType.One),
-                new Ship(0,0,Direction.DOWN,ShipType.One),
-                new Ship(0,0,Direction.DOWN,ShipType.One),
-                new Ship(0,0,Direction.DOWN,ShipType.One)
+                new Ship(0,0,Direction.VERTICAL,ShipType.Four),
+                new Ship(0,0,Direction.VERTICAL,ShipType.Three),
+                new Ship(0,0,Direction.VERTICAL,ShipType.Three),
+                new Ship(0,0,Direction.VERTICAL,ShipType.Two),
+                new Ship(0,0,Direction.VERTICAL,ShipType.Two),
+                new Ship(0,0,Direction.VERTICAL,ShipType.Two),
+                new Ship(0,0,Direction.VERTICAL,ShipType.One),
+                new Ship(0,0,Direction.VERTICAL,ShipType.One),
+                new Ship(0,0,Direction.VERTICAL,ShipType.One),
+                new Ship(0,0,Direction.VERTICAL,ShipType.One)
         };
     }
 
