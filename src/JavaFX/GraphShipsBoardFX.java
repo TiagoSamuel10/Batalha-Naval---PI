@@ -46,7 +46,7 @@ public class GraphShipsBoardFX extends GraphBoardFX {
         ArrayList<Ship> ships = pb.getShips();
         for(int i = 0; i < ships.size(); i++) {
             Ship s = ships.get(i);
-            System.out.println(s);
+            //System.out.println(s);
             switch(s.getDirection()){
                 case VERTICAL:
                     doShipVertical(i, s);

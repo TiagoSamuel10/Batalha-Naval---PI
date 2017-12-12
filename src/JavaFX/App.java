@@ -10,6 +10,8 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.concurrent.Task;
+import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -24,9 +26,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
-import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
@@ -42,7 +42,6 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.UnknownHostException;
 import java.util.*;
-import java.util.Timer;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class App extends Application{
@@ -51,15 +50,11 @@ public class App extends Application{
     private MyAI ai;
 
     //FOR ONLINE
-    private final static boolean ONLINE = true;
-    boolean shipsSet;
     private Client client;
     private String myName;
     private final String address = "localhost";
     private PlayerBoard pb;
 
-    private boolean iCanAttack;
-    
     //region MAIN MENU STUFF
     
     private BorderPane mMRoot;
@@ -69,7 +64,7 @@ public class App extends Application{
             BackgroundRepeat.REPEAT, 
             BackgroundRepeat.REPEAT,
             null,
-            new BackgroundSize(MM_IMAGE_BACKGROUND.getWidth(), MM_IMAGE_BACKGROUND.getHeight(), 
+            new BackgroundSize(MM_IMAGE_BACKGROUND.getWidth(), MM_IMAGE_BACKGROUND.getHeight(),
                     false, false, true, true)
     );
 
@@ -79,14 +74,13 @@ public class App extends Application{
     private Image mMAloneButtonImage = new Image("images/alone_medium.png");
     private Button mMAloneButton;
 
-    private Image mMexitButtonImage = new Image("images/exit_medium.png");
-    private Button mMexit;
+    private Image mMExitButtonImage = new Image("images/exit_medium.png");
+    private Button mMExit;
 
     private TextField mMnameInput;
-    private AtomicBoolean mMserverOn;
     private Label mMServerText;
 
-    private GridPane MMMiddle;
+    private GridPane mMMiddle;
 
     //endregion
 
@@ -103,7 +97,6 @@ public class App extends Application{
 
     private HBox sSReadyBox;
     private Button sSRandomButton;
-    private CheckBox sSReady;
     private Button sSReadyButton;
 
     private VBox sSPlayersReady;
@@ -117,7 +110,7 @@ public class App extends Application{
     private BorderPane MGRoot;
 
     private Group MGCanvasHolder;
-    private SelfGraphBoardFX MGSelfBoard;
+    private SelfGraphBoardFX mGSelfBoard;
 
     private StackPane MGTop;
     private Label mGcurrentPlayerText;
@@ -129,11 +122,16 @@ public class App extends Application{
 
     //endregion
 
-    //ATTACKS
+    //region ATTACK WINDOW STUFF
 
+    private boolean iCanAttack;
     private EnemyLocal lastAttacked;
     private EnemyLocal ene1;
     private EnemyLocal ene2;
+    private HBox aWRoot;
+
+    //endregion
+
 
     private final static Rectangle2D SCREEN_RECTANGLE = Screen.getPrimary().getVisualBounds();
 
@@ -142,6 +140,8 @@ public class App extends Application{
     private Scene mainMenu;
     private Scene mainGame;
     private Scene setShips;
+    private Scene attackScene;
+
     private Stage theStage;
 
     public static void main(String[] args){
@@ -197,8 +197,6 @@ public class App extends Application{
         client = new Client();
         client.start();
 
-        mMserverOn = new AtomicBoolean(false);
-
         Network.register(client);
 
         client.addListener(new Listener() {
@@ -208,15 +206,17 @@ public class App extends Application{
             public void received(Connection connection, Object object) {
                 if (object instanceof IsFull)
                     System.out.println(object);
-                if (object instanceof Abort){}
+                if (object instanceof Abort){
+                    //
+                }
 
                 if (object instanceof CanStart) 
-                    transitionTo(mainGame);
+                    Platform.runLater( () -> transitionTo(mainGame));
                 
                 if (object instanceof WhoseTurn) {
                     WhoseTurn whoseTurn = (WhoseTurn) object;
                     System.out.println(whoseTurn.name);
-                    setTurnLabel(whoseTurn.name);
+                    Platform.runLater( () -> setTurnLabel(whoseTurn.name));
                 }
                 if (object instanceof ConnectedPlayers) {
                     System.out.println("CONNECTED PLAYERS");
@@ -225,47 +225,61 @@ public class App extends Application{
                 }
 
                 if (object instanceof ReadyForShips)
-                    transitionTo(setShips);
+                    Platform.runLater( () -> transitionTo(setShips));
 
                 if (object instanceof OthersSpecs) {
                     //TODO: LABELS WITH THE CORRECT NAMES
                     OthersSpecs othersSpecs = (OthersSpecs) object;
 
-                    ene1.serverID = othersSpecs.ene1;
-                    ene1.alive = true;
-                    ene1.name = othersSpecs.ene1n;
+                    Platform.runLater( () -> {
 
-                    ene2.serverID = othersSpecs.ene2;
-                    ene2.alive = true;
-                    ene2.name = othersSpecs.ene2n;
+                        ene1.serverID = othersSpecs.ene1;
+                        ene1.alive = true;
+                        ene1.name = othersSpecs.ene1n;
+
+                        ene2.serverID = othersSpecs.ene2;
+                        ene2.alive = true;
+                        ene2.name = othersSpecs.ene2n;
+
+                    });
 
                 }
 
                 if (object instanceof YourBoardToPaint)
                     //System.out.println("MY BOARD TO PAINT");
-                    MGSelfBoard.updateTiles(((YourBoardToPaint) object).board);
+                    Platform.runLater( () -> mGSelfBoard.updateTiles(((YourBoardToPaint) object).board));
 
                 if (object instanceof EnemiesBoardsToPaint) {
                     //System.out.println("ENEMIES BOARDS TO PAINT");
-                    ene1.b.startTiles(((EnemiesBoardsToPaint) object).board1);
-                    ene2.b.startTiles(((EnemiesBoardsToPaint) object).board2);
+                    Platform.runLater( () -> {
+                                ene1.b.startTiles(((EnemiesBoardsToPaint) object).board1);
+                                ene1.b.startAnimating();
+                                ene2.b.startTiles(((EnemiesBoardsToPaint) object).board2);
+                                ene2.b.startAnimating();
+                            });
                     //TODO: LABELS WITH THE CORRECT NAMES
                 }
 
                 if (object instanceof EnemyBoardToPaint) {
-                    EnemyBoardToPaint ebp = (EnemyBoardToPaint) object;
-                    updateEnemyBoard(ebp.id, ebp.newAttackedBoard);
-                    System.out.println("ENEMY BOARD TO PAINT WITH INDEX " + ebp.id);
+                    Platform.runLater( () -> {
+                                EnemyBoardToPaint ebp = (EnemyBoardToPaint) object;
+                                updateEnemyBoard(ebp.id, ebp.newAttackedBoard);
+                                System.out.println("ENEMY BOARD TO PAINT WITH INDEX " + ebp.id);
+                    });
                 }
 
                 if (object instanceof AnAttackResponse) {
-                    lastAttacked.b.updateTiles(((AnAttackResponse) object).newAttackedBoard);
-                    iCanAttack = ((AnAttackResponse) object).again;
+                    Platform.runLater( () -> {
+                        lastAttacked.b.updateTiles(((AnAttackResponse) object).newAttackedBoard);
+                        iCanAttack = ((AnAttackResponse) object).again;
+                    });
                 }
 
                 if (object instanceof YourTurn) {
-                    iCanAttack = true;
-                    setTurnLabel("My TURN!!");
+                    Platform.runLater( () -> {
+                        iCanAttack = true;
+                        setTurnLabel("My TURN!!");
+                    });
                 }
 
                 if (object instanceof YouDead) {
@@ -288,31 +302,6 @@ public class App extends Application{
             }
         });
 
-        if (ONLINE) {
-            Timer timed = new Timer();
-            timed.schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    new Thread("Connect") {
-                        public void run() {
-                            if(!mMserverOn.get()) {
-                                try {
-                                    mMserverOn.set(true);
-                                    client.connect(5000, address, Network.port);
-                                    // Server communication after connection can go here, or in Listener#connected().
-                                } catch (IOException ex) {
-                                    //ex.printStackTrace();
-                                    mMserverOn.set(false);
-                                }finally {
-                                    //updateServerOn();
-                                }
-                            }
-                        }
-                    }.start();
-                }
-            }, 5000);
-        }
-
     }
 
     private void updateEnemyBoard(int id, String[][] newAttackedBoard) {
@@ -328,6 +317,7 @@ public class App extends Application{
     public void stop() throws Exception {
         super.stop();
         client.stop();
+        System.exit(0);
     }
 
     //endregion
@@ -335,7 +325,9 @@ public class App extends Application{
     @Override
     public void start(Stage primaryStage) throws Exception {
 
-        shipsSet = false;
+        ene1 = new EnemyLocal();
+        ene2 = new EnemyLocal();
+        lastAttacked = new EnemyLocal();
         iCanAttack = false;
 
         serverConfigurations();
@@ -356,6 +348,7 @@ public class App extends Application{
         setMainMenu();
         setMainGame();
         setShipsScene();
+        setAttackScreen();
     }
 
     private void transitionTo(Scene scene) {
@@ -373,14 +366,9 @@ public class App extends Application{
         MGCanvasHolder = new Group();
         MGCanvasHolder.setStyle("-fx-background-color:cyan");
 
-        MGSelfBoard = new SelfGraphBoardFX(512, 512);
+        mGSelfBoard = new SelfGraphBoardFX(500, 500);
 
-        MGSelfBoard.startTiles(pb.getToPaint());
-        MGSelfBoard.updateTiles(pb.getToPaint());
-        MGSelfBoard.startAnimating();
-        MGSelfBoard.setPlayerBoard(pb);
-
-        MGCanvasHolder.getChildren().add(MGSelfBoard);
+        MGCanvasHolder.getChildren().add(mGSelfBoard);
 
         MGTop = new StackPane();
         MGTop.setStyle("-fx-background-color:red");
@@ -395,6 +383,12 @@ public class App extends Application{
         MGShips = new Circle();
         MGShips.setRadius(50);
         MGAttackButton = new Button("TO ARMS");
+        MGAttackButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                transitionTo(attackScene);
+            }
+        });
         MGChatButton = new Button("CHAT");
 
         MGRight.getChildren().addAll(MGShips, MGAttackButton, MGChatButton);
@@ -404,10 +398,6 @@ public class App extends Application{
         MGRoot.setCenter(MGCanvasHolder);
 
         mainGame = new Scene(MGRoot, SCREEN_RECTANGLE.getWidth(), SCREEN_RECTANGLE.getHeight());
-        mainGame.setOnKeyPressed(event -> {
-            if(event.getCode() == KeyCode.A)
-                pb.getAttacked(new Random().nextInt(10), new Random().nextInt(10));
-        });
     }
 
     private void setMainMenu(){
@@ -415,9 +405,11 @@ public class App extends Application{
         mMRoot = new BorderPane();
         mMRoot.setPrefSize(SCREEN_RECTANGLE.getWidth(), SCREEN_RECTANGLE.getHeight());
         mMRoot.setBackground(new Background(MM_BACKGROUND));
+        mMRoot.setStyle("-fx-background-image: url(images/BattleShipBigger2.png);-fx-background-repeat-style: strech;");
 
         mMPlayButton = new Button();
         mMPlayButton.setGraphic(new ImageView(mMPlayButtonImage));
+
         mMPlayButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
@@ -430,47 +422,68 @@ public class App extends Application{
                     alert.showAndWait();
                     return;
                 }
-                if(!mMserverOn.get()){
-                    Alert alert = new Alert(Alert.AlertType.ERROR);
-                    alert.setTitle("Noo!");
-                    alert.setHeaderText("Can't play when you can't connect to server :(");
-                    alert.setContentText("Maybe...Go play alone?");
-                    alert.showAndWait();
-                    return;
-                }
-                Register r = new Register();
-                r.name = myName;
-                try {
-                    r.address = getMeIPV4().toString();
-                } catch (UnknownHostException e1) {
-                    e1.printStackTrace();
-                    r.address = "100:00";
-                }
-                client.sendTCP(r);
-                transitionTo(setShips);
+
+                Task<Boolean> connect = new Task<>() {
+                    @Override
+                    protected Boolean call() throws Exception {
+                        Boolean connected = true;
+                        try {
+                            client.connect(5000, address, Network.port);
+                        }
+                        catch (IOException e) {
+                            connected = false;
+                        }
+                        return connected;
+                    }
+                };
+                connect.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+                    @Override
+                    public void handle(WorkerStateEvent event) {
+                        if(connect.getValue()) {
+                            Register r = new Register();
+                            r.name = myName;
+                            try {
+                                r.address = getMeIPV4().toString();
+                            } catch (UnknownHostException e1) {
+                                e1.printStackTrace();
+                                r.address = "100:00";
+                            }
+                            client.sendTCP(r);
+                            //transitionTo(setShips);
+                        }else{
+                            Alert alert = new Alert(Alert.AlertType.ERROR);
+                            alert.setTitle("Noo!");
+                            alert.setHeaderText("Can't play when you can't connect to server :(");
+                            alert.setContentText("Maybe...Go play alone? \nOr you could try again (:");
+                            alert.showAndWait();
+                        }
+                    }
+                });
+
+                new Thread(connect).start();
             }
         });
         mMPlayButton.setStyle("-fx-background-color: transparent;");
 
         mMAloneButton = new Button();
         mMAloneButton.setGraphic(new ImageView(mMAloneButtonImage));
-        mMAloneButton.setOnAction(event -> {
-            theStage.setScene(mainGame);
-        });
+        mMAloneButton.setOnAction(event ->
+            theStage.setScene(mainGame)
+        );
         mMAloneButton.setStyle("-fx-background-color: transparent;");
 
-        mMexit = new Button();
-        mMexit.setGraphic(new ImageView(mMexitButtonImage));
-        mMexit.setOnAction(event ->
+        mMExit = new Button();
+        mMExit.setGraphic(new ImageView(mMExitButtonImage));
+        mMExit.setOnAction(event ->
                 Platform.exit()
         );
-        mMexit.setStyle("-fx-background-color: transparent;");
+        mMExit.setStyle("-fx-background-color: transparent;");
 
         //TODO: BETTER TEXT
         mMServerText = new Label();
 
-        mMnameInput = new TextField("Name to be called!");
-        mMnameInput.textProperty().addListener(new ChangeListener<String>() {
+        mMnameInput = new TextField("Name!");
+        mMnameInput.textProperty().addListener(new ChangeListener<>() {
 
             final int maxLength = 10;
 
@@ -483,43 +496,35 @@ public class App extends Application{
             }
         });
 
-        MMMiddle = new GridPane();
-        MMMiddle.add(mMPlayButton, 0, 2);
-        MMMiddle.add(mMAloneButton, 1, 2);
-        MMMiddle.add(mMexit, 1, 3);
-        MMMiddle.add(mMnameInput, 0, 1);
-        MMMiddle.add(mMServerText, 0, 0);
+        mMMiddle = new GridPane();
+        mMMiddle.add(mMPlayButton, 0, 2);
+        mMMiddle.add(mMAloneButton, 1, 2);
+        mMMiddle.add(mMExit, 1, 3);
+        mMMiddle.add(mMnameInput, 0, 1);
+        mMMiddle.add(mMServerText, 0, 0);
 
-        //MMMiddle.getChildren().addAll(mMPlayButton,mMAloneButton, mMexit, mMServerText, mMnameInput);
-        MMMiddle.setAlignment(Pos.BOTTOM_CENTER);
-        mMRoot.setCenter(MMMiddle);
-        //MMMiddle.setStyle("-fx-background-color:cyan;");
+        //mMMiddle.getChildren().addAll(mMPlayButton,mMAloneButton, mMExit, mMServerText, mMnameInput);
+        mMMiddle.setAlignment(Pos.BOTTOM_CENTER);
+        mMRoot.setCenter(mMMiddle);
+        //mMMiddle.setStyle("-fx-background-color:cyan;");
 
         mainMenu = new Scene(mMRoot, SCREEN_RECTANGLE.getWidth(),
                 SCREEN_RECTANGLE.getHeight()
         );
     }
-    
+
     private void setTurnLabel(String name) {
         mGcurrentPlayerText.setText(name + " IS ATTACKING!!");
-    }
-
-    private void updateServerOn(){
-        new Timer().schedule(new TimerTask() {
-            @Override
-            public void run() {
-                mMServerText.setText("SERVER IS: " + ((mMserverOn.get())?"ON":"OFF"));
-            }
-        }, 5001);
     }
 
     private void setShipsScene(){
 
         sSRoot = new HBox();
-        sSRoot.setStyle("-fx-background-color: white");
+        sSRoot.setStyle("-fx-background-image: url(images/BattleShipBigger2.png)");
 
         pb = new PlayerBoard();
         sSboard = new GraphShipsBoardFX(700,500);
+
         sSboard.setPlayerBoard(pb);
         sSboard.startAnimating();
 
@@ -554,11 +559,34 @@ public class App extends Application{
             }
         });
 
-        sSReady = new CheckBox();
-
         sSReadyButton = new Button("Ready");
 
-        sSReadyBox.getChildren().addAll(sSRandomButton, sSReady, sSReadyButton);
+        sSReadyButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
+
+
+            @Override
+            public void handle(MouseEvent event) {
+                if(sSboard.pb.fullOfShips()) {
+
+                    sSReadyButton.setDisable(true);
+                    sSRandomButton.setDisable(true);
+
+                    pb = sSboard.pb;
+
+                    System.out.println(pb);
+
+                    mGSelfBoard.setPlayerBoard(pb);
+                    mGSelfBoard.startTiles(pb.getToPaint());
+                    mGSelfBoard.updateTiles(pb.getToPaint());
+                    mGSelfBoard.startAnimating();
+                    client.sendTCP(sSboard.pb.getToPaint());
+
+                }
+            }
+        });
+
+
+        sSReadyBox.getChildren().addAll(sSRandomButton, sSReadyButton);
 
         sSPlayersReady = new VBox();
         sSPlayersReady.setStyle("-fx-background-color: blue");
@@ -654,95 +682,57 @@ public class App extends Application{
 
     private void setAttackScreen(){
 
-        sSRoot = new HBox();
-        sSRoot.setStyle("-fx-background-color: white");
+        aWRoot = new HBox(200);
+        aWRoot.setPrefSize(SCREEN_RECTANGLE.getWidth(), SCREEN_RECTANGLE.getHeight());
+        aWRoot.setStyle("-fx-background-image: url(images/BattleShipBigger2.png)");
 
         ene1.b = new GraphBoardFX();
-        ene1.b = new GraphBoardFX();
+        ene2.b = new GraphBoardFX();
 
-        sSRoot.getChildren().addAll(ene1.b, ene2.b);
+        aWRoot.getChildren().addAll(ene1.b, ene2.b);
 
-        sSShipsStatus.getChildren().addAll(sSTips);
-
-        sSReadyBox = new HBox();
-        sSReadyBox.setStyle("-fx-background-color: yellow;");
-
-
-        sSRoot.setOnKeyPressed(new EventHandler<KeyEvent>() {
-            @Override
-            public void handle(KeyEvent event) {
-                if(sSboard.selected != null && event.getCode() == KeyCode.R){
-                    sSboard.toRotate = !sSboard.toRotate;
-                }
-            }
-        });
-        sSboard.setOnMouseMoved(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                sSboard.seeIfShipFXCanBePlaced(event.getX(), event.getY());
-            }
-        });
-        sSboard.setOnMouseClicked(new EventHandler<MouseEvent>() {
-
-            ShipFX current = null;
-            boolean haveAShip = false;
-            boolean toRemove = false;
+        ene1.b.setOnMouseClicked(new EventHandler<MouseEvent>() {
 
             @Override
             public void handle(MouseEvent event) {
+                if (iCanAttack) {
+                    iCanAttack = false;
 
-                ShipFX result = sSboard.checkAShip(event.getX(), event.getY());
+                    Point p = ene1.b.pointCoordinates(event);
+                    System.out.println(p);
 
-                if(haveAShip && result == current){
-                    if(toRemove) {
-                        sSboard.placeShipFX(event.getX(), event.getY());
-                        toRemove = false;
-                    }
-                    haveAShip = false;
-                    current = null;
-                    sSboard.setSelected(null);
-                    return;
+                    AnAttackAttempt anAttackAttempt = new AnAttackAttempt();
+                    anAttackAttempt.l = p.x;
+                    anAttackAttempt.c = p.y;
+                    anAttackAttempt.toAttackID = ene1.serverID;
+                    anAttackAttempt.otherID = ene2.serverID;
+
+                    client.sendTCP(anAttackAttempt);
                 }
+            }
+        });
+        ene2.b.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                if (iCanAttack) {
+                    iCanAttack = false;
 
-                //ALREADY HAVE 1, HIT WATER AND ALREADY PLACED
-                if(haveAShip && result == null && current.placed){
-                    if(sSboard.canPlace(event.getX(), event.getY())) {
-                        sSboard.placeShipFX(event.getX(), event.getY());
-                        haveAShip = false;
-                        current = null;
-                    }
-                    return;
-                }
+                    Point p = ene2.b.pointCoordinates(event);
+                    System.out.println(p);
 
-                //ALREADY HAVE 1, HIT WATER AND NOT PLACED
-                if (haveAShip && result == null) {
-                    if(sSboard.canPlace(event.getX(), event.getY())) {
-                        sSboard.placeShipFX(event.getX(), event.getY());
-                        haveAShip = false;
-                        current = null;
-                    }
-                    return;
-                }
+                    AnAttackAttempt anAttackAttempt = new AnAttackAttempt();
+                    anAttackAttempt.l = p.x;
+                    anAttackAttempt.c = p.y;
+                    anAttackAttempt.toAttackID = ene2.serverID;
+                    anAttackAttempt.otherID = ene1.serverID;
 
-                if (result != null &&!haveAShip && result.placed) {
-                    toRemove = true;
-                    sSboard.removeShipFX(result);
-                    sSboard.setSelected(result);
-                    current = result;
-                    haveAShip = true;
-                    return;
-                }
-
-                if (result != null &&!haveAShip) {
-                    sSboard.setSelected(result);
-                    current = result;
-                    haveAShip = true;
+                    client.sendTCP(anAttackAttempt);
                 }
             }
         });
 
-        setShips = new Scene(sSRoot, SCREEN_RECTANGLE.getWidth(),
-                SCREEN_RECTANGLE.getHeight());
+        attackScene = new Scene(aWRoot, SCREEN_RECTANGLE.getWidth(), SCREEN_RECTANGLE.getHeight());
+
     }
 
 

@@ -5,7 +5,9 @@ import Common.PlayerBoard;
 import Common.ShipPiece;
 import Common.WaterTile;
 import javafx.animation.AnimationTimer;
+import javafx.scene.input.MouseEvent;
 
+import java.awt.*;
 import java.util.Arrays;
 
 import static Common.PlayerBoard.COLUMNS;
@@ -17,13 +19,29 @@ public class GraphBoardFX extends EmptyGraphBoardFX {
     PlayerBoard pb;
 
     GraphBoardFX(){
-        super(TileFX.TILE_SIZE * COLUMNS, TileFX.TILE_SIZE * LINES);
-        gc = getGraphicsContext2D();
-        tiles = new TileFX[LINES][COLUMNS];
+        this(TileFX.TILE_SIZE * COLUMNS, TileFX.TILE_SIZE * LINES);
     }
 
     public GraphBoardFX(int _w, int _h) {
         super(_w, _h);
+        gc = getGraphicsContext2D();
+        tiles = new TileFX[LINES][COLUMNS];
+    }
+
+    /**
+     * @param event
+     * @return a point with coordenates (L, C) -> L - Line; C -> Column
+     */
+
+    Point pointCoordinates(MouseEvent event){
+        //BECAUSE ON SCREEN IS THE OTHER WAY AROUND
+        int l = (int) event.getY() / TileFX.TILE_SIZE;
+        int c = (int) event.getX() / TileFX.TILE_SIZE;
+
+        if(l > 9 || l < 0 || c > 9 || c < 0)
+            return null;
+
+        return new Point(l, c);
     }
 
     //TODO: PUT IT SOMEWHERE COMMON
@@ -107,9 +125,8 @@ public class GraphBoardFX extends EmptyGraphBoardFX {
         {
             public void handle(long currentNanoTime)
             {
-                updateTiles(pb.getToPaint());
+                //updateTiles(pb.getToPaint());
                 //gc.drawImage(BACKGROUND_WATER, 0,0);
-
                 for (int l = 0; l < LINES; l++)
                     for (int c = 0; c < COLUMNS; c++) {
                         gc.drawImage(WaterTileFX.IMAGE_TO_SELF, c * TileFX.TILE_SIZE,

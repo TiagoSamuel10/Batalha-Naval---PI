@@ -1,0 +1,9 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="All" type="CompoundRunConfigurationType" factoryName="Compound Run Configuration">
+    <toRun type="Application" name="App" />
+    <toRun type="Application" name="GameServer" />
+    <toRun type="Application" name="Unnamed" />
+    <toRun type="Application" name="Unnamed (1)" />
+    <method />
+  </configuration>
+</component>
