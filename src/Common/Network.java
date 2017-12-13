@@ -38,6 +38,8 @@ public class Network {
         kryo.register(PlayerDied.class);
         kryo.register(OthersSpecs.class);
         kryo.register(YouWon.class);
+        kryo.register(PlayerBoard.class);
+        kryo.register(APlayerboard.class);
 
     }
 
@@ -63,6 +65,10 @@ public class Network {
     public static class EnemiesBoardsToPaint{
         public String[][] board1;
         public String[][] board2;
+    }
+
+    public static class APlayerboard{
+	    public String[][] board;
     }
 
     public static class AnAttackAttempt{

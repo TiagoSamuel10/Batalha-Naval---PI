@@ -4,6 +4,7 @@ import Common.Conversations;
 import Common.Network;
 import Common.Network.*;
 import Common.PlayerBoard;
+import JavaFX.GraphBoardFX;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
@@ -113,8 +114,6 @@ public class GameServer {
 
             }
 
-
-
             public void received (Connection c, Object object) {
 
                 BConnection connection = (BConnection)c;
@@ -122,11 +121,12 @@ public class GameServer {
                 if(object instanceof Register){
                     handleRegister(connection, (Register) object);
                 }
-                if(object instanceof String[][]){
-                    PlayerBoard pb = new PlayerBoard((String[][]) object);
+                if(object instanceof APlayerboard){
+                    PlayerBoard pb = new PlayerBoard(((APlayerboard) object).board);
                     //ADD TO GAME
                     //System.out.println("ADDING TO: " + connection.myID +
                     //        " WHICH IS " + connection.name);
+
                     game.setPlayerBoard(pb, connection.myID);
                     //IF WE'VE RECEIVED ALL, WE CAN START
                     if(game.canStart()){

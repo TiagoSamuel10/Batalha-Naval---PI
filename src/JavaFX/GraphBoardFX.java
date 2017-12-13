@@ -105,10 +105,6 @@ public class GraphBoardFX extends EmptyGraphBoardFX {
     //WRONG SOMEWHERE
     void updateTiles(String[][] sent) {
 
-
-        printDoubleArray(sent);
-        printDoubleArray(tiles);
-
         for (int l = 0; l < LINES; l++) {
             for (int c = 0; c < COLUMNS; c++) {
                 TileFX t = tiles[l][c];
@@ -139,18 +135,6 @@ public class GraphBoardFX extends EmptyGraphBoardFX {
             }
         }
     }
-
-    static <E> void printDoubleArray(E[][] array){
-        String s = "";
-        for (E[] arry : array) {
-            s += "\n";
-            for (E e : arry)
-                s += "," + e;
-        }
-        System.out.println(s);
-    }
-
-
 
     public void setPlayerBoard(PlayerBoard playerBoard) {
         pb = playerBoard;

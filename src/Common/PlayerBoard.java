@@ -203,8 +203,9 @@ public class PlayerBoard implements Serializable {
                     toPaint[point.x][point.y] = WaterTile.VISIBLE_STRING;
                 }
             }
-            toPaint[piece.x][piece.y] = ShipPiece.ATTACKED_SHIP_DESTROYED_STRING;
         }
+        for (ShipPiece piece : s.getPieces())
+            toPaint[piece.x][piece.y] = ShipPiece.ATTACKED_SHIP_DESTROYED_STRING;
     }
 
     @Override
@@ -226,6 +227,16 @@ public class PlayerBoard implements Serializable {
             //i++;
             placeShip(ship);
         }
+    }
+
+    public static void printDoubleArray(String[][] array){
+        String s = "";
+        for (String [] arry : array) {
+            s += "\n";
+            for (String e : arry)
+                s += "," + e;
+        }
+        System.out.println(s);
     }
 
     public boolean placeShip(Ship toAdd) {

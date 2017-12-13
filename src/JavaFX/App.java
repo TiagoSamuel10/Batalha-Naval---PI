@@ -19,6 +19,7 @@ import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Group;
 import javafx.scene.Scene;
+import javafx.scene.SceneAntialiasing;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -27,6 +28,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.shape.Circle;
+import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
@@ -126,8 +128,13 @@ public class App extends Application{
     private EnemyLocal ene1;
     private EnemyLocal ene2;
     private HBox aWRoot;
+    private VBox aWvBox = new VBox(50);
+    private VBox aWvBox2 = new VBox(50);
 
     //endregion
+
+    private Label cWl1;
+    private Label cWl2;
 
     private ArrayList<EmptyGraphBoardFX> toAnimate = new ArrayList<>();
 
@@ -139,6 +146,8 @@ public class App extends Application{
     private Scene mainGame;
     private Scene setShips;
     private Scene attackScene;
+    private Scene wonScene;
+    private Scene chatScreen;
 
     private Stage theStage;
 
@@ -225,19 +234,19 @@ public class App extends Application{
                     Platform.runLater( () -> transitionTo(setShips));
 
                 if (object instanceof OthersSpecs) {
-                    //TODO: LABELS WITH THE CORRECT NAMES
                     OthersSpecs othersSpecs = (OthersSpecs) object;
 
                     Platform.runLater( () -> {
 
                         ene1.serverID = othersSpecs.ene1;
-                        ene1.alive = true;
                         ene1.name = othersSpecs.ene1n;
+                        ene1.button.setText(ene1.name);
+                        cWl1.setText(ene1.name);
 
                         ene2.serverID = othersSpecs.ene2;
-                        ene2.alive = true;
                         ene2.name = othersSpecs.ene2n;
-
+                        ene2.button.setText(ene2.name);
+                        cWl2.setText(ene2.name);
                     });
 
                 }
@@ -252,7 +261,6 @@ public class App extends Application{
                                 ene1.b.startTiles(((EnemiesBoardsToPaint) object).board1);
                                 ene2.b.startTiles(((EnemiesBoardsToPaint) object).board2);
                             });
-                    //TODO: LABELS WITH THE CORRECT NAMES
                 }
 
                 if (object instanceof EnemyBoardToPaint) {
@@ -284,19 +292,43 @@ public class App extends Application{
                 if (object instanceof PlayerDied) {
                     //TODO: REMOVE BOARDS
                     System.out.println("Player died");
+                    Platform.runLater( () -> {
+
+                        removeEnemy(((PlayerDied) object).who);
+
+                    });
                     //removeEnemyBoard(((Network.mMplayerDied) object).who);
                 }
 
                 if (object instanceof YouWon) {
-                    //TODO: YOU WON
+                    Platform.runLater( () -> {
+                        won();
+                    });
                 }
 
                 if (object instanceof ChatMessage) {
-                    ///TODO: CHAT
+                    Platform.runLater( () -> {
+                        EnemyLocal toUpdate = ene1;
+                        if(((ChatMessage) object).saidIt == ene2.serverID){
+                            toUpdate = ene2;
+                        }
+                        toUpdate.conversation.setText(toUpdate.conversation.getText() + ((ChatMessage) object).message);
+                    });
                 }
             }
         });
 
+    }
+
+    private void won() {
+        transitionTo(wonScene);
+    }
+
+    private void removeEnemy(int who) {
+        if(who == ene2.serverID)
+            aWRoot.getChildren().remove(aWvBox2);
+        else
+            aWRoot.getChildren().remove(aWvBox);
     }
 
     private void updateEnemyBoard(int id, String[][] newAttackedBoard) {
@@ -340,6 +372,8 @@ public class App extends Application{
         setMainGame();
         setShipsScene();
         setAttackScreen();
+        setChatScreen();
+        setWonScene();
     }
 
     /**
@@ -400,6 +434,12 @@ public class App extends Application{
             }
         });
         MGChatButton = new Button("CHAT");
+        MGChatButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                transitionTo(chatScreen);
+            }
+        });
 
         MGRight.getChildren().addAll(MGShips, MGAttackButton, MGChatButton);
 
@@ -431,6 +471,13 @@ public class App extends Application{
                     alert.setContentText("Name can't be null, we need to know who you are :(");
                     alert.showAndWait();
                     return;
+                }
+                else                {
+                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                    alert.setTitle("YEE");
+                    alert.setHeaderText("WE GOT IN");
+                    alert.setContentText("TEMP MESSAGE TO SAY WE GOT IN; WAIT NOW! DON'T PRESS ANY MORE SHIT");
+                    alert.showAndWait();
                 }
                 theStage.setTitle(myName);
                 Task<Boolean> connect = new Task<>() {
@@ -590,7 +637,10 @@ public class App extends Application{
                     mGSelfBoard.startTiles(pb.getToPaint());
                     mGSelfBoard.updateTiles(pb.getToPaint());
                     mGSelfBoard.startAnimating();
-                    client.sendTCP(sSboard.pb.getToPaint());
+
+                    APlayerboard p = new APlayerboard();
+                    p.board = sSboard.pb.getToPaint();
+                    client.sendTCP(p);
 
                 }
             }
@@ -706,11 +756,14 @@ public class App extends Application{
         ene1.b = new GraphBoardFX();
         ene2.b = new GraphBoardFX();
 
-        VBox vBox = new VBox(50);
-        vBox.getChildren().addAll(ene1.b, new Button(ene1.name));
+        ene1.button = new Button("ENEMY 1");
+        ene2.button = new Button("ENEMY 2");
 
-        VBox vBox2 = new VBox(50);
-        vBox2.getChildren().addAll(ene2.b ,new Button(ene2.name));
+        aWvBox = new VBox(50);
+        aWvBox.getChildren().addAll(ene1.b, ene1.button);
+
+        aWvBox2 = new VBox(50);
+        aWvBox2.getChildren().addAll(ene2.b, ene2.button);
 
         Button back = new Button("BACK");
         back.setOnMouseClicked(new EventHandler<MouseEvent>() {
@@ -725,21 +778,17 @@ public class App extends Application{
         aWRoot.setPrefSize(SCREEN_RECTANGLE.getWidth(), SCREEN_RECTANGLE.getHeight());
         aWRoot.setStyle("-fx-background-image: url(images/BattleShipBigger2.png)");
 
-        aWRoot.getChildren().addAll(vBox, vBox2, back);
-
+        aWRoot.getChildren().addAll(aWvBox, aWvBox2, back);
 
         ene1.b.setOnMouseClicked(new EventHandler<MouseEvent>() {
 
             @Override
             public void handle(MouseEvent event) {
-
                 lastAttacked = ene1;
-
                 if (iCanAttack) {
                     iCanAttack = false;
 
                     Point p = ene1.b.pointCoordinates(event);
-                    System.out.println(p);
 
                     AnAttackAttempt anAttackAttempt = new AnAttackAttempt();
                     anAttackAttempt.l = p.x;
@@ -761,7 +810,6 @@ public class App extends Application{
                     iCanAttack = false;
 
                     Point p = ene2.b.pointCoordinates(event);
-                    System.out.println(p);
 
                     AnAttackAttempt anAttackAttempt = new AnAttackAttempt();
                     anAttackAttempt.l = p.x;
@@ -778,15 +826,98 @@ public class App extends Application{
 
     }
 
+    private void setWonScene() {
+        StackPane root = new StackPane();
+        aWRoot.setStyle("-fx-background-image: url(images/BattleShipBigger2.png)");
+        Button b = new Button();
+        b.setOnMouseClicked(event -> transitionTo(mainMenu));
+        b.setStyle("-fx-alignment: center");
+        root.getChildren().add(b);
+
+        wonScene = new Scene(root, SCREEN_RECTANGLE.getWidth(), SCREEN_RECTANGLE.getHeight());
+    }
+
+    private void setChatScreen() {
+
+        Button n = new Button("BACK");
+        n.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                transitionTo(mainGame);
+            }
+        });
+
+        cWl1 = new Label();
+        cWl1.setFont(new Font(30));
+        cWl2 = new Label();
+        cWl2.setFont(new Font(30));
+
+        VBox vBox1 = new VBox(20);
+        VBox vBox2 = new VBox(20);
+
+        ene1.conversation = new TextArea();
+        ene1.conversation.setEditable(false);
+        ene1.conversation.setWrapText(true);
+
+        TextArea tf1 = new TextArea();
+        tf1.setWrapText(true);
+        tf1.setMinSize(tf1.getPrefWidth() * 2, tf1.getPrefHeight() * 2);
+        tf1.setOnKeyPressed(event -> {
+            if(event.getCode() == KeyCode.ENTER) {
+                System.out.println(tf1.getText());
+                String message = tf1.getText();
+                tf1.setText("");
+                ChatMessageFromClient c = new ChatMessageFromClient();
+                ene1.conversation.setText(ene1.conversation.getText() + "ME: " + message);
+                c.text = message;
+                c.to = ene1.serverID;
+                client.sendTCP(c);
+            }
+        });
+
+        ene2.conversation = new TextArea();
+        ene2.conversation.setEditable(false);
+        ene2.conversation.setWrapText(true);
+
+        TextArea tf2 = new TextArea();
+        tf2.setWrapText(true);
+        tf2.setMinSize(tf2.getPrefWidth(), tf2.getPrefHeight());
+        tf2.setOnKeyPressed(event -> {
+            if(event.getCode() == KeyCode.ENTER) {
+                System.out.println(tf2.getText());
+                String message = tf2.getText();
+                tf2.setText("");
+                ChatMessageFromClient c = new ChatMessageFromClient();
+                ene2.conversation.setText(ene2.conversation.getText() + "ME: " + message);
+                c.text = message;
+                c.to = ene2.serverID;
+                client.sendTCP(c);
+            }
+        });
+
+        vBox1.getChildren().addAll(cWl1, ene1.conversation, tf1);
+        vBox2.getChildren().addAll(cWl2, ene2.conversation, tf2);
+
+        VBox.setVgrow(ene1.conversation, Priority.ALWAYS);
+        VBox.setVgrow(ene2.conversation, Priority.ALWAYS);
+
+        HBox hBox = new HBox(50);
+        HBox.setHgrow(vBox1, Priority.ALWAYS);
+        HBox.setHgrow(vBox2, Priority.ALWAYS);
+        hBox.getChildren().addAll(vBox1, vBox2, n);
+
+        chatScreen = new Scene(hBox, SCREEN_RECTANGLE.getWidth(), SCREEN_RECTANGLE.getHeight());
+
+    }
+
     private static class EnemyLocal {
         private int serverID;
         private GraphBoardFX b;
-        private boolean alive = true;
         private String name;
-        private ArrayList<String> conversation;
+        private Button button;
+        private TextArea conversation;
         private EnemyLocal(){
             serverID = 0;
-            conversation = new ArrayList<>();
         }
     }
 
