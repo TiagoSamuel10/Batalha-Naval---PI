@@ -16,7 +16,7 @@ import static Common.PlayerBoard.COLUMNS;
 import static Common.PlayerBoard.LINES;
 import static Common.PlayerBoard.inBounds;
 
-public class GraphShipsBoardFX extends GraphBoardFX {
+public class ShipsBoardFX extends GraphBoardFX {
 
     ShipFX[] shipsFX;
     ShipFX selected;
@@ -24,13 +24,51 @@ public class GraphShipsBoardFX extends GraphBoardFX {
     boolean canPlace;
     public boolean toRotate;
 
-    GraphShipsBoardFX(int _w, int _h) {
+    ShipsBoardFX(int _w, int _h) {
         super(_w, _h);
         shipsFX = new ShipFX[10];
         tilesToDraw = new ArrayList<>();
         canPlace = false;
         toRotate = false;
         doShips();
+
+
+        anim = new AnimationTimer()
+        {
+            long lastNano = System.nanoTime();
+            final double perSec = 0;
+
+            int x_max = COLUMNS * TileFX.TILE_SIZE;
+            int y_max = LINES * TileFX.TILE_SIZE;
+
+            public void handle(long currentNanoTime)
+            {
+
+                if(((currentNanoTime - lastNano) / 1000000000.0) > perSec ) {
+                    gc.clearRect(0, 0,getWidth() ,getHeight() );
+                    gc.drawImage(new Image("images/water_bg.jpg"), 0 , 0);
+                    for (int l = 0; l < LINES; l++)
+                        gc.strokeLine(0, l * TileFX.TILE_SIZE , x_max, l * TileFX.TILE_SIZE);
+                    for (int c = 0; c < COLUMNS; c++)
+                        gc.strokeLine(c * TileFX.TILE_SIZE, 0 , c * TileFX.TILE_SIZE, y_max);
+                    for(ShipFX s : shipsFX)
+                        s.draw(gc);
+                    gc.save();
+                    gc.setStroke(Color.BLUE);
+                    if(selected != null)
+                        gc.strokeRect(selected.x, selected.y, selected.width, selected.height);
+                    gc.setFill(Color.rgb(3, 200, 100, 0.5));
+                    if (!canPlace)
+                        gc.setFill(Color.rgb(233, 0, 3, 0.5));
+                    if(tilesToDraw.size() > 0)
+                        for (Point p : tilesToDraw)
+                            gc.fillRect(p.x * TileFX.TILE_SIZE, p.y * TileFX.TILE_SIZE, TileFX.TILE_SIZE, TileFX.TILE_SIZE);
+                    gc.restore();
+                    lastNano = currentNanoTime;
+                }
+            }
+        };
+
     }
 
     void doShips(){
@@ -131,36 +169,6 @@ public class GraphShipsBoardFX extends GraphBoardFX {
             }
             selected = null;
         }
-    }
-
-    @Override
-    void startAnimating() {
-        new AnimationTimer() {
-            public void handle(long currentNanoTime) {
-                gc.clearRect(0, 0,getWidth() ,getHeight() );
-                gc.drawImage(new Image("images/water_bg.jpg"), 0 , 0);
-                for (int l = 0; l < LINES; l++)
-                    for (int c = 0; c < COLUMNS; c++)
-                        gc.strokeRect(c * TileFX.TILE_SIZE,
-                                l * TileFX.TILE_SIZE,
-                                TileFX.TILE_SIZE,
-                                TileFX.TILE_SIZE
-                        );
-                for(ShipFX s : shipsFX)
-                    s.draw(gc);
-                gc.save();
-                gc.setStroke(Color.BLUE);
-                if(selected != null)
-                    gc.strokeRect(selected.x, selected.y, selected.width, selected.height);
-                gc.setFill(Color.rgb(3, 200, 100, 0.5));
-                if (!canPlace)
-                    gc.setFill(Color.rgb(233, 0, 3, 0.5));
-                if(tilesToDraw.size() > 0)
-                    for (Point p : tilesToDraw)
-                        gc.fillRect(p.x * TileFX.TILE_SIZE, p.y * TileFX.TILE_SIZE, TileFX.TILE_SIZE, TileFX.TILE_SIZE);
-                gc.restore();
-            }
-        }.start();
     }
 
 

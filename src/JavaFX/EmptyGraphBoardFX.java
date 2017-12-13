@@ -13,23 +13,40 @@ class EmptyGraphBoardFX extends Canvas {
     final static Image BACKGROUND_WATER = new Image("images/water_bg.jpg");
     GraphicsContext gc;
 
+    AnimationTimer anim;
+
     EmptyGraphBoardFX(int _w, int _h) {
         super(_w, _h);
         gc = getGraphicsContext2D();
+
+        anim = new AnimationTimer()
+        {
+            long lastNano = System.nanoTime();
+            final double perSec = 1;
+
+            int x_max = COLUMNS * TileFX.TILE_SIZE;
+            int y_max = LINES * TileFX.TILE_SIZE;
+
+            public void handle(long currentNanoTime)
+            {
+                if((currentNanoTime - lastNano) / 1000000000.0 > perSec ) {
+                    gc.drawImage(BACKGROUND_WATER, 0, 0);
+                    for (int l = 0; l < LINES; l++)
+                        gc.strokeLine(0, l * TileFX.TILE_SIZE , x_max, l * TileFX.TILE_SIZE);
+                    for (int c = 0; c < COLUMNS; c++)
+                        gc.strokeLine(c * TileFX.TILE_SIZE, 0 , c * TileFX.TILE_SIZE, y_max);
+                    lastNano = currentNanoTime;
+                }
+            }
+        };
+
     }
 
     void startAnimating() {
-        new AnimationTimer() {
-            public void handle(long currentNanoTime) {
-                gc.drawImage(BACKGROUND_WATER, 0, 0);
-                for (int l = 0; l < LINES; l++)
-                    for (int c = 0; c < COLUMNS; c++)
-                        gc.strokeRect(c * TileFX.TILE_SIZE,
-                                (l) * TileFX.TILE_SIZE,
-                                TileFX.TILE_SIZE,
-                                TileFX.TILE_SIZE
-                        );
-            }
-        }.start();
+        anim.start();
+    }
+
+    void stopAnimating(){
+        anim.stop();
     }
 }

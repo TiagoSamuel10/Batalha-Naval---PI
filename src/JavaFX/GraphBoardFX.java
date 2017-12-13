@@ -5,6 +5,7 @@ import Common.PlayerBoard;
 import Common.ShipPiece;
 import Common.WaterTile;
 import javafx.animation.AnimationTimer;
+import javafx.animation.Timeline;
 import javafx.scene.input.MouseEvent;
 
 import java.awt.*;
@@ -24,8 +25,35 @@ public class GraphBoardFX extends EmptyGraphBoardFX {
 
     public GraphBoardFX(int _w, int _h) {
         super(_w, _h);
-        gc = getGraphicsContext2D();
         tiles = new TileFX[LINES][COLUMNS];
+        gc.setLineWidth(1);
+
+
+
+        anim = new AnimationTimer()
+        {
+
+            int x_max = COLUMNS * TileFX.TILE_SIZE;
+            int y_max = LINES * TileFX.TILE_SIZE;
+
+            long lastNano = System.nanoTime();
+            final double perSec = 1;
+
+            public void handle(long currentNanoTime)
+            {
+                if((currentNanoTime - lastNano) / 1000000000.0 > perSec ) {
+                    for (int l = 0; l < LINES; l++)
+                        for (int c = 0; c < COLUMNS; c++)
+                            tiles[l][c].draw(gc);
+                    for (int l = 0; l < LINES; l++)
+                        gc.strokeLine(0, l * TileFX.TILE_SIZE , x_max, l * TileFX.TILE_SIZE);
+                    for (int c = 0; c < COLUMNS; c++)
+                        gc.strokeLine(c * TileFX.TILE_SIZE, 0 , c * TileFX.TILE_SIZE, y_max);
+
+                    lastNano = currentNanoTime;
+                }
+            }
+        };
     }
 
     /**
@@ -60,92 +88,71 @@ public class GraphBoardFX extends EmptyGraphBoardFX {
                 if(pb.getTileAt(l, c).isPiece()) {
                     ShipPiece sp = (ShipPiece) pb.getTileAt(l, c);
                     //System.out.println(sp.getShip().getDirection());
-                    tiles[l][c] = new ShipTileFX(sp.getShip().getSize(), sp.getIdInsideShip(), l, c, sp.getShip().getDirection());
+                    addShipTileFX(l, c, sp);
                 }
                 else
-                    tiles[l][c] = new WaterTileFX(l, c, Direction.VERTICAL);
+                    addWaterTileFX(l, c, (WaterTile)pb.getTileAt(l, c));
             }
         }
     }
 
+    void addShipTileFX(int l, int c, ShipPiece sp){
+        tiles[l][c] = new ShipTileFX(sp.getShip().getSize(), sp.getIdInsideShip(), l, c, sp.getShip().getDirection());
+    }
+
+    void addWaterTileFX(int l, int c, WaterTile wt){
+        tiles[l][c] = new WaterTileFX(l, c, Direction.VERTICAL);
+    }
+
+    //WRONG SOMEWHERE
     void updateTiles(String[][] sent) {
+
+
+        printDoubleArray(sent);
+        printDoubleArray(tiles);
+
         for (int l = 0; l < LINES; l++) {
             for (int c = 0; c < COLUMNS; c++) {
                 TileFX t = tiles[l][c];
-                boolean piece = true;
                 switch (sent[l][c]){
                     case ShipPiece.ATTACKED_SHIP_DESTROYED_STRING:
                         ShipTileFX st = (ShipTileFX) t;
-                        st.attacked = true;
+                        st.attack();
                         st.shipDestroyed = true;
                         break;
                     case ShipPiece.ATTACKED_STRING:
                         st = (ShipTileFX) t;
-                        st.attacked = true;
+                        st.attack();
                         break;
                     case ShipPiece.NOT_ATTACKED_STRING:
                         st = (ShipTileFX) t;
                         st.attacked = false;
                         break;
                     case WaterTile.NOT_VISIBLE_STRING:
-                        piece = false;
                         WaterTileFX wt = (WaterTileFX) t;
                         wt.attacked = false;
                         break;
                     case WaterTile.VISIBLE_STRING:
-                        piece = false;
                         wt = (WaterTileFX) t;
                         wt.attacked = true;
+                        wt.setImageHidden(false);
                         break;
                 }
-                setImageForTile(t, piece);
             }
         }
     }
 
-    void setImageForTile(TileFX t, boolean isPiece){
-        if(isPiece){
-            ShipTileFX st = (ShipTileFX) t;
-            if(st.attacked)
-                st.setImageToDraw(st.imageAttacked);
-            else
-                st.setImageToDraw(st.imageOthersHidden);
-        }else {
-            WaterTileFX wt = (WaterTileFX) t;
-            if(wt.attacked)
-                wt.setImageToDraw(WaterTileFX.IMAGE_ATTACKED);
-            else
-                wt.setImageToDraw(WaterTileFX.IMAGE_OTHERS_HIDDEN);
+    static <E> void printDoubleArray(E[][] array){
+        String s = "";
+        for (E[] arry : array) {
+            s += "\n";
+            for (E e : arry)
+                s += "," + e;
         }
+        System.out.println(s);
     }
 
-    @Override
-    void startAnimating(){
-        new AnimationTimer()
-        {
-            public void handle(long currentNanoTime)
-            {
-                //updateTiles(pb.getToPaint());
-                //gc.drawImage(BACKGROUND_WATER, 0,0);
-                for (int l = 0; l < LINES; l++)
-                    for (int c = 0; c < COLUMNS; c++) {
-                        gc.drawImage(WaterTileFX.IMAGE_TO_SELF, c * TileFX.TILE_SIZE,
-                                l * TileFX.TILE_SIZE);
-                        tiles[l][c].draw(gc);
-                    }
 
-                for (int l = 0; l < LINES; l++)
-                    for (int c = 0; c < COLUMNS; c++) {
-                        gc.strokeRect(c * TileFX.TILE_SIZE,
-                                l * TileFX.TILE_SIZE,
-                                TileFX.TILE_SIZE,
-                                TileFX.TILE_SIZE
-                        );
-                    }
-
-            }
-        }.start();
-    }
 
     public void setPlayerBoard(PlayerBoard playerBoard) {
         pb = playerBoard;

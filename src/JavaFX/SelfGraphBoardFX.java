@@ -1,24 +1,30 @@
 package JavaFX;
 
+import Common.Direction;
+import Common.PlayerBoard;
+import Common.ShipPiece;
+
+import static Common.PlayerBoard.COLUMNS;
+import static Common.PlayerBoard.LINES;
+
 public class SelfGraphBoardFX extends GraphBoardFX {
 
     SelfGraphBoardFX(int _w, int _h) {
         super(_w, _h);
     }
-
-    void setImageForTile(TileFX t, boolean isPiece){
-        if(isPiece){
-            ShipTileFX st = (ShipTileFX) t;
-            if(st.attacked)
-                st.setImageToDraw(st.imageAttacked);
-            else
-                st.setImageToDraw(st.imageToSelf);
-        }else {
-            WaterTileFX wt = (WaterTileFX) t;
-            if(wt.attacked)
-                wt.setImageToDraw(WaterTileFX.IMAGE_ATTACKED);
-            else
-                wt.setImageToDraw(WaterTileFX.IMAGE_TO_SELF);
+    @Override
+    void startTiles(String[][] sent) {
+        pb = new PlayerBoard(sent);
+        for (int l = 0; l < LINES; l++) {
+            for (int c = 0; c < COLUMNS; c++) {
+                if(pb.getTileAt(l, c).isPiece()) {
+                    ShipPiece sp = (ShipPiece) pb.getTileAt(l, c);
+                    tiles[l][c] = new ShipTileFX(sp.getShip().getSize(), sp.getIdInsideShip(), l, c, sp.getShip().getDirection());
+                }
+                else
+                    tiles[l][c] = new WaterTileFX(l, c, Direction.VERTICAL);
+                tiles[l][c].setImageHidden(false);
+            }
         }
     }
 }

@@ -1,12 +1,13 @@
 package JavaFX;
 
 import Common.Direction;
+import Common.WaterTile;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 
 public class ShipTileFX extends TileFX {
 
-    boolean shipDestroyed;
+    private final static Image ATTACKED = new Image("images/fumeira.png");
 
     private final static Image ONE_ONE = new Image("images/1_1.png");
     //private final static Image ONE_ONE_DESTROYED = new Image("images/1_1_d.png");
@@ -57,16 +58,21 @@ public class ShipTileFX extends TileFX {
     private final static Image FOUR_FOUR_V = new Image("images/4_4_v.png");
     //private final static Image FOUR_FOUR_DESTROYED = new Image("images/4_4_d.png");
 
-    Image imageToSelf;
-    Image imageAttacked;
-    Image imageOthersHidden;
+    boolean shipDestroyed;
 
-    ShipTileFX(int sSize, int id, int _l, int _c, Direction _dir) {
+    private int id;
+    private int sSize;
+
+    ShipTileFX(int _sSize, int _id, int _l, int _c, Direction _dir) {
         super(_l, _c, _dir);
-        giveImages(sSize, id);
+        sSize = _sSize;
+        id = _id;
+        imageAttacked = ATTACKED;
+        giveRightImageToShow();
+        setImageHidden(true);
     }
 
-    private void giveImages(int sSize,int id){
+    void giveRightImageToShow(){
         switch (sSize){
             case 1:
                 imageToSelf = giveImageBasedOnDirection(ONE_ONE);
@@ -120,10 +126,20 @@ public class ShipTileFX extends TileFX {
                         break;
                 }
         }
+        setImageToDraw(imageToSelf);
     }
 
     @Override
     void draw(GraphicsContext gc) {
+        gc.drawImage(WaterTileFX.IMAGE_TO_SELF, x, y);
         super.draw(gc);
+        if(attacked)
+            gc.drawImage(imageAttacked, x, y);
+    }
+
+    @Override
+    public String toString() {
+        return "ST at" + l + ":" + c + "; attacked: " + attacked;
+
     }
 }

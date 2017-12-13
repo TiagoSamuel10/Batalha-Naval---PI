@@ -200,7 +200,8 @@ public class PlayerBoard implements Serializable {
             for (Point point : points) {
                 if (inBounds(point.x, point.y)) {
                     getTileAt(point.x, point.y).setAttacked(true);
-                    toPaint[point.x][point.y] = WaterTile.VISIBLE_STRING;
+                    if(!getTileAt(point.x, point.y).isPiece())
+                        toPaint[point.x][point.y] = WaterTile.VISIBLE_STRING;
                 }
             }
         }

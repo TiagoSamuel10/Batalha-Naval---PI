@@ -19,6 +19,7 @@ import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Group;
 import javafx.scene.Scene;
+import javafx.scene.canvas.Canvas;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -88,7 +89,7 @@ public class App extends Application{
 
     private HBox sSRoot;
 
-    private GraphShipsBoardFX sSboard;
+    private ShipsBoardFX sSboard;
 
     private VBox sSRightStuff;
 
@@ -132,6 +133,7 @@ public class App extends Application{
 
     //endregion
 
+    private ArrayList<EmptyGraphBoardFX> toAnimate = new ArrayList<>();
 
     private final static Rectangle2D SCREEN_RECTANGLE = Screen.getPrimary().getVisualBounds();
 
@@ -215,7 +217,6 @@ public class App extends Application{
                 
                 if (object instanceof WhoseTurn) {
                     WhoseTurn whoseTurn = (WhoseTurn) object;
-                    System.out.println(whoseTurn.name);
                     Platform.runLater( () -> setTurnLabel(whoseTurn.name));
                 }
                 if (object instanceof ConnectedPlayers) {
@@ -253,9 +254,7 @@ public class App extends Application{
                     //System.out.println("ENEMIES BOARDS TO PAINT");
                     Platform.runLater( () -> {
                                 ene1.b.startTiles(((EnemiesBoardsToPaint) object).board1);
-                                ene1.b.startAnimating();
                                 ene2.b.startTiles(((EnemiesBoardsToPaint) object).board2);
-                                ene2.b.startAnimating();
                             });
                     //TODO: LABELS WITH THE CORRECT NAMES
                 }
@@ -310,6 +309,7 @@ public class App extends Application{
         if(id == ene2.serverID){
             toUpdate = ene2;
         }
+
         toUpdate.b.updateTiles(newAttackedBoard);
     }
 
@@ -324,11 +324,6 @@ public class App extends Application{
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-
-        ene1 = new EnemyLocal();
-        ene2 = new EnemyLocal();
-        lastAttacked = new EnemyLocal();
-        iCanAttack = false;
 
         serverConfigurations();
 
@@ -351,8 +346,27 @@ public class App extends Application{
         setAttackScreen();
     }
 
+    /**
+     * CALL BEFORE OTHER STUFF
+     * @param scene
+     */
     private void transitionTo(Scene scene) {
+        for (EmptyGraphBoardFX g : toAnimate)
+            g.stopAnimating();
+        toAnimate.clear();
         theStage.setScene(scene);
+        if(scene == mainGame){
+            toAnimate.add(mGSelfBoard);
+        }
+        if(scene == attackScene){
+            toAnimate.add(ene1.b);
+            toAnimate.add(ene2.b);
+        }
+        if(scene == setShips){
+            toAnimate.add(sSboard);
+        }
+        for (EmptyGraphBoardFX g : toAnimate)
+            g.startAnimating();
     }
 
     private void setMainGame() {
@@ -422,7 +436,7 @@ public class App extends Application{
                     alert.showAndWait();
                     return;
                 }
-
+                theStage.setTitle(myName);
                 Task<Boolean> connect = new Task<>() {
                     @Override
                     protected Boolean call() throws Exception {
@@ -523,7 +537,7 @@ public class App extends Application{
         sSRoot.setStyle("-fx-background-image: url(images/BattleShipBigger2.png)");
 
         pb = new PlayerBoard();
-        sSboard = new GraphShipsBoardFX(700,500);
+        sSboard = new ShipsBoardFX(700,500);
 
         sSboard.setPlayerBoard(pb);
         sSboard.startAnimating();
@@ -573,7 +587,7 @@ public class App extends Application{
 
                     pb = sSboard.pb;
 
-                    System.out.println(pb);
+                    //System.out.println(pb);
 
                     mGSelfBoard.setPlayerBoard(pb);
                     mGSelfBoard.startTiles(pb.getToPaint());
@@ -682,19 +696,43 @@ public class App extends Application{
 
     private void setAttackScreen(){
 
-        aWRoot = new HBox(200);
-        aWRoot.setPrefSize(SCREEN_RECTANGLE.getWidth(), SCREEN_RECTANGLE.getHeight());
-        aWRoot.setStyle("-fx-background-image: url(images/BattleShipBigger2.png)");
+        ene1 = new EnemyLocal();
+        ene2 = new EnemyLocal();
+        lastAttacked = new EnemyLocal();
+        iCanAttack = false;
 
         ene1.b = new GraphBoardFX();
         ene2.b = new GraphBoardFX();
 
-        aWRoot.getChildren().addAll(ene1.b, ene2.b);
+        VBox vBox = new VBox(50);
+        vBox.getChildren().addAll(ene1.b, new Button(ene1.name));
+
+        VBox vBox2 = new VBox(50);
+        vBox2.getChildren().addAll(ene2.b ,new Button(ene2.name));
+
+        Button back = new Button("BACK");
+        back.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                transitionTo(mainGame);
+            }
+        });
+
+        aWRoot = new HBox(200);
+        aWRoot.setAlignment(Pos.CENTER);
+        aWRoot.setPrefSize(SCREEN_RECTANGLE.getWidth(), SCREEN_RECTANGLE.getHeight());
+        aWRoot.setStyle("-fx-background-image: url(images/BattleShipBigger2.png)");
+
+        aWRoot.getChildren().addAll(vBox, vBox2, back);
+
 
         ene1.b.setOnMouseClicked(new EventHandler<MouseEvent>() {
 
             @Override
             public void handle(MouseEvent event) {
+
+                lastAttacked = ene1;
+
                 if (iCanAttack) {
                     iCanAttack = false;
 
@@ -711,9 +749,12 @@ public class App extends Application{
                 }
             }
         });
+
+
         ene2.b.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
+                lastAttacked = ene2;
                 if (iCanAttack) {
                     iCanAttack = false;
 
@@ -735,17 +776,14 @@ public class App extends Application{
 
     }
 
-
     private static class EnemyLocal {
         private int serverID;
         private GraphBoardFX b;
-        private BufferedImage buffered;
-        private JLabel image;
         private boolean alive = true;
         private String name;
-        private Button attack;
         private ArrayList<String> conversation;
         private EnemyLocal(){
+            serverID = 0;
             conversation = new ArrayList<>();
         }
     }
