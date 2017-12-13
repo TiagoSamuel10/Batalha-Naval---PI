@@ -1,17 +1,30 @@
-package ClientSide;
+package Old;
 
 import Common.BoardTile;
 import Common.ShipPiece;
 import Common.WaterTile;
 
+import javax.swing.*;
 import java.awt.*;
 
 import static Common.PlayerBoard.COLUMNS;
 import static Common.PlayerBoard.LINES;
 
-class MyGraphBoard extends GraphicalBoard {
+class GraphicalBoard extends JPanel {
 
-    MyGraphBoard(String[][] board) {
+    static final int BORDER = 1;
+    static final Dimension SIZE = new Dimension(
+            LINES * (BoardTile.SIZE + BORDER),
+            COLUMNS * (BoardTile.SIZE + BORDER)
+    );
+
+    GraphicalBoard() {
+    }
+
+
+
+    GraphicalBoard (String[][] board){
+
         setLayout(null);
         int multiplier = (BoardTile.SIZE + BORDER);
 
@@ -21,6 +34,7 @@ class MyGraphBoard extends GraphicalBoard {
                 Point p = new Point(c * multiplier, l * multiplier);
                 graphTile.setLocation(p);
                 graphTile.setSize(BoardTile.SIZE, BoardTile.SIZE);
+                //System.out.println("HAVE " + board[l][c]);
                 switch (board[l][c]){
                     case ShipPiece.ATTACKED_SHIP_DESTROYED_STRING:
                         graphTile.setColor(ShipPiece.COLOR_ATTACKED_SHIP_DESTROYED);
@@ -29,10 +43,8 @@ class MyGraphBoard extends GraphicalBoard {
                         graphTile.setColor(ShipPiece.COLOR_ATTACKED);
                         break;
                     case ShipPiece.NOT_ATTACKED_STRING:
-                        graphTile.setColor(ShipPiece.COLOR_TO_SHOW);
-                        break;
                     case WaterTile.NOT_VISIBLE_STRING:
-                        graphTile.setColor(WaterTile.COLOR_TO_SHOW);
+                        graphTile.setColor(BoardTile.COLOR_NOT_VISIBLE);
                         break;
                     case WaterTile.VISIBLE_STRING:
                         graphTile.setColor(WaterTile.COLOR_ATTACKED_OR_VISIBLE);
@@ -47,4 +59,5 @@ class MyGraphBoard extends GraphicalBoard {
         setSize(SIZE);
         setLocation(GameClient.GAME_BOARD_LOCATION);
     }
+
 }

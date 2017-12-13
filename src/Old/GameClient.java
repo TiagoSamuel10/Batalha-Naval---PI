@@ -1,4 +1,4 @@
-package ClientSide;
+package Old;
 
 import Common.BoardTile;
 import Common.Direction;
@@ -207,8 +207,8 @@ public class GameClient extends JFrame{
             /*
             System.out.println("-----------");
             System.out.println("X: "+ x);
-            System.out.println("FIRST: " + (minX + x * (ClientSide.GraphicalBoard.BORDER + BoardTile.SIZE)));
-            System.out.println("SECOND: " + (minX + x * (BoardTile.SIZE  + ClientSide.GraphicalBoard.BORDER) + BoardTile.SIZE));
+            System.out.println("FIRST: " + (minX + x * (Old.GraphicalBoard.BORDER + BoardTile.SIZE)));
+            System.out.println("SECOND: " + (minX + x * (BoardTile.SIZE  + Old.GraphicalBoard.BORDER) + BoardTile.SIZE));
             */
             if(point.x > minX + x * (GraphicalBoard.BORDER + BoardTile.SIZE) &&
                     point.x <= minX + x  * (BoardTile.SIZE + GraphicalBoard.BORDER) + BoardTile.SIZE){
@@ -222,8 +222,8 @@ public class GameClient extends JFrame{
             /*
             System.out.println("-----------");
             System.out.println("Y: "+ y);
-            System.out.println("FIRST: " + (minY + y * (ClientSide.GraphicalBoard.BORDER + BoardTile.SIZE)));
-            System.out.println("SECOND: " + (minY + y * (BoardTile.SIZE  + ClientSide.GraphicalBoard.BORDER) + BoardTile.SIZE));
+            System.out.println("FIRST: " + (minY + y * (Old.GraphicalBoard.BORDER + BoardTile.SIZE)));
+            System.out.println("SECOND: " + (minY + y * (BoardTile.SIZE  + Old.GraphicalBoard.BORDER) + BoardTile.SIZE));
             */
 
             if(point.y > minY + y * (GraphicalBoard.BORDER + BoardTile.SIZE) &&

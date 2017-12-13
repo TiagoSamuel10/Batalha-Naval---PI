@@ -19,7 +19,6 @@ import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Group;
 import javafx.scene.Scene;
-import javafx.scene.SceneAntialiasing;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -51,7 +50,7 @@ public class App extends Application{
     //FOR ONLINE
     private Client client;
     private String myName;
-    private final String address = "localhost";
+    private static final String ADDRESS = "82.154.150.115";
     private PlayerBoard pb;
 
     //region MAIN MENU STUFF
@@ -148,6 +147,7 @@ public class App extends Application{
     private Scene attackScene;
     private Scene wonScene;
     private Scene chatScreen;
+    private Scene waitingScreen;
 
     private Stage theStage;
 
@@ -189,7 +189,7 @@ public class App extends Application{
                 throw new UnknownHostException("The JDK INetAddress.getLocalHost() method unexpectedly returned null.");
             return jdkSuppliedAddress;
         } catch (Exception e) {
-            UnknownHostException unknownHostException = new UnknownHostException("Failed to determine LAN address: " + e);
+            UnknownHostException unknownHostException = new UnknownHostException("Failed to determine LAN ADDRESS: " + e);
             unknownHostException.initCause(e);
             throw unknownHostException;
         }
@@ -472,20 +472,13 @@ public class App extends Application{
                     alert.showAndWait();
                     return;
                 }
-                else                {
-                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                    alert.setTitle("YEE");
-                    alert.setHeaderText("WE GOT IN");
-                    alert.setContentText("TEMP MESSAGE TO SAY WE GOT IN; WAIT NOW! DON'T PRESS ANY MORE SHIT");
-                    alert.showAndWait();
-                }
                 theStage.setTitle(myName);
                 Task<Boolean> connect = new Task<>() {
                     @Override
                     protected Boolean call() throws Exception {
                         Boolean connected = true;
                         try {
-                            client.connect(5000, address, Network.port);
+                            client.connect(5000, ADDRESS, Network.port);
                         }
                         catch (IOException e) {
                             connected = false;
@@ -506,7 +499,13 @@ public class App extends Application{
                                 r.address = "100:00";
                             }
                             client.sendTCP(r);
-                            //transitionTo(setShips);
+                            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                            alert.setTitle("YEE");
+                            alert.setHeaderText("WE GOT IN");
+                            alert.setContentText("TEMP MESSAGE TO SAY WE GOT IN; WAIT NOW! DON'T PRESS ANY MORE SHIT");
+                            alert.showAndWait();
+                            waitingScreen = new Scene(new BorderPane(), SCREEN_RECTANGLE.getWidth(), SCREEN_RECTANGLE.getHeight());
+                            transitionTo(waitingScreen);
                         }else{
                             Alert alert = new Alert(Alert.AlertType.ERROR);
                             alert.setTitle("Noo!");
