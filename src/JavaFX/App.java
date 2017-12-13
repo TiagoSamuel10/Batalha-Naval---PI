@@ -498,13 +498,13 @@ public class App extends Application{
                                 e1.printStackTrace();
                                 r.address = "100:00";
                             }
+                            waitingScreen = new Scene(new BorderPane(), SCREEN_RECTANGLE.getWidth(), SCREEN_RECTANGLE.getHeight());
+                            transitionTo(waitingScreen);
                             client.sendTCP(r);
                             Alert alert = new Alert(Alert.AlertType.INFORMATION);
                             alert.setTitle("YEE");
                             alert.setHeaderText("WE GOT IN");
                             alert.setContentText("TEMP MESSAGE TO SAY WE GOT IN; WAIT NOW! DON'T PRESS ANY MORE SHIT");
-                            waitingScreen = new Scene(new BorderPane(), SCREEN_RECTANGLE.getWidth(), SCREEN_RECTANGLE.getHeight());
-                            transitionTo(waitingScreen);
                             alert.showAndWait();
                         }else{
                             Alert alert = new Alert(Alert.AlertType.ERROR);
