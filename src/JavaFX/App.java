@@ -29,6 +29,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -132,6 +133,8 @@ public class App extends Application{
 
     //endregion
 
+    private TextArea textArea;
+
     private Label cWl1;
     private Label cWl2;
 
@@ -227,7 +230,12 @@ public class App extends Application{
                 if (object instanceof ConnectedPlayers) {
                     System.out.println("CONNECTED PLAYERS");
                     ConnectedPlayers players = (ConnectedPlayers) object;
-                    //TODO: DO WAITING WINDOW
+                    Platform.runLater(() -> {
+                        textArea.clear();
+                        for (String name : players.names)
+                            textArea.appendText(name +"\n");
+                        }
+                    );
                 }
 
                 if (object instanceof ReadyForShips)
@@ -293,11 +301,8 @@ public class App extends Application{
                     //TODO: REMOVE BOARDS
                     System.out.println("Player died");
                     Platform.runLater( () -> {
-
                         removeEnemy(((PlayerDied) object).who);
-
                     });
-                    //removeEnemyBoard(((Network.mMplayerDied) object).who);
                 }
 
                 if (object instanceof YouWon) {
@@ -485,7 +490,14 @@ public class App extends Application{
                                 e1.printStackTrace();
                                 r.address = "100:00";
                             }
-                            waitingScreen = new Scene(new BorderPane(), SCREEN_RECTANGLE.getWidth(), SCREEN_RECTANGLE.getHeight());
+
+                            BorderPane root = new BorderPane();
+                            textArea = new TextArea();
+                            textArea.setEditable(false);
+
+                            root.setCenter(textArea);
+
+                            waitingScreen = new Scene(root, SCREEN_RECTANGLE.getWidth(), SCREEN_RECTANGLE.getHeight());
                             transitionTo(waitingScreen);
                             client.sendTCP(r);
                             Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -848,11 +860,10 @@ public class App extends Application{
         tf1.setMinSize(tf1.getPrefWidth() * 2, tf1.getPrefHeight() * 2);
         tf1.setOnKeyPressed(event -> {
             if(event.getCode() == KeyCode.ENTER) {
-                System.out.println(tf1.getText());
                 String message = tf1.getText();
-                tf1.setText("");
+                tf1.clear();
                 ChatMessageFromClient c = new ChatMessageFromClient();
-                ene1.conversation.setText(ene1.conversation.getText() + "ME: " + message);
+                ene1.conversation.appendText("ME: " + message);
                 c.text = message;
                 c.to = ene1.serverID;
                 client.sendTCP(c);
@@ -868,11 +879,10 @@ public class App extends Application{
         tf2.setMinSize(tf2.getPrefWidth(), tf2.getPrefHeight());
         tf2.setOnKeyPressed(event -> {
             if(event.getCode() == KeyCode.ENTER) {
-                System.out.println(tf2.getText());
                 String message = tf2.getText();
-                tf2.setText("");
+                tf2.clear();
                 ChatMessageFromClient c = new ChatMessageFromClient();
-                ene2.conversation.setText(ene2.conversation.getText() + "ME: " + message);
+                ene2.conversation.appendText("ME: " + message);
                 c.text = message;
                 c.to = ene2.serverID;
                 client.sendTCP(c);
