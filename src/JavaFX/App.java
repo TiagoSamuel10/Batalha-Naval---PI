@@ -15,7 +15,6 @@ import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Group;
 import javafx.scene.Scene;
@@ -26,6 +25,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
@@ -212,7 +212,7 @@ public class App extends Application{
 
             public void received(Connection connection, Object object) {
                 if (object instanceof IsFull)
-                    System.out.println(object);
+                    transitionTo(mainMenu);
                 if (object instanceof Abort){
                     //
                 }
@@ -240,12 +240,12 @@ public class App extends Application{
 
                         ene1.serverID = othersSpecs.ene1;
                         ene1.name = othersSpecs.ene1n;
-                        ene1.button.setText(ene1.name);
+                        ene1.labeln.setText(ene1.name);
                         cWl1.setText(ene1.name);
 
                         ene2.serverID = othersSpecs.ene2;
                         ene2.name = othersSpecs.ene2n;
-                        ene2.button.setText(ene2.name);
+                        ene2.labeln.setText(ene2.name);
                         cWl2.setText(ene2.name);
                     });
 
@@ -402,46 +402,35 @@ public class App extends Application{
     private void setMainGame() {
 
         MGRoot = new BorderPane();
-        MGRoot.setStyle("-fx-background-color:white");
+        MGRoot.setStyle("-fx-background-image: url(images/BattleShipBigger2.png);-fx-background-size: cover;");
 
         //GridPane gridPane = new GridPane();
         //gridPane.setStyle("-fx-background-color:cyan");
 
         MGCanvasHolder = new Group();
-        MGCanvasHolder.setStyle("-fx-background-color:cyan");
 
         mGSelfBoard = new SelfGraphBoardFX(500, 500);
+        mGSelfBoard.startTiles(PlayerBoard.getRandomPlayerBoard().getToPaint());
 
         MGCanvasHolder.getChildren().add(mGSelfBoard);
 
         MGTop = new StackPane();
-        MGTop.setStyle("-fx-background-color:red");
 
         mGcurrentPlayerText = new Label("IS PLAYING");
+        mGcurrentPlayerText.setFont(new Font(30));
         MGTop.getChildren().add(mGcurrentPlayerText);
 
-        MGRight = new VBox();
-        MGRight.setStyle("-fx-background-color:green");
-        MGRight.setSpacing(50);
+        MGRight = new VBox(50);
 
-        MGShips = new Circle();
-        MGShips.setRadius(50);
         MGAttackButton = new Button("TO ARMS");
-        MGAttackButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                transitionTo(attackScene);
-            }
-        });
+        MGAttackButton.setOnMouseClicked(event -> transitionTo(attackScene));
         MGChatButton = new Button("CHAT");
-        MGChatButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                transitionTo(chatScreen);
-            }
-        });
+        MGChatButton.setOnMouseClicked(event -> transitionTo(chatScreen));
 
-        MGRight.getChildren().addAll(MGShips, MGAttackButton, MGChatButton);
+        VBox.setVgrow(MGAttackButton, Priority.ALWAYS);
+        VBox.setVgrow(MGChatButton, Priority.ALWAYS);
+
+        MGRight.getChildren().addAll(MGAttackButton, MGChatButton);
 
         MGRoot.setRight(MGRight);
         MGRoot.setTop(MGTop);
@@ -453,9 +442,7 @@ public class App extends Application{
     private void setMainMenu(){
 
         mMRoot = new BorderPane();
-        mMRoot.setPrefSize(SCREEN_RECTANGLE.getWidth(), SCREEN_RECTANGLE.getHeight());
-        mMRoot.setBackground(new Background(MM_BACKGROUND));
-        mMRoot.setStyle("-fx-background-image: url(images/BattleShipBigger2.png);-fx-background-repeat-style: strech;");
+        mMRoot.setStyle("-fx-background-image: url(images/BattleShip.png);-fx-background-size: cover;");
 
         mMPlayButton = new Button();
         mMPlayButton.setGraphic(new ImageView(mMPlayButtonImage));
@@ -524,7 +511,7 @@ public class App extends Application{
         mMAloneButton = new Button();
         mMAloneButton.setGraphic(new ImageView(mMAloneButtonImage));
         mMAloneButton.setOnAction(event ->
-            theStage.setScene(mainGame)
+            theStage.setScene(attackScene)
         );
         mMAloneButton.setStyle("-fx-background-color: transparent;");
 
@@ -534,9 +521,6 @@ public class App extends Application{
                 Platform.exit()
         );
         mMExit.setStyle("-fx-background-color: transparent;");
-
-        //TODO: BETTER TEXT
-        mMServerText = new Label();
 
         mMnameInput = new TextField("Name!");
         mMnameInput.textProperty().addListener(new ChangeListener<>() {
@@ -557,10 +541,9 @@ public class App extends Application{
         mMMiddle.add(mMAloneButton, 1, 2);
         mMMiddle.add(mMExit, 1, 3);
         mMMiddle.add(mMnameInput, 0, 1);
-        mMMiddle.add(mMServerText, 0, 0);
+        mMMiddle.setStyle("-fx-fill: true; -fx-alignment:center");
 
         //mMMiddle.getChildren().addAll(mMPlayButton,mMAloneButton, mMExit, mMServerText, mMnameInput);
-        mMMiddle.setAlignment(Pos.BOTTOM_CENTER);
         mMRoot.setCenter(mMMiddle);
         //mMMiddle.setStyle("-fx-background-color:cyan;");
 
@@ -576,7 +559,7 @@ public class App extends Application{
     private void setShipsScene(){
 
         sSRoot = new HBox();
-        sSRoot.setStyle("-fx-background-image: url(images/BattleShipBigger2.png)");
+        sSRoot.setStyle("-fx-background-image: url(images/BattleShipBigger2.png);-fx-background-size: cover;");
 
         pb = new PlayerBoard();
         sSboard = new ShipsBoardFX(700,500);
@@ -586,8 +569,6 @@ public class App extends Application{
 
         sSRightStuff = new VBox();
         sSRightStuff.setStyle("-fx-background-color: red");
-
-
 
         sSShipsStatus = new HBox();
         sSShipsStatus.setStyle("-fx-background-color: green;");
@@ -662,8 +643,8 @@ public class App extends Application{
         sSRightStuff.getChildren().addAll(sSShipsStatus, sSReadyBox, sSPlayersReady);
 
         sSRoot.getChildren().addAll(sSboard, sSRightStuff);
-        sSRoot.setPadding(new Insets(50, 50, 200,200));
-        sSRoot.setSpacing(200);
+        sSRoot.setPadding(new Insets(25));
+        sSRoot.setSpacing(10);
 
         sSRoot.setOnKeyPressed(new EventHandler<KeyEvent>() {
             @Override
@@ -756,28 +737,30 @@ public class App extends Application{
 
         ene1.b = new GraphBoardFX();
         ene2.b = new GraphBoardFX();
+        ene1.b.startTiles(PlayerBoard.getRandomPlayerBoard().getToPaint());
+        ene2.b.startTiles(PlayerBoard.getRandomPlayerBoard().getToPaint());
+        ene1.b.startAnimating();
+        ene2.b.startAnimating();
 
-        ene1.button = new Button("ENEMY 1");
-        ene2.button = new Button("ENEMY 2");
+        ene1.labeln = new Label("ENEMY 1");
+        ene1.labeln.setFont(new Font("Verdana", 30));
+        ene1.labeln.setTextFill(Color.rgb(0,0,0));
 
-        aWvBox = new VBox(50);
-        aWvBox.getChildren().addAll(ene1.b, ene1.button);
+        ene2.labeln = new Label("ENEMY 2");
+        ene2.labeln.setFont(new Font("Verdana", 30));
+        ene2.labeln.setTextFill(Color.rgb(0,0,0));
 
-        aWvBox2 = new VBox(50);
-        aWvBox2.getChildren().addAll(ene2.b, ene2.button);
+        aWvBox = new VBox(10);
+        aWvBox.getChildren().addAll(ene1.b, ene1.labeln);
+
+        aWvBox2 = new VBox(10);
+        aWvBox2.getChildren().addAll(ene2.b, ene2.labeln);
 
         Button back = new Button("BACK");
-        back.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                transitionTo(mainGame);
-            }
-        });
+        back.setOnMouseClicked(event -> transitionTo(mainGame));
 
-        aWRoot = new HBox(200);
-        aWRoot.setAlignment(Pos.CENTER);
-        aWRoot.setPrefSize(SCREEN_RECTANGLE.getWidth(), SCREEN_RECTANGLE.getHeight());
-        aWRoot.setStyle("-fx-background-image: url(images/BattleShipBigger2.png)");
+        aWRoot = new HBox(50);
+        aWRoot.setStyle("-fx-background-image: url(images/BattleShipBigger2.png);-fx-background-size: cover;");
 
         aWRoot.getChildren().addAll(aWvBox, aWvBox2, back);
 
@@ -915,7 +898,7 @@ public class App extends Application{
         private int serverID;
         private GraphBoardFX b;
         private String name;
-        private Button button;
+        private Label labeln;
         private TextArea conversation;
         private EnemyLocal(){
             serverID = 0;
