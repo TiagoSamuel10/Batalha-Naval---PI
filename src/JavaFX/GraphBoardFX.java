@@ -28,8 +28,6 @@ public class GraphBoardFX extends EmptyGraphBoardFX {
         tiles = new TileFX[LINES][COLUMNS];
         gc.setLineWidth(1);
 
-
-
         anim = new AnimationTimer()
         {
 

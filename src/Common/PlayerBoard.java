@@ -200,10 +200,10 @@ public class PlayerBoard implements Serializable {
             for (Point point : points) {
                 if (inBounds(point.x, point.y)) {
                     getTileAt(point.x, point.y).setAttacked(true);
-                    if(!getTileAt(point.x, point.y).isPiece())
-                        toPaint[point.x][point.y] = WaterTile.VISIBLE_STRING;
+                    toPaint[point.x][point.y] = WaterTile.VISIBLE_STRING;
                 }
             }
+            toPaint[piece.x][piece.y] = ShipPiece.ATTACKED_SHIP_DESTROYED_STRING;
         }
     }
 

@@ -22,7 +22,8 @@ public class ShipsBoardFX extends GraphBoardFX {
     ShipFX selected;
     ArrayList<Point> tilesToDraw;
     boolean canPlace;
-    public boolean toRotate;
+    boolean toRotate;
+    boolean finished;
 
     ShipsBoardFX(int _w, int _h) {
         super(_w, _h);

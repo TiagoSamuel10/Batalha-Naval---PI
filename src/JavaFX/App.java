@@ -19,7 +19,6 @@ import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Group;
 import javafx.scene.Scene;
-import javafx.scene.canvas.Canvas;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -35,15 +34,12 @@ import javafx.stage.StageStyle;
 
 import Common.Network.*;
 
-import javax.swing.*;
 import java.awt.Point;
-import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.UnknownHostException;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class App extends Application{
 
@@ -584,6 +580,7 @@ public class App extends Application{
 
                     sSReadyButton.setDisable(true);
                     sSRandomButton.setDisable(true);
+                    sSboard.finished = true;
 
                     pb = sSboard.pb;
 
@@ -628,7 +625,9 @@ public class App extends Application{
         sSboard.setOnMouseMoved(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
-                sSboard.seeIfShipFXCanBePlaced(event.getX(), event.getY());
+                if(!sSboard.finished) {
+                    sSboard.seeIfShipFXCanBePlaced(event.getX(), event.getY());
+                }
             }
         });
         sSboard.setOnMouseClicked(new EventHandler<MouseEvent>() {
@@ -640,52 +639,55 @@ public class App extends Application{
             @Override
             public void handle(MouseEvent event) {
 
-                ShipFX result = sSboard.checkAShip(event.getX(), event.getY());
+                if(!sSboard.finished) {
 
-                if(haveAShip && result == current){
-                    if(toRemove) {
-                        sSboard.placeShipFX(event.getX(), event.getY());
-                        toRemove = false;
-                    }
-                    haveAShip = false;
-                    current = null;
-                    sSboard.setSelected(null);
-                    return;
-                }
+                    ShipFX result = sSboard.checkAShip(event.getX(), event.getY());
 
-                //ALREADY HAVE 1, HIT WATER AND ALREADY PLACED
-                if(haveAShip && result == null && current.placed){
-                    if(sSboard.canPlace(event.getX(), event.getY())) {
-                        sSboard.placeShipFX(event.getX(), event.getY());
+                    if (haveAShip && result == current) {
+                        if (toRemove) {
+                            sSboard.placeShipFX(event.getX(), event.getY());
+                            toRemove = false;
+                        }
                         haveAShip = false;
                         current = null;
+                        sSboard.setSelected(null);
+                        return;
                     }
-                    return;
-                }
 
-                //ALREADY HAVE 1, HIT WATER AND NOT PLACED
-                if (haveAShip && result == null) {
-                    if(sSboard.canPlace(event.getX(), event.getY())) {
-                        sSboard.placeShipFX(event.getX(), event.getY());
-                        haveAShip = false;
-                        current = null;
+                    //ALREADY HAVE 1, HIT WATER AND ALREADY PLACED
+                    if (haveAShip && result == null && current.placed) {
+                        if (sSboard.canPlace(event.getX(), event.getY())) {
+                            sSboard.placeShipFX(event.getX(), event.getY());
+                            haveAShip = false;
+                            current = null;
+                        }
+                        return;
                     }
-                    return;
-                }
 
-                if (result != null &&!haveAShip && result.placed) {
-                    toRemove = true;
-                    sSboard.removeShipFX(result);
-                    sSboard.setSelected(result);
-                    current = result;
-                    haveAShip = true;
-                    return;
-                }
+                    //ALREADY HAVE 1, HIT WATER AND NOT PLACED
+                    if (haveAShip && result == null) {
+                        if (sSboard.canPlace(event.getX(), event.getY())) {
+                            sSboard.placeShipFX(event.getX(), event.getY());
+                            haveAShip = false;
+                            current = null;
+                        }
+                        return;
+                    }
 
-                if (result != null &&!haveAShip) {
-                    sSboard.setSelected(result);
-                    current = result;
-                    haveAShip = true;
+                    if (result != null && !haveAShip && result.placed) {
+                        toRemove = true;
+                        sSboard.removeShipFX(result);
+                        sSboard.setSelected(result);
+                        current = result;
+                        haveAShip = true;
+                        return;
+                    }
+
+                    if (result != null && !haveAShip) {
+                        sSboard.setSelected(result);
+                        current = result;
+                        haveAShip = true;
+                    }
                 }
             }
         });
