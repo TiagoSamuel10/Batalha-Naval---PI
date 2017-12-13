@@ -809,7 +809,7 @@ public class GameClient extends JFrame{
 
             @Override
             public void keyPressed(KeyEvent e) {
-                if(e.getKeyCode() == KeyCode.R.getCode()){
+                if(e.getKeyChar() == 'R'){
                     handleAIAttack(ai);
                 }
             }

@@ -503,9 +503,9 @@ public class App extends Application{
                             alert.setTitle("YEE");
                             alert.setHeaderText("WE GOT IN");
                             alert.setContentText("TEMP MESSAGE TO SAY WE GOT IN; WAIT NOW! DON'T PRESS ANY MORE SHIT");
-                            alert.showAndWait();
                             waitingScreen = new Scene(new BorderPane(), SCREEN_RECTANGLE.getWidth(), SCREEN_RECTANGLE.getHeight());
                             transitionTo(waitingScreen);
+                            alert.showAndWait();
                         }else{
                             Alert alert = new Alert(Alert.AlertType.ERROR);
                             alert.setTitle("Noo!");
@@ -586,6 +586,8 @@ public class App extends Application{
 
         sSRightStuff = new VBox();
         sSRightStuff.setStyle("-fx-background-color: red");
+
+
 
         sSShipsStatus = new HBox();
         sSShipsStatus.setStyle("-fx-background-color: green;");
