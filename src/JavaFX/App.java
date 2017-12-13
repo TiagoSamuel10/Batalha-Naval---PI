@@ -29,7 +29,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
-import javafx.scene.text.TextFlow;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -43,10 +42,12 @@ import java.net.NetworkInterface;
 import java.net.UnknownHostException;
 import java.util.*;
 
-public class App extends Application{
+public class App extends Application {
 
     //FOR OFFLINE
     private MyAI ai;
+    private boolean vsAI;
+    private SelfGraphBoardFX selfvsAI;
 
     //FOR ONLINE
     private Client client;
@@ -55,12 +56,12 @@ public class App extends Application{
     private PlayerBoard pb;
 
     //region MAIN MENU STUFF
-    
+
     private BorderPane mMRoot;
     private final static String MM_IMAGE_BACKGROUND_PATH = "images/BattleShipBigger.png";
     private final static Image MM_IMAGE_BACKGROUND = new Image(MM_IMAGE_BACKGROUND_PATH);
     private final static BackgroundImage MM_BACKGROUND = new BackgroundImage(MM_IMAGE_BACKGROUND,
-            BackgroundRepeat.REPEAT, 
+            BackgroundRepeat.REPEAT,
             BackgroundRepeat.REPEAT,
             null,
             new BackgroundSize(MM_IMAGE_BACKGROUND.getWidth(), MM_IMAGE_BACKGROUND.getHeight(),
@@ -151,10 +152,11 @@ public class App extends Application{
     private Scene wonScene;
     private Scene chatScreen;
     private Scene waitingScreen;
+    private Scene AIScene;
 
     private Stage theStage;
 
-    public static void main(String[] args){
+    public static void main(String[] args) {
         launch(args);
     }
 
@@ -169,7 +171,7 @@ public class App extends Application{
                 NetworkInterface networkInterface = networkInterfaces.nextElement();
                 // GO THROUGH ALL IP ADDRESSES OF THIS CARD...
                 Enumeration<InetAddress> inetAddresses = networkInterface.getInetAddresses();
-                while(inetAddresses.hasMoreElements()) {
+                while (inetAddresses.hasMoreElements()) {
                     InetAddress inetAddress = inetAddresses.nextElement();
                     if (!inetAddress.isLoopbackAddress()) {
                         if (inetAddress.isSiteLocalAddress())
@@ -216,35 +218,35 @@ public class App extends Application{
             public void received(Connection connection, Object object) {
                 if (object instanceof IsFull)
                     transitionTo(mainMenu);
-                if (object instanceof Abort){
+                if (object instanceof Abort) {
                     //
                 }
 
-                if (object instanceof CanStart) 
-                    Platform.runLater( () -> transitionTo(mainGame));
-                
+                if (object instanceof CanStart)
+                    Platform.runLater(() -> transitionTo(mainGame));
+
                 if (object instanceof WhoseTurn) {
                     WhoseTurn whoseTurn = (WhoseTurn) object;
-                    Platform.runLater( () -> setTurnLabel(whoseTurn.name));
+                    Platform.runLater(() -> setTurnLabel(whoseTurn.name));
                 }
                 if (object instanceof ConnectedPlayers) {
                     System.out.println("CONNECTED PLAYERS");
                     ConnectedPlayers players = (ConnectedPlayers) object;
                     Platform.runLater(() -> {
-                        textArea.clear();
-                        for (String name : players.names)
-                            textArea.appendText(name +"\n");
-                        }
+                                textArea.clear();
+                                for (String name : players.names)
+                                    textArea.appendText(name + "\n");
+                            }
                     );
                 }
 
                 if (object instanceof ReadyForShips)
-                    Platform.runLater( () -> transitionTo(setShips));
+                    Platform.runLater(() -> transitionTo(setShips));
 
                 if (object instanceof OthersSpecs) {
                     OthersSpecs othersSpecs = (OthersSpecs) object;
 
-                    Platform.runLater( () -> {
+                    Platform.runLater(() -> {
 
                         ene1.serverID = othersSpecs.ene1;
                         ene1.name = othersSpecs.ene1n;
@@ -261,60 +263,66 @@ public class App extends Application{
 
                 if (object instanceof YourBoardToPaint)
                     //System.out.println("MY BOARD TO PAINT");
-                    Platform.runLater( () -> mGSelfBoard.updateTiles(((YourBoardToPaint) object).board));
+                    Platform.runLater(() -> mGSelfBoard.updateTiles(((YourBoardToPaint) object).board));
 
                 if (object instanceof EnemiesBoardsToPaint) {
                     //System.out.println("ENEMIES BOARDS TO PAINT");
-                    Platform.runLater( () -> {
-                                ene1.b.startTiles(((EnemiesBoardsToPaint) object).board1);
-                                ene2.b.startTiles(((EnemiesBoardsToPaint) object).board2);
-                            });
+                    Platform.runLater(() -> {
+                        ene1.b.startTiles(((EnemiesBoardsToPaint) object).board1);
+                        ene2.b.startTiles(((EnemiesBoardsToPaint) object).board2);
+                    });
                 }
 
                 if (object instanceof EnemyBoardToPaint) {
-                    Platform.runLater( () -> {
-                                EnemyBoardToPaint ebp = (EnemyBoardToPaint) object;
-                                updateEnemyBoard(ebp.id, ebp.newAttackedBoard);
-                                System.out.println("ENEMY BOARD TO PAINT WITH INDEX " + ebp.id);
+                    Platform.runLater(() -> {
+                        EnemyBoardToPaint ebp = (EnemyBoardToPaint) object;
+                        updateEnemyBoard(ebp.id, ebp.newAttackedBoard);
+                        System.out.println("ENEMY BOARD TO PAINT WITH INDEX " + ebp.id);
                     });
                 }
 
                 if (object instanceof AnAttackResponse) {
-                    Platform.runLater( () -> {
+                    Platform.runLater(() -> {
                         lastAttacked.b.updateTiles(((AnAttackResponse) object).newAttackedBoard);
                         iCanAttack = ((AnAttackResponse) object).again;
                     });
                 }
 
                 if (object instanceof YourTurn) {
-                    Platform.runLater( () -> {
+                    Platform.runLater(() -> {
                         iCanAttack = true;
                         setTurnLabel("My TURN!!");
                     });
                 }
 
                 if (object instanceof YouDead) {
-                    //TODO: WARN ABOUT DEATH; AND STUFF
+                    Platform.runLater(() -> {
+                        Alert lost = new Alert(Alert.AlertType.INFORMATION);
+                        lost.setContentText("You died a horrible death. RIP you");
+                        lost.showAndWait();
+                        transitionTo(mainMenu);
+                    });
                 }
 
                 if (object instanceof PlayerDied) {
-                    //TODO: REMOVE BOARDS
-                    System.out.println("Player died");
-                    Platform.runLater( () -> {
+                    Platform.runLater(() -> {
                         removeEnemy(((PlayerDied) object).who);
                     });
                 }
 
                 if (object instanceof YouWon) {
-                    Platform.runLater( () -> {
+                    Platform.runLater(() -> {
+                        Alert lost = new Alert(Alert.AlertType.CONFIRMATION);
+                        lost.setContentText("YOU BEAT THEM ALL");
+                        lost.showAndWait();
                         won();
                     });
                 }
 
                 if (object instanceof ChatMessage) {
-                    Platform.runLater( () -> {
+                    Platform.runLater(() -> {
                         EnemyLocal toUpdate = ene1;
-                        if(((ChatMessage) object).saidIt == ene2.serverID){
+                        if (((ChatMessage) object).saidIt == ene2.serverID) {
                             toUpdate = ene2;
                         }
                         toUpdate.conversation.setText(toUpdate.conversation.getText() + ((ChatMessage) object).message);
@@ -330,7 +338,7 @@ public class App extends Application{
     }
 
     private void removeEnemy(int who) {
-        if(who == ene2.serverID)
+        if (who == ene2.serverID)
             aWRoot.getChildren().remove(aWvBox2);
         else
             aWRoot.getChildren().remove(aWvBox);
@@ -339,7 +347,7 @@ public class App extends Application{
     private void updateEnemyBoard(int id, String[][] newAttackedBoard) {
         EnemyLocal toUpdate = ene1;
 
-        if(id == ene2.serverID){
+        if (id == ene2.serverID) {
             toUpdate = ene2;
         }
 
@@ -360,6 +368,8 @@ public class App extends Application{
 
         serverConfigurations();
 
+        vsAI = false;
+
         theStage = primaryStage;
         setAllScenes();
 
@@ -372,17 +382,19 @@ public class App extends Application{
 
     }
 
-    private void setAllScenes(){
+    private void setAllScenes() {
         setMainMenu();
         setMainGame();
         setShipsScene();
         setAttackScreen();
         setChatScreen();
         setWonScene();
+        setAIScene();
     }
 
     /**
      * CALL BEFORE OTHER STUFF
+     *
      * @param scene
      */
     private void transitionTo(Scene scene) {
@@ -390,15 +402,17 @@ public class App extends Application{
             g.stopAnimating();
         toAnimate.clear();
         theStage.setScene(scene);
-        if(scene == mainGame){
+        if (scene == mainGame)
             toAnimate.add(mGSelfBoard);
-        }
-        if(scene == attackScene){
+        if (scene == attackScene) {
             toAnimate.add(ene1.b);
             toAnimate.add(ene2.b);
         }
-        if(scene == setShips){
+        if (scene == setShips)
             toAnimate.add(sSboard);
+        if (scene == AIScene) {
+            toAnimate.add(selfvsAI);
+            toAnimate.add(ai.b);
         }
         for (EmptyGraphBoardFX g : toAnimate)
             g.startAnimating();
@@ -444,7 +458,7 @@ public class App extends Application{
         mainGame = new Scene(MGRoot, SCREEN_RECTANGLE.getWidth(), SCREEN_RECTANGLE.getHeight());
     }
 
-    private void setMainMenu(){
+    private void setMainMenu() {
 
         mMRoot = new BorderPane();
         mMRoot.setStyle("-fx-background-image: url(images/BattleShip.png);-fx-background-size: cover;");
@@ -456,7 +470,7 @@ public class App extends Application{
             @Override
             public void handle(ActionEvent event) {
                 myName = mMnameInput.getText();
-                if(myName.equals("")){
+                if (myName.equals("")) {
                     Alert alert = new Alert(Alert.AlertType.WARNING);
                     alert.setTitle("Ups!");
                     alert.setHeaderText("Name was null!");
@@ -471,8 +485,7 @@ public class App extends Application{
                         Boolean connected = true;
                         try {
                             client.connect(5000, ADDRESS, Network.port);
-                        }
-                        catch (IOException e) {
+                        } catch (IOException e) {
                             connected = false;
                         }
                         return connected;
@@ -481,7 +494,7 @@ public class App extends Application{
                 connect.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
                     @Override
                     public void handle(WorkerStateEvent event) {
-                        if(connect.getValue()) {
+                        if (connect.getValue()) {
                             Register r = new Register();
                             r.name = myName;
                             try {
@@ -505,7 +518,7 @@ public class App extends Application{
                             alert.setHeaderText("WE GOT IN");
                             alert.setContentText("TEMP MESSAGE TO SAY WE GOT IN; WAIT NOW! DON'T PRESS ANY MORE SHIT");
                             alert.showAndWait();
-                        }else{
+                        } else {
                             Alert alert = new Alert(Alert.AlertType.ERROR);
                             alert.setTitle("Noo!");
                             alert.setHeaderText("Can't play when you can't connect to server :(");
@@ -522,8 +535,10 @@ public class App extends Application{
 
         mMAloneButton = new Button();
         mMAloneButton.setGraphic(new ImageView(mMAloneButtonImage));
-        mMAloneButton.setOnAction(event ->
-            theStage.setScene(attackScene)
+        mMAloneButton.setOnAction(event -> {
+                    vsAI = true;
+                    theStage.setScene(setShips);
+                }
         );
         mMAloneButton.setStyle("-fx-background-color: transparent;");
 
@@ -565,16 +580,16 @@ public class App extends Application{
     }
 
     private void setTurnLabel(String name) {
-        mGcurrentPlayerText.setText(name + " IS ATTACKING!!");
+        mGcurrentPlayerText.setText(name);
     }
 
-    private void setShipsScene(){
+    private void setShipsScene() {
 
         sSRoot = new HBox();
         sSRoot.setStyle("-fx-background-image: url(images/BattleShipBigger2.png);-fx-background-size: cover;");
 
         pb = new PlayerBoard();
-        sSboard = new ShipsBoardFX(700,500);
+        sSboard = new ShipsBoardFX(700, 500);
 
         sSboard.setPlayerBoard(pb);
         sSboard.startAnimating();
@@ -617,7 +632,7 @@ public class App extends Application{
 
             @Override
             public void handle(MouseEvent event) {
-                if(sSboard.pb.fullOfShips()) {
+                if (sSboard.pb.fullOfShips()) {
 
                     sSReadyButton.setDisable(true);
                     sSRandomButton.setDisable(true);
@@ -627,15 +642,17 @@ public class App extends Application{
 
                     //System.out.println(pb);
 
-                    mGSelfBoard.setPlayerBoard(pb);
-                    mGSelfBoard.startTiles(pb.getToPaint());
-                    mGSelfBoard.updateTiles(pb.getToPaint());
-                    mGSelfBoard.startAnimating();
-
-                    APlayerboard p = new APlayerboard();
-                    p.board = sSboard.pb.getToPaint();
-                    client.sendTCP(p);
-
+                    if (!vsAI) {
+                        mGSelfBoard.setPlayerBoard(pb);
+                        mGSelfBoard.startTiles(pb.getToPaint());
+                        mGSelfBoard.updateTiles(pb.getToPaint());
+                        APlayerboard p = new APlayerboard();
+                        p.board = sSboard.pb.getToPaint();
+                        client.sendTCP(p);
+                    } else {
+                        selfvsAI.startTiles(pb.getToPaint());
+                        transitionTo(AIScene);
+                    }
                 }
             }
         });
@@ -661,7 +678,7 @@ public class App extends Application{
         sSRoot.setOnKeyPressed(new EventHandler<KeyEvent>() {
             @Override
             public void handle(KeyEvent event) {
-                if(sSboard.selected != null && event.getCode() == KeyCode.R){
+                if (sSboard.selected != null && event.getCode() == KeyCode.R) {
                     sSboard.toRotate = !sSboard.toRotate;
                 }
             }
@@ -669,7 +686,7 @@ public class App extends Application{
         sSboard.setOnMouseMoved(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
-                if(!sSboard.finished) {
+                if (!sSboard.finished) {
                     sSboard.seeIfShipFXCanBePlaced(event.getX(), event.getY());
                 }
             }
@@ -683,7 +700,7 @@ public class App extends Application{
             @Override
             public void handle(MouseEvent event) {
 
-                if(!sSboard.finished) {
+                if (!sSboard.finished) {
 
                     ShipFX result = sSboard.checkAShip(event.getX(), event.getY());
 
@@ -740,7 +757,7 @@ public class App extends Application{
                 SCREEN_RECTANGLE.getHeight());
     }
 
-    private void setAttackScreen(){
+    private void setAttackScreen() {
 
         ene1 = new EnemyLocal();
         ene2 = new EnemyLocal();
@@ -756,11 +773,11 @@ public class App extends Application{
 
         ene1.labeln = new Label("ENEMY 1");
         ene1.labeln.setFont(new Font("Verdana", 30));
-        ene1.labeln.setTextFill(Color.rgb(0,0,0));
+        ene1.labeln.setTextFill(Color.rgb(0, 0, 0));
 
         ene2.labeln = new Label("ENEMY 2");
         ene2.labeln.setFont(new Font("Verdana", 30));
-        ene2.labeln.setTextFill(Color.rgb(0,0,0));
+        ene2.labeln.setTextFill(Color.rgb(0, 0, 0));
 
         aWvBox = new VBox(10);
         aWvBox.getChildren().addAll(ene1.b, ene1.labeln);
@@ -824,8 +841,8 @@ public class App extends Application{
 
     private void setWonScene() {
         StackPane root = new StackPane();
-        aWRoot.setStyle("-fx-background-image: url(images/BattleShipBigger2.png)");
-        Button b = new Button();
+        root.setStyle("-fx-background-image: url(images/BattleShipBigger2.png)");
+        Button b = new Button("Go To Main Menu");
         b.setOnMouseClicked(event -> transitionTo(mainMenu));
         b.setStyle("-fx-alignment: center");
         root.getChildren().add(b);
@@ -859,7 +876,7 @@ public class App extends Application{
         tf1.setWrapText(true);
         tf1.setMinSize(tf1.getPrefWidth() * 2, tf1.getPrefHeight() * 2);
         tf1.setOnKeyPressed(event -> {
-            if(event.getCode() == KeyCode.ENTER) {
+            if (event.getCode() == KeyCode.ENTER) {
                 String message = tf1.getText();
                 tf1.clear();
                 ChatMessageFromClient c = new ChatMessageFromClient();
@@ -878,7 +895,7 @@ public class App extends Application{
         tf2.setWrapText(true);
         tf2.setMinSize(tf2.getPrefWidth(), tf2.getPrefHeight());
         tf2.setOnKeyPressed(event -> {
-            if(event.getCode() == KeyCode.ENTER) {
+            if (event.getCode() == KeyCode.ENTER) {
                 String message = tf2.getText();
                 tf2.clear();
                 ChatMessageFromClient c = new ChatMessageFromClient();
@@ -904,6 +921,88 @@ public class App extends Application{
 
     }
 
+    private void setAIScene() {
+
+        selfvsAI = new SelfGraphBoardFX(500,500);
+        ai = new MyAI();
+        iCanAttack = true;
+
+        Label label = new Label("YOU!");
+        label.setFont(new Font("Verdana", 30));
+        label.setTextFill(Color.ALICEBLUE);
+
+        VBox forYou = new VBox(10);
+        forYou.getChildren().addAll(selfvsAI, label);
+
+        Label ene = new Label("ENEMY(AI)!");
+        ene.setFont(new Font("Verdana", 30));
+        ene.setTextFill(Color.ROSYBROWN);
+
+        VBox forAI = new VBox(10);
+        forAI.getChildren().addAll(ai.b, ene);
+
+        Button back = new Button("BACK/FORFEIT");
+        back.setOnMouseClicked(event -> transitionTo(mainGame));
+
+        HBox root = new HBox(50);
+        root.setStyle("-fx-fill: true; -fx-alignment:center");
+        root.setStyle("-fx-background-image: url(images/BattleShipBigger2.png);-fx-background-size: cover;");
+
+        root.getChildren().addAll(forYou, forAI, back);
+
+        ai.b.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                if (iCanAttack) {
+                    Point p = ai.b.pointCoordinates(event);
+                    iCanAttack = ai.attacked(p);
+                    if (!iCanAttack)
+                        aiTurn();
+                }
+            }
+        });
+
+        AIScene = new Scene(root, SCREEN_RECTANGLE.getWidth(), SCREEN_RECTANGLE.getHeight());
+
+    }
+
+    private void aiTurn() {
+        Point p = ai.chooseAttack(pb.getAvailable());
+        System.out.println("CHOSE " + p);
+        boolean hit = false;
+        boolean destroyed = false;
+        if (pb.getAttacked(p.x, p.y)) {
+            //ACTUAL HIT AND NOT A AN ALREADY ATTACKED POSITION
+            hit = pb.actualNewHit();
+            destroyed = pb.lastShipDestroyed();
+        }
+        ai.thinkAboutNext(pb.getAvailable(), hit, destroyed);
+        selfvsAI.updateTiles(pb.getToPaint());
+        selfvsAI.setLast(p);
+        if(hit && !pb.isGameOver()) {
+            Task<Void> wait = new Task<> () {
+                @Override
+                protected Void call() throws Exception {
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                    }
+                    return null;
+                }
+            };
+            wait.setOnSucceeded(event -> aiTurn());
+            new Thread(wait).start();
+        }
+        else if(hit &&pb.isGameOver()){
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setContentText("YOU LOST TO AI LOL!");
+            alert.showAndWait();
+            transitionTo(mainMenu);
+        }
+        else
+            iCanAttack = true;
+    }
+
     private static class EnemyLocal {
         private int serverID;
         private GraphBoardFX b;
@@ -917,7 +1016,7 @@ public class App extends Application{
 
     private static class MyAI {
 
-        GraphBoardFX gb;
+        GraphBoardFX b;
         PlayerBoard board;
 
         private boolean searching;
@@ -935,11 +1034,9 @@ public class App extends Application{
             firstHit = new Point(0,0);
             directionsToGo = new ArrayList<>();
             board = PlayerBoard.getRandomPlayerBoard();
+            b = new GraphBoardFX();
+            b.startTiles(board.getToPaint());
             //gb = new GraphBoardFX(getToPaint());
-        }
-
-        private String[][] getToPaint(){
-            return board.getToPaint();
         }
 
         private boolean inBounds(Point p){
@@ -1021,11 +1118,23 @@ public class App extends Application{
                 p = new Point(justBefore.x + directionLooking.getDirectionVector()[0],
                         justBefore.y + directionLooking.getDirectionVector()[1]);
 
+                if(betweenTwo)
+                    if(!pos.contains(p)){
+                    directionLooking = directionLooking.getOpposite();
+                        p = new Point(justBefore.x + directionLooking.getDirectionVector()[0],
+                                justBefore.y + directionLooking.getDirectionVector()[1]);
+                    }
+
             }
             justBefore = p;
             return p;
         }
 
+        public boolean attacked(Point p) {
+            boolean res = board.getAttacked(p.x, p.y);
+            b.updateTiles(board.getToPaint());
+            return res;
+        }
     }
 
 }

@@ -357,10 +357,6 @@ public class GameServer {
         state = GameState.waitingForShips;
     }
 
-    private void sendConversation(int requester){
-        //TODO
-    }
-
     static class BConnection extends Connection {
 
         String name;

@@ -1,13 +1,6 @@
 package Common;
 
-import java.awt.*;
-
 public class ShipPiece extends BoardTile {
-
-    public final static Color COLOR_ATTACKED = new Color(150,10,11);
-    public final static Color COLOR_ATTACKED_SHIP_DESTROYED = new Color(20,20,20);
-
-    public final static Color COLOR_TO_SHOW = new Color(139,69,19);
 
     public static final String NOT_ATTACKED_STRING = "P";
     public static final String ATTACKED_STRING = "PA";

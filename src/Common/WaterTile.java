@@ -5,10 +5,6 @@ import java.awt.*;
 
 public class WaterTile extends BoardTile {
 
-    public final static Color COLOR_ATTACKED_OR_VISIBLE = new Color(0,0,255);
-
-    public final static Color COLOR_TO_SHOW = new Color(0,200,200);
-
     public static final String NOT_VISIBLE_STRING = "W";
     public static final String VISIBLE_STRING = "WV";
 

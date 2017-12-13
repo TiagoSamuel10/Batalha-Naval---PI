@@ -7,6 +7,9 @@ import Common.WaterTile;
 import javafx.animation.AnimationTimer;
 import javafx.animation.Timeline;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
+import javafx.scene.shape.Rectangle;
 
 import java.awt.*;
 import java.util.Arrays;
@@ -18,6 +21,7 @@ public class GraphBoardFX extends EmptyGraphBoardFX {
 
     TileFX[][] tiles;
     PlayerBoard pb;
+    Point last;
 
     GraphBoardFX(){
         this(TileFX.TILE_SIZE * COLUMNS, TileFX.TILE_SIZE * LINES);
@@ -27,6 +31,7 @@ public class GraphBoardFX extends EmptyGraphBoardFX {
         super(_w, _h);
         tiles = new TileFX[LINES][COLUMNS];
         gc.setLineWidth(1);
+        last = null;
 
         anim = new AnimationTimer()
         {
@@ -47,7 +52,15 @@ public class GraphBoardFX extends EmptyGraphBoardFX {
                         gc.strokeLine(0, l * TileFX.TILE_SIZE , x_max, l * TileFX.TILE_SIZE);
                     for (int c = 0; c < COLUMNS; c++)
                         gc.strokeLine(c * TileFX.TILE_SIZE, 0 , c * TileFX.TILE_SIZE, y_max);
-
+                    if(last != null) {
+                        Paint p = gc.getStroke();
+                        double gcW = gc.getLineWidth();
+                        gc.setLineWidth(4);
+                        gc.setStroke(Color.rgb(255, 50,50 , 0.5));
+                        gc.strokeRect(last.y * TileFX.TILE_SIZE, last.x * TileFX.TILE_SIZE, TileFX.TILE_SIZE, TileFX.TILE_SIZE);
+                        gc.setStroke(p);
+                        gc.setLineWidth(gcW);
+                    }
                     lastNano = currentNanoTime;
                 }
             }
@@ -70,7 +83,6 @@ public class GraphBoardFX extends EmptyGraphBoardFX {
         return new Point(l, c);
     }
 
-    //TODO: PUT IT SOMEWHERE COMMON
     private boolean aPieceInTheArray(String[][] sent, int l, int c) {
         return sent[l][c].equalsIgnoreCase(ShipPiece.ATTACKED_STRING) ||
                 sent[l][c].equalsIgnoreCase(ShipPiece.NOT_ATTACKED_STRING) ||
@@ -138,5 +150,9 @@ public class GraphBoardFX extends EmptyGraphBoardFX {
 
     public void setPlayerBoard(PlayerBoard playerBoard) {
         pb = playerBoard;
+    }
+
+    public void setLast(Point p) {
+        last = p;
     }
 }
