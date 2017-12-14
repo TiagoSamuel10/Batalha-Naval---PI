@@ -92,14 +92,14 @@ public class App extends Application {
 
     private VBox sSRightStuff;
 
-    private HBox sSShipsStatus;
+    private HBox sSPlaceIntructions;
     private VBox sSTips;
 
     private HBox sSReadyBox;
     private Button sSRandomButton;
     private Button sSReadyButton;
 
-    private VBox sSPlayersReady;
+    private VBox sSInstructionsGame;
     private Text sSPlayer1Ready;
     private Text sSPlayer2Ready;
 
@@ -334,6 +334,9 @@ public class App extends Application {
     }
 
     private void won() {
+        sSReadyButton.setDisable(false);
+        sSReadyButton.setDisable(false);
+        sSboard = new ShipsBoardFX(700, 500);
         transitionTo(wonScene);
     }
 
@@ -568,7 +571,7 @@ public class App extends Application {
         mMMiddle.add(mMAloneButton, 1, 2);
         mMMiddle.add(mMExit, 1, 3);
         mMMiddle.add(mMnameInput, 0, 1);
-        mMMiddle.setStyle("-fx-fill: true; -fx-alignment:center");
+        mMMiddle.setStyle("-fx-fill: true; -fx-alignment:bottom-center; -fx-padding: 50");
 
         //mMMiddle.getChildren().addAll(mMPlayButton,mMAloneButton, mMExit, mMServerText, mMnameInput);
         mMRoot.setCenter(mMMiddle);
@@ -595,10 +598,10 @@ public class App extends Application {
         sSboard.startAnimating();
 
         sSRightStuff = new VBox();
-        sSRightStuff.setStyle("-fx-background-color: red");
 
-        sSShipsStatus = new HBox();
-        sSShipsStatus.setStyle("-fx-background-color: green;");
+        sSPlaceIntructions = new HBox();
+        sSPlaceIntructions.setStyle("-fx-background-color: grey;");
+
         sSTips = new VBox();
 
         //TIPS
@@ -610,26 +613,27 @@ public class App extends Application {
         sSTips.getChildren().add(new Text(" +Green means it can be placed there; Left-Mouse to do that"));
         sSTips.getChildren().add(new Text(" +Red means it can't be placed there"));
 
-        sSShipsStatus.getChildren().addAll(sSTips);
+        sSPlaceIntructions.getChildren().addAll(sSTips);
 
         sSReadyBox = new HBox();
         sSReadyBox.setStyle("-fx-background-color: yellow;");
 
         sSRandomButton = new Button("Random");
+        sSRandomButton.setFont(new Font(50));
         sSRandomButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
                 pb = PlayerBoard.getRandomPlayerBoard();
                 sSboard.doShips(pb);
+                sSboard.setSelected(null);
                 //System.out.println(pb);
             }
         });
 
         sSReadyButton = new Button("Ready");
+        sSReadyButton.setFont(new Font(50));
 
         sSReadyButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
-
-
             @Override
             public void handle(MouseEvent event) {
                 if (sSboard.pb.fullOfShips()) {
@@ -639,8 +643,6 @@ public class App extends Application {
                     sSboard.finished = true;
 
                     pb = sSboard.pb;
-
-                    //System.out.println(pb);
 
                     if (!vsAI) {
                         mGSelfBoard.setPlayerBoard(pb);
@@ -657,25 +659,17 @@ public class App extends Application {
             }
         });
 
-
         sSReadyBox.getChildren().addAll(sSRandomButton, sSReadyButton);
 
-        sSPlayersReady = new VBox();
-        sSPlayersReady.setStyle("-fx-background-color: blue");
+        sSInstructionsGame = new VBox();
 
-        sSPlayer1Ready = new Text("A");
-        sSPlayer2Ready = new Text("ADD");
-
-        sSPlayersReady.getChildren().addAll(sSPlayer1Ready, sSPlayer2Ready);
-        sSPlayersReady.setPadding(new Insets(5));
-
-        sSRightStuff.getChildren().addAll(sSShipsStatus, sSReadyBox, sSPlayersReady);
+        sSRightStuff.getChildren().addAll(sSPlaceIntructions, sSReadyBox, sSInstructionsGame);
 
         sSRoot.getChildren().addAll(sSboard, sSRightStuff);
         sSRoot.setPadding(new Insets(25));
         sSRoot.setSpacing(10);
 
-        sSRoot.setOnKeyPressed(new EventHandler<KeyEvent>() {
+        sSRoot.setOnKeyPressed(new EventHandler<>() {
             @Override
             public void handle(KeyEvent event) {
                 if (sSboard.selected != null && event.getCode() == KeyCode.R) {
@@ -683,7 +677,7 @@ public class App extends Application {
                 }
             }
         });
-        sSboard.setOnMouseMoved(new EventHandler<MouseEvent>() {
+        sSboard.setOnMouseMoved(new EventHandler<>() {
             @Override
             public void handle(MouseEvent event) {
                 if (!sSboard.finished) {
@@ -691,7 +685,7 @@ public class App extends Application {
                 }
             }
         });
-        sSboard.setOnMouseClicked(new EventHandler<MouseEvent>() {
+        sSboard.setOnMouseClicked(new EventHandler<>() {
 
             ShipFX current = null;
             boolean haveAShip = false;
@@ -950,10 +944,14 @@ public class App extends Application {
 
         root.getChildren().addAll(forYou, forAI, back);
 
-        ai.b.setOnMouseClicked(new EventHandler<MouseEvent>() {
+        ai.b.setOnMouseClicked(new EventHandler<>() {
             @Override
             public void handle(MouseEvent event) {
                 if (iCanAttack) {
+                    if(ai.b.pb.isGameOver()) {
+                        won();
+                        return;
+                    }
                     Point p = ai.b.pointCoordinates(event);
                     iCanAttack = ai.attacked(p);
                     if (!iCanAttack)
@@ -972,7 +970,7 @@ public class App extends Application {
         boolean hit = false;
         boolean destroyed = false;
         if (pb.getAttacked(p.x, p.y)) {
-            //ACTUAL HIT AND NOT A AN ALREADY ATTACKED POSITION
+            //ACTUAL HIT AND NOT AN ALREADY ATTACKED POSITION
             hit = pb.actualNewHit();
             destroyed = pb.lastShipDestroyed();
         }
@@ -998,6 +996,9 @@ public class App extends Application {
             alert.setContentText("YOU LOST TO AI LOL!");
             alert.showAndWait();
             transitionTo(mainMenu);
+            sSboard = new ShipsBoardFX(700, 500);
+            sSReadyButton.setDisable(false);
+            sSRandomButton.setDisable(false);
         }
         else
             iCanAttack = true;
@@ -1076,26 +1077,22 @@ public class App extends Application {
                 }
             }
             else if (searching) {
+                //FILTER OUT ALREADY ATTACKED
+
                 System.out.println("WAS AN OLD TARGET");
                 //FAILED
-                if(!hit && !betweenTwo){
-                    System.out.println("MISSED; CHANGING DIRECTION");
+                if(!hit) {
                     justBefore = firstHit;
-                    directionsToGo.remove(directionsToGo.size() - 1);
-                    directionLooking = directionsToGo.get(directionsToGo.size() - 1);
-                    System.out.println(directionLooking);
-                }
-                //SEARCHING ALREADY
-                //BETWEEN TWO BUT FAILED
-                else if (betweenTwo && !hit) {
-                    System.out.println("I KNOW THE RIGHT ONE");
-                    directionLooking = directionLooking.getOpposite();
-                    justBefore = firstHit;
-                }
-                //IF HIT THAT MEANS IT'S EITHER THIS WAY OR THE OPPOSITE
-                else{
-                    System.out.println("BETWEEN TWO");
-                    betweenTwo = true;
+                    int size = directionsToGo.size();
+
+                    for(int i = size - 1; i >= 0; i--){
+                        Point n = new Point(justBefore.x + directionsToGo.get(i).getDirectionVector()[0],
+                                justBefore.y + directionsToGo.get(i).getDirectionVector()[1]);
+                        if(!pos.contains(n))
+                            directionsToGo.remove(i);
+                    }
+                    directionLooking = directionsToGo.get(0);
+
                 }
             }
             if(hit) {
@@ -1118,12 +1115,6 @@ public class App extends Application {
                 p = new Point(justBefore.x + directionLooking.getDirectionVector()[0],
                         justBefore.y + directionLooking.getDirectionVector()[1]);
 
-                if(betweenTwo)
-                    if(!pos.contains(p)){
-                    directionLooking = directionLooking.getOpposite();
-                        p = new Point(justBefore.x + directionLooking.getDirectionVector()[0],
-                                justBefore.y + directionLooking.getDirectionVector()[1]);
-                    }
 
             }
             justBefore = p;

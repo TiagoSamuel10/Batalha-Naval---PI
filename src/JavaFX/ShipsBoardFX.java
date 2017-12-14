@@ -8,6 +8,7 @@ import javafx.animation.AnimationTimer;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -54,7 +55,7 @@ public class ShipsBoardFX extends GraphBoardFX {
                         gc.strokeLine(c * TileFX.TILE_SIZE, 0 , c * TileFX.TILE_SIZE, y_max);
                     for(ShipFX s : shipsFX)
                         s.draw(gc);
-                    gc.save();
+                    Paint paint = gc.getFill();
                     gc.setStroke(Color.BLUE);
                     if(selected != null)
                         gc.strokeRect(selected.x, selected.y, selected.width, selected.height);
@@ -64,7 +65,7 @@ public class ShipsBoardFX extends GraphBoardFX {
                     if(tilesToDraw.size() > 0)
                         for (Point p : tilesToDraw)
                             gc.fillRect(p.x * TileFX.TILE_SIZE, p.y * TileFX.TILE_SIZE, TileFX.TILE_SIZE, TileFX.TILE_SIZE);
-                    gc.restore();
+                    gc.setFill(paint);
                     lastNano = currentNanoTime;
                 }
             }
