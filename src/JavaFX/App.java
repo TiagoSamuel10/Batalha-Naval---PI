@@ -312,9 +312,7 @@ public class App extends Application {
 
                 if (object instanceof YouDead) {
                     Platform.runLater(() -> {
-                        Alert lost = new Alert(Alert.AlertType.INFORMATION);
-                        lost.setContentText("You died a horrible death. RIP you");
-                        lost.showAndWait();
+                        lost("You died a horrible death. RIP you");
                         transitionTo(mainMenu);
                     });
                 }
@@ -348,11 +346,20 @@ public class App extends Application {
 
     }
 
+    private void reset(){
+        setShipsScene();
+    }
+
+    private void lost(String s) {
+        Alert lost = new Alert(Alert.AlertType.INFORMATION);
+        lost.setContentText(s);
+        lost.showAndWait();
+        reset();
+    }
+
 
     private void won() {
-        sSReadyButton.setDisable(false);
-        sSReadyButton.setDisable(false);
-        sSboard = new ShipsBoardFX(700, 500);
+        reset();
         transitionTo(wonScene);
     }
 
@@ -963,7 +970,7 @@ public class App extends Application {
         forAI.getChildren().addAll(ai.b, ene);
 
         Button back = new Button("BACK/FORFEIT");
-        back.setOnMouseClicked(event -> transitionTo(mainGame));
+        back.setOnMouseClicked(event -> { reset(); transitionTo(mainMenu); });
 
         HBox root = new HBox(50);
         root.setStyle("-fx-fill: true; -fx-alignment:center");
@@ -1035,15 +1042,8 @@ public class App extends Application {
             wait.setOnSucceeded(event -> aiTurn());
             new Thread(wait).start();
         }
-        else if(hit &&pb.isGameOver()){
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.setContentText("YOU LOST TO AI LOL!");
-            alert.showAndWait();
-            transitionTo(mainMenu);
-            sSboard = new ShipsBoardFX(700, 500);
-            sSReadyButton.setDisable(false);
-            sSRandomButton.setDisable(false);
-        }
+        else if(hit &&pb.isGameOver())
+            lost("YOU LOST TO AI LOL!");
         else
             iCanAttack = true;
     }
@@ -1082,6 +1082,11 @@ public class App extends Application {
             b = new GraphBoardFX();
             b.startTiles(board.getToPaint());
             //gb = new GraphBoardFX(getToPaint());
+        }
+
+        //POINT WITH DIRECTION
+        private Point pWD(Point p, Direction dir){
+            return new Point(p.x + dir.getDirectionVector()[0], p.y + dir.getDirectionVector()[1]);
         }
 
         private boolean inBounds(Point p){
@@ -1124,6 +1129,7 @@ public class App extends Application {
                 //FILTER OUT ALREADY ATTACKED
 
                 System.out.println("WAS AN OLD TARGET");
+
                 //FAILED
                 if(!hit) {
                     justBefore = firstHit;
@@ -1136,8 +1142,13 @@ public class App extends Application {
                             directionsToGo.remove(i);
                     }
                     directionLooking = directionsToGo.get(0);
-
                 }
+                else
+                    if(!pos.contains(pWD(justBefore, directionLooking))) {
+                        justBefore = firstHit;
+                        directionLooking = directionLooking.getOpposite();
+                    }
+
             }
             if(hit) {
                 searching = !destroyedIt;

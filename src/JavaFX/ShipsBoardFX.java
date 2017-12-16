@@ -196,4 +196,10 @@ public class ShipsBoardFX extends GraphBoardFX {
         pb.removeShip(new Ship(oldL, oldC, s.dir, Ship.ShipType.getShipType(s.shipSize)));
 
     }
+
+    @Override
+    public void setPlayerBoard(PlayerBoard playerBoard) {
+        pb = playerBoard;
+        doShips(pb);
+    }
 }
