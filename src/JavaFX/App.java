@@ -407,8 +407,11 @@ public class App extends Application {
         theStage.show();
 
         soundPlayer.setVolume(.2);
-        soundPlayer.play();
         soundPlayer.setCycleCount(AudioClip.INDEFINITE);
+        soundPlayer.play();
+
+        aWShipSound.setVolume(1);
+        aWWaterSound.setVolume(.1);
 
     }
 
