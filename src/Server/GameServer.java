@@ -177,12 +177,16 @@ public class GameServer {
                         a.c
                 );
 
+                boolean ship = game.lastAttackShip();
+                boolean actualNewHit = game.lastActualHit();
+
                 String[][] attackedOne = game.getPlayerBoard(a.toAttackID).getToPaint();
 
                 AnAttackResponse response = new AnAttackResponse();
                 response.again = canGoAgain;
                 response.newAttackedBoard = attackedOne;
-
+                response.actualHit = actualNewHit;
+                response.shipHit = ship;
 
                 // TO THE ATTACKED GUY
 

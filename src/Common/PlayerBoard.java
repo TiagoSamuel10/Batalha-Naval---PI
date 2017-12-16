@@ -18,6 +18,8 @@ public class PlayerBoard implements Serializable {
     private BoardTile[][] boardTiles;
     private boolean lastShipDestroyed;
     private boolean actualHit;
+    private boolean shipHit;
+
 
     public ArrayList<Ship> getShips(){
         return ships;
@@ -157,9 +159,11 @@ public class PlayerBoard implements Serializable {
                 boardTile.setAttacked(true);
                 // NOT A SHIP PIECE
                 if (!boardTile.isPiece()) {
+                    shipHit = false;
                     toPaint[x][y] = WaterTile.VISIBLE_STRING;
                     return false;
                 }
+                shipHit = true;
                 toPaint[x][y] = ShipPiece.ATTACKED_STRING;
                 pieces.remove((ShipPiece) boardTile);
                 Ship ship = ((ShipPiece) boardTile).ship;
@@ -333,7 +337,6 @@ public class PlayerBoard implements Serializable {
         return lastShipDestroyed;
     }
 
-    //FOR DUMB AI!
     public boolean actualNewHit(){
         return actualHit;
     }
@@ -341,5 +344,9 @@ public class PlayerBoard implements Serializable {
     public boolean fullOfShips(){
         System.out.println(pieces.size());
         return pieces.size() == 20;
+    }
+
+    public boolean isShipHit() {
+        return shipHit;
     }
 }

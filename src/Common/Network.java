@@ -86,6 +86,8 @@ public class Network {
     public static class AnAttackResponse{
 	    public String[][] newAttackedBoard;
 	    public boolean again;
+	    public boolean shipHit;
+	    public boolean actualHit;
     }
 
 	public static class YourBoardToPaint{

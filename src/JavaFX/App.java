@@ -25,6 +25,9 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
+import javafx.scene.media.AudioClip;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
@@ -36,6 +39,7 @@ import javafx.stage.StageStyle;
 import Common.Network.*;
 
 import java.awt.Point;
+import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -54,6 +58,9 @@ public class App extends Application {
     private String myName;
     private static final String ADDRESS = "82.154.150.115";
     private PlayerBoard pb;
+
+    private String soundFile = "assets/sound/play.mp3";
+    private AudioClip soundPlayer = new AudioClip(new File(soundFile).toURI().toString());
 
     //region MAIN MENU STUFF
 
@@ -131,6 +138,12 @@ public class App extends Application {
     private HBox aWRoot;
     private VBox aWvBox = new VBox(50);
     private VBox aWvBox2 = new VBox(50);
+
+    private String aWshipSoundFile = "assets/sound/ship.mp3";
+    private String aWwaterSoundFile = "assets/sound/water.mp3";
+
+    private MediaPlayer aWShipSound = new MediaPlayer(new Media(new File(aWshipSoundFile).toURI().toString()));
+    private MediaPlayer aWWaterSound = new MediaPlayer(new Media(new File(aWwaterSoundFile).toURI().toString()));
 
     //endregion
 
@@ -257,6 +270,7 @@ public class App extends Application {
                         ene2.name = othersSpecs.ene2n;
                         ene2.labeln.setText(ene2.name);
                         cWl2.setText(ene2.name);
+
                     });
 
                 }
@@ -285,6 +299,7 @@ public class App extends Application {
                     Platform.runLater(() -> {
                         lastAttacked.b.updateTiles(((AnAttackResponse) object).newAttackedBoard);
                         iCanAttack = ((AnAttackResponse) object).again;
+                        doSounds(((AnAttackResponse) object).actualHit, ((AnAttackResponse) object).shipHit);
                     });
                 }
 
@@ -332,6 +347,7 @@ public class App extends Application {
         });
 
     }
+
 
     private void won() {
         sSReadyButton.setDisable(false);
@@ -382,6 +398,10 @@ public class App extends Application {
         theStage.setMaximized(true);
         theStage.setScene(mainMenu);
         theStage.show();
+
+        soundPlayer.setVolume(.2);
+        soundPlayer.play();
+        soundPlayer.setCycleCount(AudioClip.INDEFINITE);
 
     }
 
@@ -662,6 +682,13 @@ public class App extends Application {
         sSReadyBox.getChildren().addAll(sSRandomButton, sSReadyButton);
 
         sSInstructionsGame = new VBox();
+        sSInstructionsGame.setStyle("-fx-background-color: grey;");
+        sSInstructionsGame.setSpacing(5);
+        sSInstructionsGame.getChildren().add(new Text("Instructions: "));
+        sSInstructionsGame.getChildren().add(new Text(
+                " +When you hit a ship piece, you get to go again"));
+        sSInstructionsGame.getChildren().add(new Text(" +Missing means it is now somebody else's turn"));
+        sSInstructionsGame.getChildren().add(new Text(" +If you destroy a ship, surrounding area will be shown"));
 
         sSRightStuff.getChildren().addAll(sSPlaceIntructions, sSReadyBox, sSInstructionsGame);
 
@@ -948,12 +975,13 @@ public class App extends Application {
             @Override
             public void handle(MouseEvent event) {
                 if (iCanAttack) {
-                    if(ai.b.pb.isGameOver()) {
+                    Point p = ai.b.pointCoordinates(event);
+                    iCanAttack = ai.attacked(p);
+                    doSounds(ai.board);
+                    if(ai.board.isGameOver()) {
                         won();
                         return;
                     }
-                    Point p = ai.b.pointCoordinates(event);
-                    iCanAttack = ai.attacked(p);
                     if (!iCanAttack)
                         aiTurn();
                 }
@@ -962,6 +990,22 @@ public class App extends Application {
 
         AIScene = new Scene(root, SCREEN_RECTANGLE.getWidth(), SCREEN_RECTANGLE.getHeight());
 
+    }
+
+    private void doSounds(PlayerBoard pb){
+        doSounds(pb.actualNewHit(), pb.isShipHit());
+    }
+
+
+    private void doSounds(boolean actualHit, boolean shipHit) {
+        aWShipSound.stop();
+        aWWaterSound.stop();
+        if(actualHit){
+            if(shipHit)
+                aWShipSound.play();
+            else
+                aWWaterSound.play();
+        }
     }
 
     private void aiTurn() {

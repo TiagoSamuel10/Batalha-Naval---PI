@@ -114,9 +114,7 @@ public class GraphBoardFX extends EmptyGraphBoardFX {
         tiles[l][c] = new WaterTileFX(l, c, Direction.VERTICAL);
     }
 
-    //WRONG SOMEWHERE
     void updateTiles(String[][] sent) {
-
         for (int l = 0; l < LINES; l++) {
             for (int c = 0; c < COLUMNS; c++) {
                 TileFX t = tiles[l][c];

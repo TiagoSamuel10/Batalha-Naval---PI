@@ -5,6 +5,7 @@ import Common.PlayerBoard;
 public class Game {
 
     private PlayerBoard[] playerBoards;
+    private int idLastAttacked = 0;
 
     Game(){
         playerBoards = new PlayerBoard[3];
@@ -20,6 +21,7 @@ public class Game {
     }
 
     boolean attack(int id, int x, int y){
+        idLastAttacked = id;
         return playerBoards[id].getAttacked(x, y);
     }
 
@@ -60,5 +62,13 @@ public class Game {
 
     PlayerBoard getPlayerBoard(int i){
         return playerBoards[i];
+    }
+
+    public boolean lastAttackShip() {
+        return playerBoards[idLastAttacked].isShipHit();
+    }
+
+    public boolean lastActualHit(){
+        return playerBoards[idLastAttacked].actualNewHit();
     }
 }
