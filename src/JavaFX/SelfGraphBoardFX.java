@@ -23,7 +23,7 @@ public class SelfGraphBoardFX extends GraphBoardFX {
                 }
                 else
                     tiles[l][c] = new WaterTileFX(l, c, Direction.VERTICAL);
-                tiles[l][c].setImageHidden(false);
+                tiles[l][c].forNormalBoard(false);
             }
         }
     }

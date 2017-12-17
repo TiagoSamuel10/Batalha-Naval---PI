@@ -1,62 +1,27 @@
 package JavaFX;
 
 import Common.Direction;
-import Common.WaterTile;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 
 public class ShipTileFX extends TileFX {
 
-    private final static Image ATTACKED = new Image("images/fumeira.png");
+    private final static Image ATTACKED = new Image("images/FOGO.png");
+    private final static Image DESTROYED = new Image("images/fumeira.png");
 
     private final static Image ONE_ONE = new Image("images/1_1.png");
-    //private final static Image ONE_ONE_DESTROYED = new Image("images/1_1_d.png");
 
     private final static Image ONE_TWO = new Image("images/1_2.png");
-    //private final static Image ONE_TWO_DESTROYED = new Image("images/1_2_d.png");
     private final static Image TWO_TWO = new Image("images/2_2.png");
-    //private final static Image TWO_TWO_DESTROYED = new Image("images/2_2_d.png");
 
     private final static Image ONE_THREE = new Image("images/1_3.png");
-    //private final static Image ONE_THREE_DESTROYED = new Image("images/1_3.png");
     private final static Image TWO_THREE = new Image("images/2_3.png");
-    //private final static Image TWO_THREE_DESTROYED = new Image("images/2_3_d.png");
     private final static Image THREE_THREE = new Image("images/3_3.png");
-    //private final static Image THREE_THREE_DESTROYED = new Image("images/3_3_d.png");
 
     private final static Image ONE_FOUR = new Image("images/1_4.png");
-    //private final static Image ONE_FOUR_DESTROYED = new Image("images/1_4_d.png");
     private final static Image TWO_FOUR = new Image("images/2_4.png");
-    //private final static Image TWO_FOUR_DESTROYED = new Image("images/2_4_d.png");
     private final static Image THREE_FOUR = new Image("images/3_4.png");
-    //private final static Image THREE_FOUR_DESTROYED = new Image("images/3_4_d.png");
     private final static Image FOUR_FOUR = new Image("images/4_4.png");
-    //private final static Image FOUR_FOUR_DESTROYED = new Image("images/4_4_d.png");
-
-    //VERTICAL
-
-    private final static Image ONE_ONE_V = new Image("images/1_1_v.png");
-
-    private final static Image ONE_TWO_V = new Image("images/1_2_v.png");
-    //private final static Image ONE_TWO_DESTROYED = new Image("images/1_2_d.png");
-    private final static Image TWO_TWO_V = new Image("images/2_2_v.png");
-    //private final static Image TWO_TWO_DESTROYED = new Image("images/2_2_d.png");
-
-    private final static Image ONE_THREE_V = new Image("images/1_3_v.png");
-    //private final static Image ONE_THREE_DESTROYED = new Image("images/1_3.png");
-    private final static Image TWO_THREE_V = new Image("images/2_3_v.png");
-    //private final static Image TWO_THREE_DESTROYED = new Image("images/2_3_d.png");
-    private final static Image THREE_THREE_V = new Image("images/3_3_v.png");
-    //private final static Image THREE_THREE_DESTROYED = new Image("images/3_3_d.png");
-
-    private final static Image ONE_FOUR_V = new Image("images/1_4_v.png");
-    //private final static Image ONE_FOUR_DESTROYED = new Image("images/1_4_d.png");
-    private final static Image TWO_FOUR_V = new Image("images/2_4_v.png");
-    //private final static Image TWO_FOUR_DESTROYED = new Image("images/2_4_d.png");
-    private final static Image THREE_FOUR_V = new Image("images/3_4_v.png");
-    //private final static Image THREE_FOUR_DESTROYED = new Image("images/3_4_d.png");
-    private final static Image FOUR_FOUR_V = new Image("images/4_4_v.png");
-    //private final static Image FOUR_FOUR_DESTROYED = new Image("images/4_4_d.png");
 
     boolean shipDestroyed;
 
@@ -69,24 +34,21 @@ public class ShipTileFX extends TileFX {
         id = _id;
         imageAttacked = ATTACKED;
         giveRightImageToShow();
-        setImageHidden(true);
+        forNormalBoard(true);
     }
 
     void giveRightImageToShow(){
         switch (sSize){
             case 1:
                 imageToSelf = giveImageBasedOnDirection(ONE_ONE);
-                //imageAttacked = ONE_ONE_DESTROYED;
                 break;
             case 2:
                 switch (id) {
                     case 0:
                         imageToSelf = giveImageBasedOnDirection(ONE_TWO);
-                        //imageAttacked = ONE_TWO_DESTROYED;
                         break;
                     case 1:
                         imageToSelf = giveImageBasedOnDirection(TWO_TWO);
-                        //imageAttacked = TWO_TWO_DESTROYED;
                         break;
                 }
                 break;
@@ -94,15 +56,12 @@ public class ShipTileFX extends TileFX {
                 switch (id) {
                     case 0:
                         imageToSelf = giveImageBasedOnDirection(ONE_THREE);
-                        //imageAttacked = ONE_THREE_DESTROYED;
                         break;
                     case 1:
                         imageToSelf = giveImageBasedOnDirection(TWO_THREE);
-                        //imageAttacked = TWO_THREE_DESTROYED;
                         break;
                     case 2:
                         imageToSelf = giveImageBasedOnDirection(THREE_THREE);
-                        //imageAttacked = THREE_THREE_DESTROYED;
                         break;
                 }
                 break;
@@ -110,36 +69,71 @@ public class ShipTileFX extends TileFX {
                 switch (id) {
                     case 0:
                         imageToSelf = giveImageBasedOnDirection(ONE_FOUR);
-                        //imageAttacked = ONE_FOUR_DESTROYED;
                         break;
                     case 1:
                         imageToSelf = giveImageBasedOnDirection(TWO_FOUR);
-                        //imageAttacked = TWO_FOUR_DESTROYED;
                         break;
                     case 2:
                         imageToSelf = giveImageBasedOnDirection(THREE_FOUR);
-                        //imageAttacked = THREE_FOUR_DESTROYED;
                         break;
                     case 3:
                         imageToSelf = giveImageBasedOnDirection(FOUR_FOUR);
-                        //imageAttacked = FOUR_FOUR_DESTROYED;
                         break;
                 }
         }
         setImageToDraw(imageToSelf);
     }
 
+    void attack(){
+        attacked = true;
+    }
+
+    void shipDestroyed(){
+        attacked = true;
+        shipDestroyed = true;
+        setImageToDraw(imageToSelf);
+    }
+
     @Override
     void draw(GraphicsContext gc) {
-        gc.drawImage(WaterTileFX.IMAGE_TO_SELF, x, y);
-        super.draw(gc);
-        if(attacked)
-            gc.drawImage(imageAttacked, x, y);
+        if(normalBoard){
+            if(attacked) {
+                gc.drawImage(WaterTileFX.IMAGE_ATTACKED, x, y);
+                if (shipDestroyed) {
+                    super.draw(gc);
+                    gc.drawImage(DESTROYED, x, y);
+                }
+                else
+                    gc.drawImage(ATTACKED, x, y);
+            }
+
+            else {
+                gc.drawImage(WaterTileFX.IMAGE_TO_SELF, x, y);
+                super.draw(gc);
+            }
+        }
+        else{
+            if(attacked) {
+                gc.drawImage(WaterTileFX.IMAGE_ATTACKED, x, y);
+                if (shipDestroyed) {
+                    super.draw(gc);
+                    gc.drawImage(DESTROYED, x, y);
+                }
+                else {
+                    super.draw(gc);
+                    gc.drawImage(ATTACKED, x, y);
+                }
+            }
+
+            else {
+                gc.drawImage(WaterTileFX.IMAGE_TO_SELF, x, y);
+                super.draw(gc);
+            }
+        }
     }
 
     @Override
     public String toString() {
         return "ST at" + l + ":" + c + "; attacked: " + attacked;
-
     }
 }

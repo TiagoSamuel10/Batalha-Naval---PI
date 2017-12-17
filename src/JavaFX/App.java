@@ -75,13 +75,13 @@ public class App extends Application {
                     false, false, true, true)
     );
 
-    private Image mMPlayButtonImage = new Image("images/start_medium.png");
+    private Image mMPlayButtonImage = new Image("images/Botao_Start.png");
     private Button mMPlayButton;
 
-    private Image mMAloneButtonImage = new Image("images/alone_medium.png");
+    private Image mMAloneButtonImage = new Image("images/Botao_Solo_Play.png");
     private Button mMAloneButton;
 
-    private Image mMExitButtonImage = new Image("images/exit_medium.png");
+    private Image mMExitButtonImage = new Image("images/Botao_Exit.png");
     private Button mMExit;
 
     private TextField mMnameInput;

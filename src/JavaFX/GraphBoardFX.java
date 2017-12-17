@@ -5,14 +5,11 @@ import Common.PlayerBoard;
 import Common.ShipPiece;
 import Common.WaterTile;
 import javafx.animation.AnimationTimer;
-import javafx.animation.Timeline;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
-import javafx.scene.shape.Rectangle;
 
 import java.awt.*;
-import java.util.Arrays;
 
 import static Common.PlayerBoard.COLUMNS;
 import static Common.PlayerBoard.LINES;
@@ -121,8 +118,7 @@ public class GraphBoardFX extends EmptyGraphBoardFX {
                 switch (sent[l][c]){
                     case ShipPiece.ATTACKED_SHIP_DESTROYED_STRING:
                         ShipTileFX st = (ShipTileFX) t;
-                        st.attack();
-                        st.shipDestroyed = true;
+                        st.shipDestroyed();
                         break;
                     case ShipPiece.ATTACKED_STRING:
                         st = (ShipTileFX) t;
@@ -138,8 +134,7 @@ public class GraphBoardFX extends EmptyGraphBoardFX {
                         break;
                     case WaterTile.VISIBLE_STRING:
                         wt = (WaterTileFX) t;
-                        wt.attacked = true;
-                        wt.setImageHidden(false);
+                        wt.attack();
                         break;
                 }
             }
