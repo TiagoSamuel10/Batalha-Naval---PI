@@ -159,6 +159,10 @@ public class GameServer {
                 }
             }
 
+
+
+
+
             private void newChatMessage(int from, int to, String message){
                 int c = conversations.getConversationIDWithIDs(from, to);
                 conversations.appendToConversation(from, c, message);

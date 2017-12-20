@@ -86,6 +86,9 @@ public class ShipsBoardFX extends GraphBoardFX {
         }
     }
 
+
+
+
     void doShips(PlayerBoard _pb){
         pb = _pb;
         ArrayList<Ship> ships = pb.getShips();

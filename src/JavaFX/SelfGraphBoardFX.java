@@ -7,6 +7,8 @@ import Common.ShipPiece;
 import static Common.PlayerBoard.COLUMNS;
 import static Common.PlayerBoard.LINES;
 
+
+
 public class SelfGraphBoardFX extends GraphBoardFX {
 
     SelfGraphBoardFX(int _w, int _h) {

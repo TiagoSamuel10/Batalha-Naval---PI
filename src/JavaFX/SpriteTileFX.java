@@ -67,6 +67,10 @@ abstract class SpriteTileFX {
         y = _y;
     }
 
+
+
+
+
     void setPositionBoard(Point p){
         setPositionBoard(p.x, p.y);
     }
