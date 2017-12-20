@@ -67,6 +67,9 @@ public class Conversations {
             conver.add(toAdd);
         }
 
+
+
+
         Line getNewLine(){
             return conver.get(conver.size() - 1);
         }

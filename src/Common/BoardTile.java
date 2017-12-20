@@ -16,6 +16,11 @@ public abstract class BoardTile implements Serializable {
         visible = false;
     }
 
+
+
+
+
+
     public abstract boolean isPiece();
 
     public Color getNotVisibleColor(){
