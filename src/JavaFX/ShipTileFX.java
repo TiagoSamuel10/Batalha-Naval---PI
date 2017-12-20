@@ -28,6 +28,9 @@ public class ShipTileFX extends TileFX {
     private int id;
     private int sSize;
 
+
+
+
     ShipTileFX(int _sSize, int _id, int _l, int _c, Direction _dir) {
         super(_l, _c, _dir);
         sSize = _sSize;

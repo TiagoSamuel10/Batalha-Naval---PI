@@ -35,6 +35,9 @@ public class ShipsBoardFX extends GraphBoardFX {
         doShips();
 
 
+
+
+
         anim = new AnimationTimer()
         {
             long lastNano = System.nanoTime();

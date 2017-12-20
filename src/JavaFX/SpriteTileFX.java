@@ -33,6 +33,9 @@ abstract class SpriteTileFX {
      * @param boardCoord if you've given the parameters as boardCoordenates or actual x and y values
      */
 
+
+
+
     public SpriteTileFX(int _i1, int _i2, boolean boardCoord, Direction _dir){
         dir = _dir;
         if(boardCoord)

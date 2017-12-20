@@ -784,6 +784,10 @@ public class App extends Application {
             }
         });
 
+
+
+
+
         setShips = new Scene(sSRoot, SCREEN_RECTANGLE.getWidth(),
                 SCREEN_RECTANGLE.getHeight());
     }
