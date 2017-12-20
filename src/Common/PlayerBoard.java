@@ -21,6 +21,10 @@ public class PlayerBoard implements Serializable {
     private boolean shipHit;
 
 
+
+
+
+
     public ArrayList<Ship> getShips(){
         return ships;
     }

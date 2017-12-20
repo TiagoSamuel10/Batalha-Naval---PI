@@ -47,6 +47,9 @@ public class Network {
 
     }
 
+
+
+
 	public static class OthersSpecs {
 	    public int ene1;
 	    public int ene2;
@@ -54,6 +57,10 @@ public class Network {
 	    public String ene1n;
         public String ene2n;
     }
+
+
+
+
 
     public static class YouWon{
 

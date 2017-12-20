@@ -24,6 +24,10 @@ public class Ship implements Serializable{
         alreadyCalculated = false;
     }
 
+
+
+
+
     //region SPECIAL
     Ship() {
     }

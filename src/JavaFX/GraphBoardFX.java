@@ -69,6 +69,11 @@ public class GraphBoardFX extends EmptyGraphBoardFX {
      * @return a point with coordenates (L, C) -> L - Line; C -> Column
      */
 
+
+
+
+
+
     Point pointCoordinates(MouseEvent event){
         //BECAUSE ON SCREEN IS THE OTHER WAY AROUND
         int l = (int) event.getY() / TileFX.TILE_SIZE;
