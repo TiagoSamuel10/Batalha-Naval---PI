@@ -42,6 +42,9 @@ public class PlayerBoard implements Serializable {
         transformBack(sent);
     }
 
+
+
+
     void seeAllShips(){
         Ship old = null;
         for (ShipPiece piece: pieces) {

@@ -40,6 +40,10 @@ public enum Direction {
 
     }
 
+
+
+
+
     public Direction getOpposite(){
         return opposite;
     }

@@ -33,6 +33,9 @@ public class GraphBoardFX extends EmptyGraphBoardFX {
         anim = new AnimationTimer()
         {
 
+
+
+
             int x_max = COLUMNS * TileFX.TILE_SIZE;
             int y_max = LINES * TileFX.TILE_SIZE;
 
