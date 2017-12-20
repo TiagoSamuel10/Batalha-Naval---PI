@@ -13,7 +13,7 @@ class WaterTileFX extends TileFX {
         super(_l, _c, _dir);
         imageToSelf = IMAGE_TO_SELF;
         imageAttacked = IMAGE_ATTACKED;
-        setImageHidden(true);
+        forNormalBoard(true);
     }
 
     @Override
@@ -27,5 +27,9 @@ class WaterTileFX extends TileFX {
     @Override
     public String toString() {
         return "WT at" + l + ":" + c + "; attacked: " + attacked;
+    }
+
+    public void attack() {
+        attacked = true;
     }
 }

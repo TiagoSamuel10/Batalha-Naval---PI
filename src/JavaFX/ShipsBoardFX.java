@@ -8,6 +8,7 @@ import javafx.animation.AnimationTimer;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -46,15 +47,16 @@ public class ShipsBoardFX extends GraphBoardFX {
             {
 
                 if(((currentNanoTime - lastNano) / 1000000000.0) > perSec ) {
+                    Paint fill = gc.getFill();
+                    Paint stroke = gc.getStroke();
                     gc.clearRect(0, 0,getWidth() ,getHeight() );
-                    gc.drawImage(new Image("images/water_bg.jpg"), 0 , 0);
+                    gc.drawImage(new Image("images/agua_bg.png"), 0 , 0);
                     for (int l = 0; l < LINES; l++)
                         gc.strokeLine(0, l * TileFX.TILE_SIZE , x_max, l * TileFX.TILE_SIZE);
                     for (int c = 0; c < COLUMNS; c++)
                         gc.strokeLine(c * TileFX.TILE_SIZE, 0 , c * TileFX.TILE_SIZE, y_max);
                     for(ShipFX s : shipsFX)
                         s.draw(gc);
-                    gc.save();
                     gc.setStroke(Color.BLUE);
                     if(selected != null)
                         gc.strokeRect(selected.x, selected.y, selected.width, selected.height);
@@ -64,7 +66,8 @@ public class ShipsBoardFX extends GraphBoardFX {
                     if(tilesToDraw.size() > 0)
                         for (Point p : tilesToDraw)
                             gc.fillRect(p.x * TileFX.TILE_SIZE, p.y * TileFX.TILE_SIZE, TileFX.TILE_SIZE, TileFX.TILE_SIZE);
-                    gc.restore();
+                    gc.setFill(fill);
+                    gc.setStroke(stroke);
                     lastNano = currentNanoTime;
                 }
             }
@@ -192,5 +195,11 @@ public class ShipsBoardFX extends GraphBoardFX {
         System.out.println("oldC: " + oldC);
         pb.removeShip(new Ship(oldL, oldC, s.dir, Ship.ShipType.getShipType(s.shipSize)));
 
+    }
+
+    @Override
+    public void setPlayerBoard(PlayerBoard playerBoard) {
+        pb = playerBoard;
+        doShips(pb);
     }
 }

@@ -16,8 +16,10 @@ public class PlayerBoard implements Serializable {
 
     private ArrayList<ShipPiece> pieces;
     private BoardTile[][] boardTiles;
-    private int shipN = 0;
     private boolean lastShipDestroyed;
+    private boolean actualHit;
+    private boolean shipHit;
+
 
     public ArrayList<Ship> getShips(){
         return ships;
@@ -152,13 +154,16 @@ public class PlayerBoard implements Serializable {
         //NOT ATTACKED YET
         if(inBounds(x, y)) {
             BoardTile boardTile = getTileAt(x, y);
+            actualHit = true;
             if (boardTile.canAttack()) {
                 boardTile.setAttacked(true);
                 // NOT A SHIP PIECE
                 if (!boardTile.isPiece()) {
+                    shipHit = false;
                     toPaint[x][y] = WaterTile.VISIBLE_STRING;
                     return false;
                 }
+                shipHit = true;
                 toPaint[x][y] = ShipPiece.ATTACKED_STRING;
                 pieces.remove((ShipPiece) boardTile);
                 Ship ship = ((ShipPiece) boardTile).ship;
@@ -170,6 +175,8 @@ public class PlayerBoard implements Serializable {
                 }
                 return true;
             }
+            else
+                actualHit = false;
         }
         else{
             return false;
@@ -183,7 +190,7 @@ public class PlayerBoard implements Serializable {
         ArrayList<Point> points = new ArrayList<>();
         for (int l = 0; l < LINES; l++) {
             for (int c = 0; c < COLUMNS; c++) {
-                if (!boardTiles[l][c].visible)
+                if (boardTiles[l][c].canAttack())
                     points.add(new Point(l, c));
             }
         }
@@ -241,7 +248,6 @@ public class PlayerBoard implements Serializable {
 
     public boolean placeShip(Ship toAdd) {
         if(canShipBeHere(toAdd)) {
-            shipN++;
             ships.add(toAdd);
             for (ShipPiece piece : toAdd.getPieces()) {
                 //System.out.println("PLACING " + piece.getClass().getSimpleName() + " AT: " + piece.x + " " + piece.y);
@@ -331,8 +337,16 @@ public class PlayerBoard implements Serializable {
         return lastShipDestroyed;
     }
 
+    public boolean actualNewHit(){
+        return actualHit;
+    }
+
     public boolean fullOfShips(){
         System.out.println(pieces.size());
         return pieces.size() == 20;
+    }
+
+    public boolean isShipHit() {
+        return shipHit;
     }
 }

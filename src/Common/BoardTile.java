@@ -5,8 +5,6 @@ import java.io.Serializable;
 
 public abstract class BoardTile implements Serializable {
 
-    public static final int SIZE = 50;
-    public final static Color COLOR_NOT_VISIBLE = new Color(100,100,100);
     int x, y;
     boolean visible;
     boolean attacked;
@@ -22,10 +20,6 @@ public abstract class BoardTile implements Serializable {
 
 
     public abstract boolean isPiece();
-
-    public Color getNotVisibleColor(){
-        return COLOR_NOT_VISIBLE;
-    }
 
     public boolean canAttack(){
         return !attacked;

@@ -15,7 +15,6 @@ import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Group;
 import javafx.scene.Scene;
@@ -26,6 +25,10 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
+import javafx.scene.media.AudioClip;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
@@ -36,16 +39,19 @@ import javafx.stage.StageStyle;
 import Common.Network.*;
 
 import java.awt.Point;
+import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.UnknownHostException;
 import java.util.*;
 
-public class App extends Application{
+public class App extends Application {
 
     //FOR OFFLINE
     private MyAI ai;
+    private boolean vsAI;
+    private SelfGraphBoardFX selfvsAI;
 
     //FOR ONLINE
     private Client client;
@@ -53,26 +59,29 @@ public class App extends Application{
     private static final String ADDRESS = "82.154.150.115";
     private PlayerBoard pb;
 
+    private String soundFile = "assets/sound/play.mp3";
+    private AudioClip soundPlayer = new AudioClip(new File(soundFile).toURI().toString());
+
     //region MAIN MENU STUFF
-    
+
     private BorderPane mMRoot;
     private final static String MM_IMAGE_BACKGROUND_PATH = "images/BattleShipBigger.png";
     private final static Image MM_IMAGE_BACKGROUND = new Image(MM_IMAGE_BACKGROUND_PATH);
     private final static BackgroundImage MM_BACKGROUND = new BackgroundImage(MM_IMAGE_BACKGROUND,
-            BackgroundRepeat.REPEAT, 
+            BackgroundRepeat.REPEAT,
             BackgroundRepeat.REPEAT,
             null,
             new BackgroundSize(MM_IMAGE_BACKGROUND.getWidth(), MM_IMAGE_BACKGROUND.getHeight(),
                     false, false, true, true)
     );
 
-    private Image mMPlayButtonImage = new Image("images/start_medium.png");
+    private Image mMPlayButtonImage = new Image("images/Botao_Start.png");
     private Button mMPlayButton;
 
-    private Image mMAloneButtonImage = new Image("images/alone_medium.png");
+    private Image mMAloneButtonImage = new Image("images/Botao_Solo_Play.png");
     private Button mMAloneButton;
 
-    private Image mMExitButtonImage = new Image("images/exit_medium.png");
+    private Image mMExitButtonImage = new Image("images/Botao_Exit.png");
     private Button mMExit;
 
     private TextField mMnameInput;
@@ -90,14 +99,14 @@ public class App extends Application{
 
     private VBox sSRightStuff;
 
-    private HBox sSShipsStatus;
+    private HBox sSPlaceIntructions;
     private VBox sSTips;
 
     private HBox sSReadyBox;
     private Button sSRandomButton;
     private Button sSReadyButton;
 
-    private VBox sSPlayersReady;
+    private VBox sSInstructionsGame;
     private Text sSPlayer1Ready;
     private Text sSPlayer2Ready;
 
@@ -130,7 +139,15 @@ public class App extends Application{
     private VBox aWvBox = new VBox(50);
     private VBox aWvBox2 = new VBox(50);
 
+    private String aWshipSoundFile = "assets/sound/ship.mp3";
+    private String aWwaterSoundFile = "assets/sound/water.mp3";
+
+    private MediaPlayer aWShipSound = new MediaPlayer(new Media(new File(aWshipSoundFile).toURI().toString()));
+    private MediaPlayer aWWaterSound = new MediaPlayer(new Media(new File(aWwaterSoundFile).toURI().toString()));
+
     //endregion
+
+    private TextArea textArea;
 
     private Label cWl1;
     private Label cWl2;
@@ -148,10 +165,11 @@ public class App extends Application{
     private Scene wonScene;
     private Scene chatScreen;
     private Scene waitingScreen;
+    private Scene AIScene;
 
     private Stage theStage;
 
-    public static void main(String[] args){
+    public static void main(String[] args) {
         launch(args);
     }
 
@@ -166,7 +184,7 @@ public class App extends Application{
                 NetworkInterface networkInterface = networkInterfaces.nextElement();
                 // GO THROUGH ALL IP ADDRESSES OF THIS CARD...
                 Enumeration<InetAddress> inetAddresses = networkInterface.getInetAddresses();
-                while(inetAddresses.hasMoreElements()) {
+                while (inetAddresses.hasMoreElements()) {
                     InetAddress inetAddress = inetAddresses.nextElement();
                     if (!inetAddress.isLoopbackAddress()) {
                         if (inetAddress.isSiteLocalAddress())
@@ -212,104 +230,112 @@ public class App extends Application{
 
             public void received(Connection connection, Object object) {
                 if (object instanceof IsFull)
-                    System.out.println(object);
-                if (object instanceof Abort){
+                    transitionTo(mainMenu);
+                if (object instanceof Abort) {
                     //
                 }
 
-                if (object instanceof CanStart) 
-                    Platform.runLater( () -> transitionTo(mainGame));
-                
+                if (object instanceof CanStart)
+                    Platform.runLater(() -> transitionTo(mainGame));
+
                 if (object instanceof WhoseTurn) {
                     WhoseTurn whoseTurn = (WhoseTurn) object;
-                    Platform.runLater( () -> setTurnLabel(whoseTurn.name));
+                    Platform.runLater(() -> setTurnLabel(whoseTurn.name));
                 }
                 if (object instanceof ConnectedPlayers) {
                     System.out.println("CONNECTED PLAYERS");
                     ConnectedPlayers players = (ConnectedPlayers) object;
-                    //TODO: DO WAITING WINDOW
+                    Platform.runLater(() -> {
+                                textArea.clear();
+                                for (String name : players.names)
+                                    textArea.appendText(name + "\n");
+                            }
+                    );
                 }
 
                 if (object instanceof ReadyForShips)
-                    Platform.runLater( () -> transitionTo(setShips));
+                    Platform.runLater(() -> transitionTo(setShips));
 
                 if (object instanceof OthersSpecs) {
                     OthersSpecs othersSpecs = (OthersSpecs) object;
 
-                    Platform.runLater( () -> {
+                    Platform.runLater(() -> {
 
                         ene1.serverID = othersSpecs.ene1;
                         ene1.name = othersSpecs.ene1n;
-                        ene1.button.setText(ene1.name);
+                        ene1.labeln.setText(ene1.name);
                         cWl1.setText(ene1.name);
 
                         ene2.serverID = othersSpecs.ene2;
                         ene2.name = othersSpecs.ene2n;
-                        ene2.button.setText(ene2.name);
+                        ene2.labeln.setText(ene2.name);
                         cWl2.setText(ene2.name);
+
                     });
 
                 }
 
                 if (object instanceof YourBoardToPaint)
                     //System.out.println("MY BOARD TO PAINT");
-                    Platform.runLater( () -> mGSelfBoard.updateTiles(((YourBoardToPaint) object).board));
+                    Platform.runLater(() -> mGSelfBoard.updateTiles(((YourBoardToPaint) object).board));
 
                 if (object instanceof EnemiesBoardsToPaint) {
                     //System.out.println("ENEMIES BOARDS TO PAINT");
-                    Platform.runLater( () -> {
-                                ene1.b.startTiles(((EnemiesBoardsToPaint) object).board1);
-                                ene2.b.startTiles(((EnemiesBoardsToPaint) object).board2);
-                            });
+                    Platform.runLater(() -> {
+                        ene1.b.startTiles(((EnemiesBoardsToPaint) object).board1);
+                        ene2.b.startTiles(((EnemiesBoardsToPaint) object).board2);
+                    });
                 }
 
                 if (object instanceof EnemyBoardToPaint) {
-                    Platform.runLater( () -> {
-                                EnemyBoardToPaint ebp = (EnemyBoardToPaint) object;
-                                updateEnemyBoard(ebp.id, ebp.newAttackedBoard);
-                                System.out.println("ENEMY BOARD TO PAINT WITH INDEX " + ebp.id);
+                    Platform.runLater(() -> {
+                        EnemyBoardToPaint ebp = (EnemyBoardToPaint) object;
+                        updateEnemyBoard(ebp.id, ebp.newAttackedBoard);
+                        System.out.println("ENEMY BOARD TO PAINT WITH INDEX " + ebp.id);
                     });
                 }
 
                 if (object instanceof AnAttackResponse) {
-                    Platform.runLater( () -> {
+                    Platform.runLater(() -> {
                         lastAttacked.b.updateTiles(((AnAttackResponse) object).newAttackedBoard);
                         iCanAttack = ((AnAttackResponse) object).again;
+                        doSounds(((AnAttackResponse) object).actualHit, ((AnAttackResponse) object).shipHit);
                     });
                 }
 
                 if (object instanceof YourTurn) {
-                    Platform.runLater( () -> {
+                    Platform.runLater(() -> {
                         iCanAttack = true;
                         setTurnLabel("My TURN!!");
                     });
                 }
 
                 if (object instanceof YouDead) {
-                    //TODO: WARN ABOUT DEATH; AND STUFF
+                    Platform.runLater(() -> {
+                        lost("You died a horrible death. RIP you");
+                        transitionTo(mainMenu);
+                    });
                 }
 
                 if (object instanceof PlayerDied) {
-                    //TODO: REMOVE BOARDS
-                    System.out.println("Player died");
-                    Platform.runLater( () -> {
-
+                    Platform.runLater(() -> {
                         removeEnemy(((PlayerDied) object).who);
-
                     });
-                    //removeEnemyBoard(((Network.mMplayerDied) object).who);
                 }
 
                 if (object instanceof YouWon) {
-                    Platform.runLater( () -> {
+                    Platform.runLater(() -> {
+                        Alert lost = new Alert(Alert.AlertType.CONFIRMATION);
+                        lost.setContentText("YOU BEAT THEM ALL");
+                        lost.showAndWait();
                         won();
                     });
                 }
 
                 if (object instanceof ChatMessage) {
-                    Platform.runLater( () -> {
+                    Platform.runLater(() -> {
                         EnemyLocal toUpdate = ene1;
-                        if(((ChatMessage) object).saidIt == ene2.serverID){
+                        if (((ChatMessage) object).saidIt == ene2.serverID) {
                             toUpdate = ene2;
                         }
                         toUpdate.conversation.setText(toUpdate.conversation.getText() + ((ChatMessage) object).message);
@@ -320,12 +346,25 @@ public class App extends Application{
 
     }
 
+    private void reset(){
+        setShipsScene();
+    }
+
+    private void lost(String s) {
+        Alert lost = new Alert(Alert.AlertType.INFORMATION);
+        lost.setContentText(s);
+        lost.showAndWait();
+        reset();
+    }
+
+
     private void won() {
+        reset();
         transitionTo(wonScene);
     }
 
     private void removeEnemy(int who) {
-        if(who == ene2.serverID)
+        if (who == ene2.serverID)
             aWRoot.getChildren().remove(aWvBox2);
         else
             aWRoot.getChildren().remove(aWvBox);
@@ -334,7 +373,7 @@ public class App extends Application{
     private void updateEnemyBoard(int id, String[][] newAttackedBoard) {
         EnemyLocal toUpdate = ene1;
 
-        if(id == ene2.serverID){
+        if (id == ene2.serverID) {
             toUpdate = ene2;
         }
 
@@ -355,6 +394,8 @@ public class App extends Application{
 
         serverConfigurations();
 
+        vsAI = false;
+
         theStage = primaryStage;
         setAllScenes();
 
@@ -365,19 +406,28 @@ public class App extends Application{
         theStage.setScene(mainMenu);
         theStage.show();
 
+        soundPlayer.setVolume(.2);
+        soundPlayer.setCycleCount(AudioClip.INDEFINITE);
+        soundPlayer.play();
+
+        aWShipSound.setVolume(1);
+        aWWaterSound.setVolume(.1);
+
     }
 
-    private void setAllScenes(){
+    private void setAllScenes() {
         setMainMenu();
         setMainGame();
         setShipsScene();
         setAttackScreen();
         setChatScreen();
         setWonScene();
+        setAIScene();
     }
 
     /**
      * CALL BEFORE OTHER STUFF
+     *
      * @param scene
      */
     private void transitionTo(Scene scene) {
@@ -385,15 +435,17 @@ public class App extends Application{
             g.stopAnimating();
         toAnimate.clear();
         theStage.setScene(scene);
-        if(scene == mainGame){
+        if (scene == mainGame)
             toAnimate.add(mGSelfBoard);
-        }
-        if(scene == attackScene){
+        if (scene == attackScene) {
             toAnimate.add(ene1.b);
             toAnimate.add(ene2.b);
         }
-        if(scene == setShips){
+        if (scene == setShips)
             toAnimate.add(sSboard);
+        if (scene == AIScene) {
+            toAnimate.add(selfvsAI);
+            toAnimate.add(ai.b);
         }
         for (EmptyGraphBoardFX g : toAnimate)
             g.startAnimating();
@@ -402,46 +454,35 @@ public class App extends Application{
     private void setMainGame() {
 
         MGRoot = new BorderPane();
-        MGRoot.setStyle("-fx-background-color:white");
+        MGRoot.setStyle("-fx-background-image: url(images/BattleShipBigger2.png);-fx-background-size: cover;");
 
         //GridPane gridPane = new GridPane();
         //gridPane.setStyle("-fx-background-color:cyan");
 
         MGCanvasHolder = new Group();
-        MGCanvasHolder.setStyle("-fx-background-color:cyan");
 
         mGSelfBoard = new SelfGraphBoardFX(500, 500);
+        mGSelfBoard.startTiles(PlayerBoard.getRandomPlayerBoard().getToPaint());
 
         MGCanvasHolder.getChildren().add(mGSelfBoard);
 
         MGTop = new StackPane();
-        MGTop.setStyle("-fx-background-color:red");
 
         mGcurrentPlayerText = new Label("IS PLAYING");
+        mGcurrentPlayerText.setFont(new Font(30));
         MGTop.getChildren().add(mGcurrentPlayerText);
 
-        MGRight = new VBox();
-        MGRight.setStyle("-fx-background-color:green");
-        MGRight.setSpacing(50);
+        MGRight = new VBox(50);
 
-        MGShips = new Circle();
-        MGShips.setRadius(50);
         MGAttackButton = new Button("TO ARMS");
-        MGAttackButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                transitionTo(attackScene);
-            }
-        });
+        MGAttackButton.setOnMouseClicked(event -> transitionTo(attackScene));
         MGChatButton = new Button("CHAT");
-        MGChatButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                transitionTo(chatScreen);
-            }
-        });
+        MGChatButton.setOnMouseClicked(event -> transitionTo(chatScreen));
 
-        MGRight.getChildren().addAll(MGShips, MGAttackButton, MGChatButton);
+        VBox.setVgrow(MGAttackButton, Priority.ALWAYS);
+        VBox.setVgrow(MGChatButton, Priority.ALWAYS);
+
+        MGRight.getChildren().addAll(MGAttackButton, MGChatButton);
 
         MGRoot.setRight(MGRight);
         MGRoot.setTop(MGTop);
@@ -450,12 +491,10 @@ public class App extends Application{
         mainGame = new Scene(MGRoot, SCREEN_RECTANGLE.getWidth(), SCREEN_RECTANGLE.getHeight());
     }
 
-    private void setMainMenu(){
+    private void setMainMenu() {
 
         mMRoot = new BorderPane();
-        mMRoot.setPrefSize(SCREEN_RECTANGLE.getWidth(), SCREEN_RECTANGLE.getHeight());
-        mMRoot.setBackground(new Background(MM_BACKGROUND));
-        mMRoot.setStyle("-fx-background-image: url(images/BattleShipBigger2.png);-fx-background-repeat-style: strech;");
+        mMRoot.setStyle("-fx-background-image: url(images/BattleShip.png);-fx-background-size: cover;");
 
         mMPlayButton = new Button();
         mMPlayButton.setGraphic(new ImageView(mMPlayButtonImage));
@@ -464,7 +503,7 @@ public class App extends Application{
             @Override
             public void handle(ActionEvent event) {
                 myName = mMnameInput.getText();
-                if(myName.equals("")){
+                if (myName.equals("")) {
                     Alert alert = new Alert(Alert.AlertType.WARNING);
                     alert.setTitle("Ups!");
                     alert.setHeaderText("Name was null!");
@@ -479,8 +518,7 @@ public class App extends Application{
                         Boolean connected = true;
                         try {
                             client.connect(5000, ADDRESS, Network.port);
-                        }
-                        catch (IOException e) {
+                        } catch (IOException e) {
                             connected = false;
                         }
                         return connected;
@@ -489,7 +527,7 @@ public class App extends Application{
                 connect.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
                     @Override
                     public void handle(WorkerStateEvent event) {
-                        if(connect.getValue()) {
+                        if (connect.getValue()) {
                             Register r = new Register();
                             r.name = myName;
                             try {
@@ -498,7 +536,14 @@ public class App extends Application{
                                 e1.printStackTrace();
                                 r.address = "100:00";
                             }
-                            waitingScreen = new Scene(new BorderPane(), SCREEN_RECTANGLE.getWidth(), SCREEN_RECTANGLE.getHeight());
+
+                            BorderPane root = new BorderPane();
+                            textArea = new TextArea();
+                            textArea.setEditable(false);
+
+                            root.setCenter(textArea);
+
+                            waitingScreen = new Scene(root, SCREEN_RECTANGLE.getWidth(), SCREEN_RECTANGLE.getHeight());
                             transitionTo(waitingScreen);
                             client.sendTCP(r);
                             Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -506,7 +551,7 @@ public class App extends Application{
                             alert.setHeaderText("WE GOT IN");
                             alert.setContentText("TEMP MESSAGE TO SAY WE GOT IN; WAIT NOW! DON'T PRESS ANY MORE SHIT");
                             alert.showAndWait();
-                        }else{
+                        } else {
                             Alert alert = new Alert(Alert.AlertType.ERROR);
                             alert.setTitle("Noo!");
                             alert.setHeaderText("Can't play when you can't connect to server :(");
@@ -523,8 +568,10 @@ public class App extends Application{
 
         mMAloneButton = new Button();
         mMAloneButton.setGraphic(new ImageView(mMAloneButtonImage));
-        mMAloneButton.setOnAction(event ->
-            theStage.setScene(mainGame)
+        mMAloneButton.setOnAction(event -> {
+                    vsAI = true;
+                    theStage.setScene(setShips);
+                }
         );
         mMAloneButton.setStyle("-fx-background-color: transparent;");
 
@@ -534,9 +581,6 @@ public class App extends Application{
                 Platform.exit()
         );
         mMExit.setStyle("-fx-background-color: transparent;");
-
-        //TODO: BETTER TEXT
-        mMServerText = new Label();
 
         mMnameInput = new TextField("Name!");
         mMnameInput.textProperty().addListener(new ChangeListener<>() {
@@ -557,10 +601,9 @@ public class App extends Application{
         mMMiddle.add(mMAloneButton, 1, 2);
         mMMiddle.add(mMExit, 1, 3);
         mMMiddle.add(mMnameInput, 0, 1);
-        mMMiddle.add(mMServerText, 0, 0);
+        mMMiddle.setStyle("-fx-fill: true; -fx-alignment:bottom-center; -fx-padding: 50");
 
         //mMMiddle.getChildren().addAll(mMPlayButton,mMAloneButton, mMExit, mMServerText, mMnameInput);
-        mMMiddle.setAlignment(Pos.BOTTOM_CENTER);
         mMRoot.setCenter(mMMiddle);
         //mMMiddle.setStyle("-fx-background-color:cyan;");
 
@@ -570,27 +613,25 @@ public class App extends Application{
     }
 
     private void setTurnLabel(String name) {
-        mGcurrentPlayerText.setText(name + " IS ATTACKING!!");
+        mGcurrentPlayerText.setText(name);
     }
 
-    private void setShipsScene(){
+    private void setShipsScene() {
 
         sSRoot = new HBox();
-        sSRoot.setStyle("-fx-background-image: url(images/BattleShipBigger2.png)");
+        sSRoot.setStyle("-fx-background-image: url(images/BattleShipBigger2.png);-fx-background-size: cover;");
 
         pb = new PlayerBoard();
-        sSboard = new ShipsBoardFX(700,500);
+        sSboard = new ShipsBoardFX(700, 500);
 
         sSboard.setPlayerBoard(pb);
         sSboard.startAnimating();
 
         sSRightStuff = new VBox();
-        sSRightStuff.setStyle("-fx-background-color: red");
 
+        sSPlaceIntructions = new HBox();
+        sSPlaceIntructions.setStyle("-fx-background-color: grey;");
 
-
-        sSShipsStatus = new HBox();
-        sSShipsStatus.setStyle("-fx-background-color: green;");
         sSTips = new VBox();
 
         //TIPS
@@ -602,29 +643,30 @@ public class App extends Application{
         sSTips.getChildren().add(new Text(" +Green means it can be placed there; Left-Mouse to do that"));
         sSTips.getChildren().add(new Text(" +Red means it can't be placed there"));
 
-        sSShipsStatus.getChildren().addAll(sSTips);
+        sSPlaceIntructions.getChildren().addAll(sSTips);
 
         sSReadyBox = new HBox();
         sSReadyBox.setStyle("-fx-background-color: yellow;");
 
         sSRandomButton = new Button("Random");
+        sSRandomButton.setFont(new Font(50));
         sSRandomButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
                 pb = PlayerBoard.getRandomPlayerBoard();
                 sSboard.doShips(pb);
+                sSboard.setSelected(null);
                 //System.out.println(pb);
             }
         });
 
         sSReadyButton = new Button("Ready");
+        sSReadyButton.setFont(new Font(50));
 
         sSReadyButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
-
-
             @Override
             public void handle(MouseEvent event) {
-                if(sSboard.pb.fullOfShips()) {
+                if (sSboard.pb.fullOfShips()) {
 
                     sSReadyButton.setDisable(true);
                     sSRandomButton.setDisable(true);
@@ -632,56 +674,55 @@ public class App extends Application{
 
                     pb = sSboard.pb;
 
-                    //System.out.println(pb);
-
-                    mGSelfBoard.setPlayerBoard(pb);
-                    mGSelfBoard.startTiles(pb.getToPaint());
-                    mGSelfBoard.updateTiles(pb.getToPaint());
-                    mGSelfBoard.startAnimating();
-
-                    APlayerboard p = new APlayerboard();
-                    p.board = sSboard.pb.getToPaint();
-                    client.sendTCP(p);
-
+                    if (!vsAI) {
+                        mGSelfBoard.setPlayerBoard(pb);
+                        mGSelfBoard.startTiles(pb.getToPaint());
+                        mGSelfBoard.updateTiles(pb.getToPaint());
+                        APlayerboard p = new APlayerboard();
+                        p.board = sSboard.pb.getToPaint();
+                        client.sendTCP(p);
+                    } else {
+                        selfvsAI.startTiles(pb.getToPaint());
+                        transitionTo(AIScene);
+                    }
                 }
             }
         });
 
-
         sSReadyBox.getChildren().addAll(sSRandomButton, sSReadyButton);
 
-        sSPlayersReady = new VBox();
-        sSPlayersReady.setStyle("-fx-background-color: blue");
+        sSInstructionsGame = new VBox();
+        sSInstructionsGame.setStyle("-fx-background-color: grey;");
+        sSInstructionsGame.setSpacing(5);
+        sSInstructionsGame.getChildren().add(new Text("Instructions: "));
+        sSInstructionsGame.getChildren().add(new Text(
+                " +When you hit a ship piece, you get to go again"));
+        sSInstructionsGame.getChildren().add(new Text(" +Missing means it is now somebody else's turn"));
+        sSInstructionsGame.getChildren().add(new Text(" +If you destroy a ship, surrounding area will be shown"));
 
-        sSPlayer1Ready = new Text("A");
-        sSPlayer2Ready = new Text("ADD");
-
-        sSPlayersReady.getChildren().addAll(sSPlayer1Ready, sSPlayer2Ready);
-        sSPlayersReady.setPadding(new Insets(5));
-
-        sSRightStuff.getChildren().addAll(sSShipsStatus, sSReadyBox, sSPlayersReady);
+        sSRightStuff.getChildren().addAll(sSPlaceIntructions, sSReadyBox, sSInstructionsGame);
 
         sSRoot.getChildren().addAll(sSboard, sSRightStuff);
-        sSRoot.setPadding(new Insets(50, 50, 200,200));
-        sSRoot.setSpacing(200);
+        sSRoot.setPadding(new Insets(25));
+        sSRoot.setSpacing(10);
 
-        sSRoot.setOnKeyPressed(new EventHandler<KeyEvent>() {
+        sSRoot.setOnKeyPressed(new EventHandler<>() {
             @Override
             public void handle(KeyEvent event) {
-                if(sSboard.selected != null && event.getCode() == KeyCode.R){
+                if (sSboard.selected != null && event.getCode() == KeyCode.R) {
                     sSboard.toRotate = !sSboard.toRotate;
                 }
             }
         });
-        sSboard.setOnMouseMoved(new EventHandler<MouseEvent>() {
+        sSboard.setOnMouseMoved(new EventHandler<>() {
             @Override
             public void handle(MouseEvent event) {
-                if(!sSboard.finished) {
+                if (!sSboard.finished) {
                     sSboard.seeIfShipFXCanBePlaced(event.getX(), event.getY());
                 }
             }
         });
-        sSboard.setOnMouseClicked(new EventHandler<MouseEvent>() {
+        sSboard.setOnMouseClicked(new EventHandler<>() {
 
             ShipFX current = null;
             boolean haveAShip = false;
@@ -690,7 +731,7 @@ public class App extends Application{
             @Override
             public void handle(MouseEvent event) {
 
-                if(!sSboard.finished) {
+                if (!sSboard.finished) {
 
                     ShipFX result = sSboard.checkAShip(event.getX(), event.getY());
 
@@ -747,7 +788,7 @@ public class App extends Application{
                 SCREEN_RECTANGLE.getHeight());
     }
 
-    private void setAttackScreen(){
+    private void setAttackScreen() {
 
         ene1 = new EnemyLocal();
         ene2 = new EnemyLocal();
@@ -756,28 +797,30 @@ public class App extends Application{
 
         ene1.b = new GraphBoardFX();
         ene2.b = new GraphBoardFX();
+        ene1.b.startTiles(PlayerBoard.getRandomPlayerBoard().getToPaint());
+        ene2.b.startTiles(PlayerBoard.getRandomPlayerBoard().getToPaint());
+        ene1.b.startAnimating();
+        ene2.b.startAnimating();
 
-        ene1.button = new Button("ENEMY 1");
-        ene2.button = new Button("ENEMY 2");
+        ene1.labeln = new Label("ENEMY 1");
+        ene1.labeln.setFont(new Font("Verdana", 30));
+        ene1.labeln.setTextFill(Color.rgb(0, 0, 0));
 
-        aWvBox = new VBox(50);
-        aWvBox.getChildren().addAll(ene1.b, ene1.button);
+        ene2.labeln = new Label("ENEMY 2");
+        ene2.labeln.setFont(new Font("Verdana", 30));
+        ene2.labeln.setTextFill(Color.rgb(0, 0, 0));
 
-        aWvBox2 = new VBox(50);
-        aWvBox2.getChildren().addAll(ene2.b, ene2.button);
+        aWvBox = new VBox(10);
+        aWvBox.getChildren().addAll(ene1.b, ene1.labeln);
+
+        aWvBox2 = new VBox(10);
+        aWvBox2.getChildren().addAll(ene2.b, ene2.labeln);
 
         Button back = new Button("BACK");
-        back.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                transitionTo(mainGame);
-            }
-        });
+        back.setOnMouseClicked(event -> transitionTo(mainGame));
 
-        aWRoot = new HBox(200);
-        aWRoot.setAlignment(Pos.CENTER);
-        aWRoot.setPrefSize(SCREEN_RECTANGLE.getWidth(), SCREEN_RECTANGLE.getHeight());
-        aWRoot.setStyle("-fx-background-image: url(images/BattleShipBigger2.png)");
+        aWRoot = new HBox(50);
+        aWRoot.setStyle("-fx-background-image: url(images/BattleShipBigger2.png);-fx-background-size: cover;");
 
         aWRoot.getChildren().addAll(aWvBox, aWvBox2, back);
 
@@ -829,8 +872,8 @@ public class App extends Application{
 
     private void setWonScene() {
         StackPane root = new StackPane();
-        aWRoot.setStyle("-fx-background-image: url(images/BattleShipBigger2.png)");
-        Button b = new Button();
+        root.setStyle("-fx-background-image: url(images/BattleShipBigger2.png)");
+        Button b = new Button("Go To Main Menu");
         b.setOnMouseClicked(event -> transitionTo(mainMenu));
         b.setStyle("-fx-alignment: center");
         root.getChildren().add(b);
@@ -864,12 +907,11 @@ public class App extends Application{
         tf1.setWrapText(true);
         tf1.setMinSize(tf1.getPrefWidth() * 2, tf1.getPrefHeight() * 2);
         tf1.setOnKeyPressed(event -> {
-            if(event.getCode() == KeyCode.ENTER) {
-                System.out.println(tf1.getText());
+            if (event.getCode() == KeyCode.ENTER) {
                 String message = tf1.getText();
-                tf1.setText("");
+                tf1.clear();
                 ChatMessageFromClient c = new ChatMessageFromClient();
-                ene1.conversation.setText(ene1.conversation.getText() + "ME: " + message);
+                ene1.conversation.appendText("ME: " + message);
                 c.text = message;
                 c.to = ene1.serverID;
                 client.sendTCP(c);
@@ -884,12 +926,11 @@ public class App extends Application{
         tf2.setWrapText(true);
         tf2.setMinSize(tf2.getPrefWidth(), tf2.getPrefHeight());
         tf2.setOnKeyPressed(event -> {
-            if(event.getCode() == KeyCode.ENTER) {
-                System.out.println(tf2.getText());
+            if (event.getCode() == KeyCode.ENTER) {
                 String message = tf2.getText();
-                tf2.setText("");
+                tf2.clear();
                 ChatMessageFromClient c = new ChatMessageFromClient();
-                ene2.conversation.setText(ene2.conversation.getText() + "ME: " + message);
+                ene2.conversation.appendText("ME: " + message);
                 c.text = message;
                 c.to = ene2.serverID;
                 client.sendTCP(c);
@@ -911,11 +952,110 @@ public class App extends Application{
 
     }
 
+    private void setAIScene() {
+
+        selfvsAI = new SelfGraphBoardFX(500,500);
+        ai = new MyAI();
+        iCanAttack = true;
+
+        Label label = new Label("YOU!");
+        label.setFont(new Font("Verdana", 30));
+        label.setTextFill(Color.ALICEBLUE);
+
+        VBox forYou = new VBox(10);
+        forYou.getChildren().addAll(selfvsAI, label);
+
+        Label ene = new Label("ENEMY(AI)!");
+        ene.setFont(new Font("Verdana", 30));
+        ene.setTextFill(Color.ROSYBROWN);
+
+        VBox forAI = new VBox(10);
+        forAI.getChildren().addAll(ai.b, ene);
+
+        Button back = new Button("BACK/FORFEIT");
+        back.setOnMouseClicked(event -> { reset(); transitionTo(mainMenu); });
+
+        HBox root = new HBox(50);
+        root.setStyle("-fx-fill: true; -fx-alignment:center");
+        root.setStyle("-fx-background-image: url(images/BattleShipBigger2.png);-fx-background-size: cover;");
+
+        root.getChildren().addAll(forYou, forAI, back);
+
+        ai.b.setOnMouseClicked(new EventHandler<>() {
+            @Override
+            public void handle(MouseEvent event) {
+                if (iCanAttack) {
+                    Point p = ai.b.pointCoordinates(event);
+                    iCanAttack = ai.attacked(p);
+                    doSounds(ai.board);
+                    if(ai.board.isGameOver()) {
+                        won();
+                        return;
+                    }
+                    if (!iCanAttack)
+                        aiTurn();
+                }
+            }
+        });
+
+        AIScene = new Scene(root, SCREEN_RECTANGLE.getWidth(), SCREEN_RECTANGLE.getHeight());
+
+    }
+
+    private void doSounds(PlayerBoard pb){
+        doSounds(pb.actualNewHit(), pb.isShipHit());
+    }
+
+
+    private void doSounds(boolean actualHit, boolean shipHit) {
+        aWShipSound.stop();
+        aWWaterSound.stop();
+        if(actualHit){
+            if(shipHit)
+                aWShipSound.play();
+            else
+                aWWaterSound.play();
+        }
+    }
+
+    private void aiTurn() {
+        Point p = ai.chooseAttack(pb.getAvailable());
+        System.out.println("CHOSE " + p);
+        boolean hit = false;
+        boolean destroyed = false;
+        if (pb.getAttacked(p.x, p.y)) {
+            //ACTUAL HIT AND NOT AN ALREADY ATTACKED POSITION
+            hit = pb.actualNewHit();
+            destroyed = pb.lastShipDestroyed();
+        }
+        ai.thinkAboutNext(pb.getAvailable(), hit, destroyed);
+        selfvsAI.updateTiles(pb.getToPaint());
+        selfvsAI.setLast(p);
+        if(hit && !pb.isGameOver()) {
+            Task<Void> wait = new Task<> () {
+                @Override
+                protected Void call() throws Exception {
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                    }
+                    return null;
+                }
+            };
+            wait.setOnSucceeded(event -> aiTurn());
+            new Thread(wait).start();
+        }
+        else if(hit &&pb.isGameOver())
+            lost("YOU LOST TO AI LOL!");
+        else
+            iCanAttack = true;
+    }
+
     private static class EnemyLocal {
         private int serverID;
         private GraphBoardFX b;
         private String name;
-        private Button button;
+        private Label labeln;
         private TextArea conversation;
         private EnemyLocal(){
             serverID = 0;
@@ -924,7 +1064,7 @@ public class App extends Application{
 
     private static class MyAI {
 
-        GraphBoardFX gb;
+        GraphBoardFX b;
         PlayerBoard board;
 
         private boolean searching;
@@ -942,11 +1082,14 @@ public class App extends Application{
             firstHit = new Point(0,0);
             directionsToGo = new ArrayList<>();
             board = PlayerBoard.getRandomPlayerBoard();
+            b = new GraphBoardFX();
+            b.startTiles(board.getToPaint());
             //gb = new GraphBoardFX(getToPaint());
         }
 
-        private String[][] getToPaint(){
-            return board.getToPaint();
+        //POINT WITH DIRECTION
+        private Point pWD(Point p, Direction dir){
+            return new Point(p.x + dir.getDirectionVector()[0], p.y + dir.getDirectionVector()[1]);
         }
 
         private boolean inBounds(Point p){
@@ -986,27 +1129,29 @@ public class App extends Application{
                 }
             }
             else if (searching) {
+                //FILTER OUT ALREADY ATTACKED
+
                 System.out.println("WAS AN OLD TARGET");
+
                 //FAILED
-                if(!hit && !betweenTwo){
-                    System.out.println("MISSED; CHANGING DIRECTION");
+                if(!hit) {
                     justBefore = firstHit;
-                    directionsToGo.remove(directionsToGo.size() - 1);
-                    directionLooking = directionsToGo.get(directionsToGo.size() - 1);
-                    System.out.println(directionLooking);
+                    int size = directionsToGo.size();
+
+                    for(int i = size - 1; i >= 0; i--){
+                        Point n = new Point(justBefore.x + directionsToGo.get(i).getDirectionVector()[0],
+                                justBefore.y + directionsToGo.get(i).getDirectionVector()[1]);
+                        if(!pos.contains(n))
+                            directionsToGo.remove(i);
+                    }
+                    directionLooking = directionsToGo.get(0);
                 }
-                //SEARCHING ALREADY
-                //BETWEEN TWO BUT FAILED
-                else if (betweenTwo && !hit) {
-                    System.out.println("I KNOW THE RIGHT ONE");
-                    directionLooking = directionLooking.getOpposite();
-                    justBefore = firstHit;
-                }
-                //IF HIT THAT MEANS IT'S EITHER THIS WAY OR THE OPPOSITE
-                else{
-                    System.out.println("BETWEEN TWO");
-                    betweenTwo = true;
-                }
+                else
+                    if(!pos.contains(pWD(justBefore, directionLooking))) {
+                        justBefore = firstHit;
+                        directionLooking = directionLooking.getOpposite();
+                    }
+
             }
             if(hit) {
                 searching = !destroyedIt;
@@ -1028,11 +1173,17 @@ public class App extends Application{
                 p = new Point(justBefore.x + directionLooking.getDirectionVector()[0],
                         justBefore.y + directionLooking.getDirectionVector()[1]);
 
+
             }
             justBefore = p;
             return p;
         }
 
+        public boolean attacked(Point p) {
+            boolean res = board.getAttacked(p.x, p.y);
+            b.updateTiles(board.getToPaint());
+            return res;
+        }
     }
 
 }
